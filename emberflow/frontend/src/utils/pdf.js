@@ -1,4 +1,3 @@
-import { jsPDF } from 'jspdf';
 import { formatDate, formatMoney } from './format.js';
 
 const page = {
@@ -27,7 +26,8 @@ function addWrappedText(doc, text, x, y, width, lineHeight = 6) {
   return y + lines.length * lineHeight;
 }
 
-export function exportInvoicePdf(invoice, profile) {
+export async function exportInvoicePdf(invoice, profile) {
+  const { jsPDF } = await import('jspdf');
   const doc = new jsPDF();
   addHeader(doc, `Invoice ${invoice.invoice_number}`, profile);
 
@@ -116,7 +116,8 @@ export function exportInvoicePdf(invoice, profile) {
   doc.save(`${invoice.invoice_number}.pdf`);
 }
 
-export function exportProposalPdf(proposal, profile) {
+export async function exportProposalPdf(proposal, profile) {
+  const { jsPDF } = await import('jspdf');
   const doc = new jsPDF();
   addHeader(doc, proposal.title || 'Project Proposal', profile);
   let y = 44;
