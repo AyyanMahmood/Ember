@@ -59,14 +59,15 @@ export async function listRecentInvoices(limit = 5) {
 }
 
 export async function getInvoice(id) {
-  return requireData(
+  const invoice = requireData(
     await supabase
       .from('invoices')
       .select('*, clients(*), invoice_items(*)')
       .eq('id', id)
-      .order('position', { foreignTable: 'invoice_items', ascending: true })
       .single()
   );
+  invoice.invoice_items = [...(invoice.invoice_items || [])].sort((a, b) => a.position - b.position);
+  return invoice;
 }
 
 export async function createInvoice(invoice, items) {

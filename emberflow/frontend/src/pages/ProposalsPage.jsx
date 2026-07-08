@@ -86,7 +86,7 @@ export default function ProposalsPage() {
                     <td>{formatDate(proposal.created_at?.slice(0, 10))}</td>
                     <td className="right">{formatMoney(proposal.amount, proposal.currency)}</td>
                     <td className="right actions">
-                      <button className="button small ghost" onClick={() => exportProposalPdf(proposal, profile)}>
+                      <button className="button small ghost" onClick={() => exportProposalPdf(proposal, profile).catch((err) => setError(err.message))}>
                         <Download size={15} />
                         PDF
                       </button>

@@ -63,7 +63,7 @@ export default function ProposalFormPage() {
   async function exportDraft() {
     try {
       const profile = await getProfile();
-      exportProposalPdf(proposal, profile);
+      await exportProposalPdf(proposal, profile);
     } catch (err) {
       setError(err.message);
     }

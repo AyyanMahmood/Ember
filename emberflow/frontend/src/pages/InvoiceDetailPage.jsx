@@ -66,7 +66,7 @@ export default function InvoiceDetailPage() {
               Mark paid
             </button>
           ) : null}
-          <button className="button ghost" onClick={() => exportInvoicePdf(invoice, profile)}>
+          <button className="button ghost" onClick={() => exportInvoicePdf(invoice, profile).catch((err) => setError(err.message))}>
             <Download size={16} />
             PDF
           </button>
