@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
+import { friendlyAuthError } from '../utils/auth.js';
 
 export default function ForgotPasswordPage() {
   const { resetPassword } = useAuth();
@@ -17,7 +18,7 @@ export default function ForgotPasswordPage() {
     const result = await resetPassword(email);
     setSubmitting(false);
     if (result.error) {
-      setError(result.error.message);
+      setError(friendlyAuthError(result.error));
       return;
     }
     setMessage('Password reset link sent. Check your email.');

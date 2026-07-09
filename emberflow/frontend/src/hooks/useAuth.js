@@ -1,5 +1,6 @@
 import { createContext, createElement, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../services/supabase.js';
+import { authRedirectUrl } from '../utils/auth.js';
 
 const AuthContext = createContext(null);
 
@@ -43,13 +44,13 @@ export function AuthProvider({ children }) {
           password,
           options: {
             data: metadata,
-            emailRedirectTo: `${window.location.origin}/login`,
+            emailRedirectTo: authRedirectUrl('/login'),
           },
         }),
       signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
       resetPassword: (email) =>
         supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo: authRedirectUrl('/reset-password'),
         }),
       updatePassword: (password) => supabase.auth.updateUser({ password }),
       signOut: () => supabase.auth.signOut(),

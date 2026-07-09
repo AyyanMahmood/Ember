@@ -52,6 +52,7 @@ Update `frontend/.env.local` with your Supabase project URL and anon key:
 ```bash
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_APP_URL=http://localhost:5173
 ```
 
 For Vercel API routes, configure these variables in Vercel:

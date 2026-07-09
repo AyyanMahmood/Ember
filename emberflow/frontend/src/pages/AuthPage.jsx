@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import PasswordField from '../components/PasswordField.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import { friendlyAuthError } from '../utils/auth.js';
 
 export default function AuthPage({ mode }) {
   const isSignup = mode === 'signup';
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, loading } = useAuth();
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  if (loading) return <div className="screen-loader">Checking session...</div>;
   if (user) return <Navigate to="/app" replace />;
 
   async function handleSubmit(event) {
@@ -26,7 +29,7 @@ export default function AuthPage({ mode }) {
 
     setSubmitting(false);
     if (result.error) {
-      setError(result.error.message);
+      setError(friendlyAuthError(result.error));
       return;
     }
 
@@ -69,17 +72,11 @@ export default function AuthPage({ mode }) {
             autoComplete="email"
           />
         </label>
-        <label>
-          Password
-          <input
-            required
-            type="password"
-            minLength={8}
-            value={form.password}
-            onChange={(event) => setForm({ ...form, password: event.target.value })}
-            autoComplete={isSignup ? 'new-password' : 'current-password'}
-          />
-        </label>
+        <PasswordField
+          value={form.password}
+          onChange={(event) => setForm({ ...form, password: event.target.value })}
+          autoComplete={isSignup ? 'new-password' : 'current-password'}
+        />
         {error ? <p className="form-error">{error}</p> : null}
         {success ? <p className="form-success">{success}</p> : null}
         <button className="button primary full" type="submit" disabled={submitting}>

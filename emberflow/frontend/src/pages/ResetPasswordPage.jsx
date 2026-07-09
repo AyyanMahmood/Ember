@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import PasswordField from '../components/PasswordField.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import { friendlyAuthError } from '../utils/auth.js';
 
 export default function ResetPasswordPage() {
   const { updatePassword } = useAuth();
@@ -16,7 +18,7 @@ export default function ResetPasswordPage() {
     const result = await updatePassword(password);
     setSubmitting(false);
     if (result.error) {
-      setError(result.error.message);
+      setError(friendlyAuthError(result.error));
       return;
     }
     navigate('/app');
@@ -32,17 +34,12 @@ export default function ResetPasswordPage() {
           <p className="eyebrow">Secure account</p>
           <h1>Create a new password</h1>
         </div>
-        <label>
-          New password
-          <input
-            required
-            type="password"
-            minLength={8}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            autoComplete="new-password"
-          />
-        </label>
+        <PasswordField
+          label="New password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          autoComplete="new-password"
+        />
         {error ? <p className="form-error">{error}</p> : null}
         <button className="button primary full" disabled={submitting} type="submit">
           {submitting ? 'Saving...' : 'Update password'}
