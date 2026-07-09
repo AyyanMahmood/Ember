@@ -36,6 +36,15 @@ export default function InvoicesPage() {
     }
   }
 
+  async function markSent(invoice) {
+    try {
+      await updateInvoiceStatus(invoice.id, 'sent');
+      await load();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   async function handleDelete(invoice) {
     if (!window.confirm(`Delete invoice ${invoice.invoice_number}?`)) return;
     try {
@@ -98,6 +107,11 @@ export default function InvoicesPage() {
                     </td>
                     <td className="right">{formatMoney(invoice.total, invoice.currency)}</td>
                     <td className="right actions">
+                      {invoice.status === 'draft' ? (
+                        <button className="button small ghost" onClick={() => markSent(invoice)}>
+                          Mark sent
+                        </button>
+                      ) : null}
                       {invoice.status !== 'paid' ? (
                         <button className="button small ghost" onClick={() => markPaid(invoice)}>
                           Mark paid

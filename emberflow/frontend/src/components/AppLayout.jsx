@@ -1,4 +1,4 @@
-import { BarChart3, FileText, Home, LogOut, Menu, Settings, Users, X } from 'lucide-react';
+import { BarChart3, FileText, Home, LineChart, LogOut, Menu, Settings, Users, X } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/app/clients', label: 'Clients', icon: Users },
   { to: '/app/invoices', label: 'Invoices', icon: FileText },
   { to: '/app/proposals', label: 'Proposals', icon: BarChart3 },
+  { to: '/app/analytics', label: 'Analytics', icon: LineChart },
   { to: '/app/settings', label: 'Settings', icon: Settings },
 ];
 

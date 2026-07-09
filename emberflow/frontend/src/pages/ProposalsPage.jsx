@@ -2,6 +2,7 @@ import { Download, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import EmptyState from '../components/EmptyState.jsx';
+import FeatureGate from '../components/FeatureGate.jsx';
 import { deleteProposal, getProfile, listProposals } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
 import { exportProposalPdf } from '../utils/pdf.js';
@@ -43,7 +44,8 @@ export default function ProposalsPage() {
   if (loading) return <div className="panel">Loading proposals...</div>;
 
   return (
-    <div className="page-stack">
+    <FeatureGate feature="proposals" title="Proposals are a Pro feature" message="Upgrade to Pro to create proposal templates and export proposal PDFs.">
+      <div className="page-stack">
       <div className="page-header">
         <div>
           <p className="eyebrow">Proposals</p>
@@ -100,7 +102,8 @@ export default function ProposalsPage() {
             </table>
           </div>
         )}
-      </section>
-    </div>
+        </section>
+      </div>
+    </FeatureGate>
   );
 }

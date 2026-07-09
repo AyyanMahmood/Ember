@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import EmptyState from '../components/EmptyState.jsx';
 import { deleteClient, listClients } from '../services/api.js';
@@ -7,6 +7,8 @@ import { formatDate } from '../utils/format.js';
 
 export default function ClientsPage() {
   const [clients, setClients] = useState([]);
+  const [query, setQuery] = useState('');
+  const [country, setCountry] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -36,6 +38,20 @@ export default function ClientsPage() {
     }
   }
 
+  const countries = [...new Set(clients.map((client) => client.country).filter(Boolean))].sort();
+  const filteredClients = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return clients.filter((client) => {
+      const matchesTerm =
+        !term ||
+        [client.name, client.company, client.email, client.phone]
+          .filter(Boolean)
+          .some((value) => value.toLowerCase().includes(term));
+      const matchesCountry = !country || client.country === country;
+      return matchesTerm && matchesCountry;
+    });
+  }, [clients, query, country]);
+
   if (loading) return <div className="panel">Loading clients...</div>;
 
   return (
@@ -53,12 +69,38 @@ export default function ClientsPage() {
 
       {error ? <div className="panel error-panel">{error}</div> : null}
       <section className="panel">
+        <div className="filters-row">
+          <label>
+            Search
+            <input
+              placeholder="Name, company, email, or phone"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+          <label>
+            Country
+            <select value={country} onChange={(event) => setCountry(event.target.value)}>
+              <option value="">All countries</option>
+              {countries.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
         {clients.length === 0 ? (
           <EmptyState
             title="No clients yet"
             message="Add a client before creating invoices and proposals."
             actionLabel="Add client"
             actionTo="/app/clients/new"
+          />
+        ) : filteredClients.length === 0 ? (
+          <EmptyState
+            title="No matching clients"
+            message="Adjust your search or filter to find the client record."
           />
         ) : (
           <div className="table-wrap">
@@ -74,7 +116,7 @@ export default function ClientsPage() {
                 </tr>
               </thead>
               <tbody>
-                {clients.map((client) => (
+                {filteredClients.map((client) => (
                   <tr key={client.id}>
                     <td>
                       <Link to={`/app/clients/${client.id}`}>{client.name}</Link>

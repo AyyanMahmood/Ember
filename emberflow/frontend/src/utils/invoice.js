@@ -12,19 +12,24 @@ export function normalizeInvoiceItems(items) {
     .filter((item) => item.description && item.quantity > 0);
 }
 
-export function calculateInvoiceTotals(items) {
-  return normalizeInvoiceItems(items).reduce(
+export function calculateInvoiceTotals(items, discount = 0) {
+  const itemTotals = normalizeInvoiceItems(items).reduce(
     (totals, item) => {
       const lineSubtotal = item.quantity * item.price;
       const lineTax = lineSubtotal * (item.tax_rate / 100);
       return {
         subtotal: totals.subtotal + lineSubtotal,
         tax_total: totals.tax_total + lineTax,
-        total: totals.total + lineSubtotal + lineTax,
       };
     },
-    { subtotal: 0, tax_total: 0, total: 0 }
+    { subtotal: 0, tax_total: 0 }
   );
+  const discountTotal = Math.min(Number(discount || 0), itemTotals.subtotal + itemTotals.tax_total);
+  return {
+    ...itemTotals,
+    discount_total: discountTotal,
+    total: Math.max(itemTotals.subtotal + itemTotals.tax_total - discountTotal, 0),
+  };
 }
 
 export function effectiveStatus(invoice) {
@@ -34,7 +39,7 @@ export function effectiveStatus(invoice) {
   return invoice.status;
 }
 
-export function nextInvoiceNumber() {
+export function nextInvoiceNumber(prefix = 'INV') {
   const compactDate = new Date().toISOString().slice(0, 10).replaceAll('-', '');
-  return `INV-${compactDate}-${Math.floor(1000 + Math.random() * 9000)}`;
+  return `${prefix || 'INV'}-${compactDate}-${Math.floor(1000 + Math.random() * 9000)}`;
 }

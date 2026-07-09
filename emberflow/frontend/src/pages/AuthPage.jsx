@@ -74,7 +74,7 @@ export default function AuthPage({ mode }) {
           <input
             required
             type="password"
-            minLength={6}
+            minLength={8}
             value={form.password}
             onChange={(event) => setForm({ ...form, password: event.target.value })}
             autoComplete={isSignup ? 'new-password' : 'current-password'}
@@ -87,8 +87,13 @@ export default function AuthPage({ mode }) {
         </button>
         <p className="center muted">
           {isSignup ? 'Already have an account?' : 'New to EmberFlow?'}{' '}
-          <Link to={isSignup ? '/login' : '/signup'}>{isSignup ? 'Login' : 'Create one'}</Link>
+          <Link to={isSignup ? '/login' : '/register'}>{isSignup ? 'Login' : 'Create one'}</Link>
         </p>
+        {!isSignup ? (
+          <p className="center muted">
+            <Link to="/forgot-password">Forgot password?</Link>
+          </p>
+        ) : null}
       </form>
     </div>
   );

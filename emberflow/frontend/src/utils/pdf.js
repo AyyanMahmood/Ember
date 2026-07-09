@@ -20,6 +20,25 @@ function addHeader(doc, title, profile) {
   doc.setTextColor('#111111');
 }
 
+async function addLogo(doc, profile) {
+  if (!profile?.logo_url) return;
+  try {
+    const response = await fetch(profile.logo_url);
+    const blob = await response.blob();
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    const format = blob.type.includes('png') ? 'PNG' : 'JPEG';
+    doc.addImage(dataUrl, format, page.margin, 34, 24, 24);
+  } catch {
+    doc.setFont('helvetica', 'bold');
+    doc.text(profile.business_name || profile.full_name || 'Logo', page.margin, 42);
+  }
+}
+
 function addWrappedText(doc, text, x, y, width, lineHeight = 6) {
   const lines = doc.splitTextToSize(text || '', width);
   doc.text(lines, x, y);
@@ -30,6 +49,7 @@ export async function exportInvoicePdf(invoice, profile) {
   const { jsPDF } = await import('jspdf');
   const doc = new jsPDF();
   addHeader(doc, `Invoice ${invoice.invoice_number}`, profile);
+  await addLogo(doc, profile);
 
   let y = 42;
   doc.setFontSize(10);
@@ -41,9 +61,9 @@ export async function exportInvoicePdf(invoice, profile) {
   addWrappedText(
     doc,
     [profile?.business_name || profile?.full_name, profile?.email].filter(Boolean).join('\n'),
-    page.margin,
+    profile?.logo_url ? page.margin + 30 : page.margin,
     y,
-    74
+    profile?.logo_url ? 44 : 74
   );
   addWrappedText(
     doc,
@@ -63,7 +83,7 @@ export async function exportInvoicePdf(invoice, profile) {
   doc.text(formatDate(invoice.due_date), 72, y + 7);
   doc.text(invoice.status.toUpperCase(), 126, y + 7);
 
-  y = 105;
+  y = 106;
   doc.setFillColor('#f3efe7');
   doc.rect(page.margin, y - 6, 174, 10, 'F');
   doc.setFont('helvetica', 'bold');
@@ -101,11 +121,30 @@ export async function exportInvoicePdf(invoice, profile) {
   y += 8;
   doc.text('Tax', 136, y);
   doc.text(formatMoney(invoice.tax_total, invoice.currency), 192, y, { align: 'right' });
+  y += 8;
+  doc.text('Discount', 136, y);
+  doc.text(`-${formatMoney(invoice.discount_total || 0, invoice.currency)}`, 192, y, { align: 'right' });
   y += 10;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.text('Total', 136, y);
   doc.text(formatMoney(invoice.total, invoice.currency), 192, y, { align: 'right' });
+
+  if (invoice.notes) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Notes', page.margin, y + 16);
+    doc.setFont('helvetica', 'normal');
+    addWrappedText(doc, invoice.notes, page.margin, y + 24, 84, 5);
+  }
+
+  if (profile?.payment_instructions) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Payment instructions', 118, y + 16);
+    doc.setFont('helvetica', 'normal');
+    addWrappedText(doc, profile.payment_instructions, 118, y + 24, 74, 5);
+  }
 
   if (profile?.invoice_footer) {
     doc.setFontSize(9);
@@ -147,6 +186,29 @@ export async function exportProposalPdf(proposal, profile) {
   doc.setFont('helvetica', 'normal');
   doc.text(proposal.timeline || '-', page.margin, y + 8);
   doc.text(formatMoney(proposal.amount, proposal.currency), 118, y + 8);
+
+  if (proposal.proposal_items?.length) {
+    y += 24;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Pricing breakdown', page.margin, y);
+    y += 8;
+    doc.setFont('helvetica', 'normal');
+    proposal.proposal_items.forEach((item) => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(item.title, page.margin, y);
+      doc.text(formatMoney(item.amount, proposal.currency), 192, y, { align: 'right' });
+      y += 6;
+      if (item.description) {
+        doc.setFont('helvetica', 'normal');
+        y = addWrappedText(doc, item.description, page.margin, y, 150, 5);
+      }
+      y += 3;
+      if (y > 260) {
+        doc.addPage();
+        y = 24;
+      }
+    });
+  }
 
   doc.save(`${(proposal.title || 'proposal').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`);
 }

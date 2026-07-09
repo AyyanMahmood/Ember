@@ -1,18 +1,18 @@
 :root {
-  color: #15120d;
-  background: #f6f1e8;
+  color: #0A0A0A;
+  background: #F7F1E3;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --bg: #f6f1e8;
+  --bg: #F7F1E3;
   --surface: #fffaf2;
   --surface-strong: #ffffff;
-  --ink: #15120d;
+  --ink: #0A0A0A;
   --muted: #6d675d;
   --line: #e5dccd;
-  --blue: #2563eb;
-  --blue-dark: #1d4ed8;
+  --blue: #3B82F6;
+  --blue-dark: #2563eb;
   --danger: #b42318;
   --success: #067647;
   --warning: #b54708;
@@ -437,6 +437,11 @@ label {
   padding: 1.3rem;
 }
 
+.pricing-card.highlight {
+  border-color: rgba(59, 130, 246, 0.55);
+  box-shadow: 0 24px 60px rgba(59, 130, 246, 0.16);
+}
+
 .pricing-card strong {
   display: block;
   font-size: 3rem;
@@ -453,6 +458,109 @@ label {
   align-items: center;
   display: flex;
   gap: 0.5rem;
+}
+
+.pricing-grid,
+.steps-grid,
+.upgrade-grid,
+.subscription-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pricing-grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.two-column {
+  align-items: start;
+  grid-template-columns: 1fr 1fr;
+}
+
+.two-column p {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.step-card,
+.testimonials article {
+  background: rgba(255, 250, 242, 0.82);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 1.15rem;
+}
+
+.step-card span {
+  align-items: center;
+  background: var(--blue);
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  font-weight: 900;
+  height: 2rem;
+  justify-content: center;
+  width: 2rem;
+}
+
+.testimonials {
+  grid-template-columns: 1fr 1fr;
+}
+
+.testimonials p {
+  font-size: 1.2rem;
+  line-height: 1.55;
+}
+
+.testimonials span {
+  color: var(--muted);
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.faq-grid {
+  grid-template-columns: 0.8fr 1.2fr;
+}
+
+.faq-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.faq-list article {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1rem;
+}
+
+.final-cta,
+.legal-page {
+  display: grid;
+  gap: 1rem;
+  margin: 0 auto;
+  max-width: 860px;
+  padding: 5rem 1.25rem;
+  text-align: center;
+}
+
+.final-cta h2,
+.legal-page h1,
+.section-heading h1 {
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  line-height: 1;
+  margin: 0;
+}
+
+.marketing-footer {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 2rem 1.25rem;
 }
 
 .app-shell {
@@ -584,6 +692,15 @@ label {
   overflow-x: auto;
 }
 
+.filters-row,
+.payment-form,
+.branding-box {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 1rem;
+}
+
 .empty-state {
   display: grid;
   justify-items: start;
@@ -663,6 +780,13 @@ label {
   grid-template-columns: minmax(12rem, 1fr) 5rem 8rem 6rem 2.4rem;
 }
 
+.proposal-item-row {
+  align-items: end;
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: minmax(10rem, 0.8fr) minmax(14rem, 1fr) 8rem 2.4rem;
+}
+
 .item-remove {
   margin-bottom: 0.05rem;
 }
@@ -683,6 +807,147 @@ label {
 .invoice-preview {
   display: grid;
   gap: 1.5rem;
+}
+
+.upgrade-inline {
+  align-items: center;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
+.upgrade-panel {
+  display: grid;
+  gap: 0.8rem;
+  justify-items: start;
+}
+
+.ranking-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ranking-row {
+  align-items: center;
+  background: #fffdf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 2rem 1fr auto;
+  padding: 0.8rem;
+}
+
+.ranking-row span {
+  color: var(--blue);
+  font-weight: 900;
+}
+
+.ranking-row em {
+  font-style: normal;
+  font-weight: 900;
+}
+
+.modal-backdrop {
+  align-items: center;
+  background: rgba(10, 10, 10, 0.38);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 50;
+}
+
+.modal-card {
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 30px 90px rgba(10, 10, 10, 0.24);
+  display: grid;
+  gap: 1rem;
+  max-width: 760px;
+  padding: 1rem;
+  width: min(100%, 760px);
+}
+
+.modal-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.loading-row {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  gap: 0.6rem;
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
+  border: 2px solid var(--line);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  height: 1rem;
+  width: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.file-upload {
+  align-items: center;
+  background: #fffdf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.5rem;
+  justify-content: center;
+  min-height: 2.8rem;
+  padding: 0.6rem 0.9rem;
+}
+
+.file-upload input {
+  display: none;
+}
+
+.branding-box img,
+.logo-placeholder {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  height: 4.8rem;
+  object-fit: contain;
+  width: 8rem;
+}
+
+.logo-placeholder {
+  align-items: center;
+  background: #f2eadc;
+  color: var(--muted);
+  display: flex;
+  font-weight: 900;
+  justify-content: center;
+}
+
+.billing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1rem;
 }
 
 .invoice-head {
@@ -735,7 +1000,15 @@ label {
   .pricing-section,
   .feature-grid,
   .stats-grid,
-  .detail-grid {
+  .detail-grid,
+  .pricing-grid,
+  .pricing-grid.three,
+  .steps-grid,
+  .testimonials,
+  .faq-grid,
+  .two-column,
+  .upgrade-grid,
+  .subscription-grid {
     grid-template-columns: 1fr;
   }
 
@@ -791,7 +1064,11 @@ label {
   }
 
   .form-grid,
-  .item-row {
+  .item-row,
+  .proposal-item-row,
+  .filters-row,
+  .payment-form,
+  .branding-box {
     grid-template-columns: 1fr;
   }
 
@@ -813,5 +1090,10 @@ label {
   .details-list,
   .details-list.compact {
     grid-template-columns: 1fr;
+  }
+
+  .upgrade-inline {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

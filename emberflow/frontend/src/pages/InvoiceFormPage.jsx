@@ -1,21 +1,25 @@
 import { Minus, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import UpgradeModal from '../components/UpgradeModal.jsx';
 import { useAuth } from '../hooks/useAuth.js';
-import { createInvoice, getInvoice, listClients, updateInvoice } from '../services/api.js';
+import { useSubscription } from '../hooks/useSubscription.js';
+import { createInvoice, getInvoice, getProfile, listClients, updateInvoice } from '../services/api.js';
 import { formatMoney, addDaysISO, todayISO } from '../utils/format.js';
 import { CURRENCIES, INVOICE_STATUSES, calculateInvoiceTotals, nextInvoiceNumber, normalizeInvoiceItems } from '../utils/invoice.js';
 
 const emptyItem = { description: '', quantity: 1, price: 0, tax_rate: 0 };
 
-function buildInitialForm(clientId = '') {
+function buildInitialForm(clientId = '', prefix = 'INV', currency = 'USD') {
   return {
-    invoice_number: nextInvoiceNumber(),
+    invoice_number: nextInvoiceNumber(prefix),
     client_id: clientId,
     invoice_date: todayISO(),
     due_date: addDaysISO(14),
-    currency: 'USD',
+    currency,
     status: 'draft',
+    discount_total: 0,
+    notes: '',
   };
 }
 
@@ -25,17 +29,19 @@ export default function InvoiceFormPage() {
   const editing = Boolean(id);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const subscription = useSubscription();
   const [clients, setClients] = useState([]);
   const [form, setForm] = useState(buildInitialForm(params.get('client') || ''));
   const [items, setItems] = useState([{ ...emptyItem }]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   useEffect(() => {
     async function load() {
       try {
-        const clientRows = await listClients();
+        const [clientRows, profile] = await Promise.all([listClients(), getProfile()]);
         setClients(clientRows);
         if (editing) {
           const invoice = await getInvoice(id);
@@ -46,6 +52,8 @@ export default function InvoiceFormPage() {
             due_date: invoice.due_date,
             currency: invoice.currency,
             status: invoice.status,
+            discount_total: invoice.discount_total || 0,
+            notes: invoice.notes || '',
           });
           setItems(
             invoice.invoice_items.length > 0
@@ -57,6 +65,8 @@ export default function InvoiceFormPage() {
                 }))
               : [{ ...emptyItem }]
           );
+        } else {
+          setForm(buildInitialForm(params.get('client') || '', profile.invoice_prefix, profile.currency));
         }
       } catch (err) {
         setError(err.message);
@@ -67,7 +77,7 @@ export default function InvoiceFormPage() {
     load();
   }, [editing, id]);
 
-  const totals = useMemo(() => calculateInvoiceTotals(items), [items]);
+  const totals = useMemo(() => calculateInvoiceTotals(items, form.discount_total), [items, form.discount_total]);
 
   function updateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -100,11 +110,18 @@ export default function InvoiceFormPage() {
     }
 
     try {
+      if (!editing && !subscription.canCreateInvoice) {
+        setUpgradeOpen(true);
+        setSaving(false);
+        return;
+      }
+
       const payload = {
         ...form,
         user_id: user.id,
         subtotal: totals.subtotal,
         tax_total: totals.tax_total,
+        discount_total: totals.discount_total,
         total: totals.total,
       };
       const saved = editing ? await updateInvoice(id, payload, normalizedItems) : await createInvoice(payload, normalizedItems);
@@ -171,6 +188,20 @@ export default function InvoiceFormPage() {
             ))}
           </select>
         </label>
+        <label>
+          Discount
+          <input
+            min="0"
+            step="0.01"
+            type="number"
+            value={form.discount_total}
+            onChange={(event) => updateField('discount_total', event.target.value)}
+          />
+        </label>
+        <label className="span-2">
+          Notes
+          <textarea rows="4" value={form.notes} onChange={(event) => updateField('notes', event.target.value)} />
+        </label>
 
         <div className="span-2 items-editor">
           <div className="panel-header">
@@ -232,6 +263,7 @@ export default function InvoiceFormPage() {
         <div className="totals-box span-2">
           <span>Subtotal {formatMoney(totals.subtotal, form.currency)}</span>
           <span>Tax {formatMoney(totals.tax_total, form.currency)}</span>
+          <span>Discount {formatMoney(totals.discount_total, form.currency)}</span>
           <strong>Total {formatMoney(totals.total, form.currency)}</strong>
         </div>
 
@@ -244,6 +276,11 @@ export default function InvoiceFormPage() {
           </button>
         </div>
       </form>
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        reason="The Free plan includes 5 invoices per month. Upgrade to Pro for unlimited invoices."
+      />
     </div>
   );
 }

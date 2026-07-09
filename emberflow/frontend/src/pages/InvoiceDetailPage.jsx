@@ -1,18 +1,33 @@
-import { Download, Edit, Trash2 } from 'lucide-react';
+import { Copy, Download, Edit, Send, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import StatusBadge from '../components/StatusBadge.jsx';
-import { deleteInvoice, getInvoice, getProfile, updateInvoiceStatus } from '../services/api.js';
+import UpgradeModal from '../components/UpgradeModal.jsx';
+import { useAuth } from '../hooks/useAuth.js';
+import { useSubscription } from '../hooks/useSubscription.js';
+import { createPayment, deleteInvoice, deletePayment, duplicateInvoice, getInvoice, getProfile, updateInvoiceStatus } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
+import { nextInvoiceNumber } from '../utils/invoice.js';
 import { exportInvoicePdf } from '../utils/pdf.js';
 
 export default function InvoiceDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const subscription = useSubscription();
   const [invoice, setInvoice] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [payment, setPayment] = useState({
+    amount: '',
+    payment_date: new Date().toISOString().slice(0, 10),
+    method: 'manual',
+    reference: '',
+    notes: '',
+  });
   const [loading, setLoading] = useState(true);
+  const [savingPayment, setSavingPayment] = useState(false);
   const [error, setError] = useState('');
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   async function load() {
     try {
@@ -40,6 +55,68 @@ export default function InvoiceDetailPage() {
     }
   }
 
+  async function markSent() {
+    try {
+      await updateInvoiceStatus(id, 'sent');
+      await load();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function duplicateCurrentInvoice() {
+    try {
+      const copied = await duplicateInvoice(id, user.id, nextInvoiceNumber(profile?.invoice_prefix || 'INV'));
+      navigate(`/app/invoices/${copied.id}`);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function handlePaymentSubmit(event) {
+    event.preventDefault();
+    if (!subscription.isPro) {
+      setUpgradeOpen(true);
+      return;
+    }
+    setSavingPayment(true);
+    setError('');
+    try {
+      await createPayment({
+        user_id: user.id,
+        invoice_id: id,
+        amount: Number(payment.amount || 0),
+        currency: invoice.currency,
+        payment_date: payment.payment_date,
+        method: payment.method,
+        reference: payment.reference,
+        notes: payment.notes,
+      });
+      setPayment({
+        amount: '',
+        payment_date: new Date().toISOString().slice(0, 10),
+        method: 'manual',
+        reference: '',
+        notes: '',
+      });
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingPayment(false);
+    }
+  }
+
+  async function removePayment(paymentRow) {
+    if (!window.confirm('Delete this payment record?')) return;
+    try {
+      await deletePayment(paymentRow.id, id);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   async function handleDelete() {
     if (!window.confirm(`Delete invoice ${invoice.invoice_number}?`)) return;
     try {
@@ -53,6 +130,9 @@ export default function InvoiceDetailPage() {
   if (loading) return <div className="panel">Loading invoice...</div>;
   if (error) return <div className="panel error-panel">{error}</div>;
 
+  const paidAmount = (invoice.payments || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
+  const balanceDue = Math.max(Number(invoice.total || 0) - paidAmount, 0);
+
   return (
     <div className="page-stack">
       <div className="page-header">
@@ -61,11 +141,21 @@ export default function InvoiceDetailPage() {
           <h2>{invoice.invoice_number}</h2>
         </div>
         <div className="actions">
+          {invoice.status === 'draft' ? (
+            <button className="button ghost" onClick={markSent}>
+              <Send size={16} />
+              Mark sent
+            </button>
+          ) : null}
           {invoice.status !== 'paid' ? (
             <button className="button ghost" onClick={markPaid}>
               Mark paid
             </button>
           ) : null}
+          <button className="button ghost" onClick={duplicateCurrentInvoice}>
+            <Copy size={16} />
+            Duplicate
+          </button>
           <button className="button ghost" onClick={() => exportInvoicePdf(invoice, profile).catch((err) => setError(err.message))}>
             <Download size={16} />
             PDF
@@ -134,11 +224,111 @@ export default function InvoiceDetailPage() {
           </table>
         </div>
         <div className="invoice-totals">
+          <span>Paid {formatMoney(paidAmount, invoice.currency)}</span>
+          <span>Balance {formatMoney(balanceDue, invoice.currency)}</span>
           <span>Subtotal {formatMoney(invoice.subtotal, invoice.currency)}</span>
           <span>Tax {formatMoney(invoice.tax_total, invoice.currency)}</span>
+          <span>Discount {formatMoney(invoice.discount_total || 0, invoice.currency)}</span>
           <strong>Total {formatMoney(invoice.total, invoice.currency)}</strong>
         </div>
       </section>
+
+      <section className="panel">
+        <div className="panel-header">
+          <h3>Payments</h3>
+          <span className="muted small">Balance due {formatMoney(balanceDue, invoice.currency)}</span>
+        </div>
+        {subscription.isPro ? (
+          <form className="payment-form" onSubmit={handlePaymentSubmit}>
+            <label>
+              Amount
+              <input
+                required
+                min="0.01"
+                step="0.01"
+                type="number"
+                value={payment.amount}
+                onChange={(event) => setPayment({ ...payment, amount: event.target.value })}
+              />
+            </label>
+            <label>
+              Date
+              <input
+                required
+                type="date"
+                value={payment.payment_date}
+                onChange={(event) => setPayment({ ...payment, payment_date: event.target.value })}
+              />
+            </label>
+            <label>
+              Method
+              <select value={payment.method} onChange={(event) => setPayment({ ...payment, method: event.target.value })}>
+                <option value="manual">Manual</option>
+                <option value="bank_transfer">Bank transfer</option>
+                <option value="card">Card</option>
+                <option value="cash">Cash</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label>
+              Reference
+              <input value={payment.reference} onChange={(event) => setPayment({ ...payment, reference: event.target.value })} />
+            </label>
+            <label className="span-2">
+              Notes
+              <input value={payment.notes} onChange={(event) => setPayment({ ...payment, notes: event.target.value })} />
+            </label>
+            <button className="button primary" disabled={savingPayment} type="submit">
+              {savingPayment ? 'Recording...' : 'Record payment'}
+            </button>
+          </form>
+        ) : (
+          <div className="upgrade-inline">
+            <p className="muted">Payment tracking is included in EmberFlow Pro.</p>
+            <button className="button primary" type="button" onClick={() => setUpgradeOpen(true)}>
+              Upgrade to Pro
+            </button>
+          </div>
+        )}
+
+        {(invoice.payments || []).length === 0 ? (
+          <p className="muted">No payments recorded yet.</p>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Method</th>
+                  <th>Reference</th>
+                  <th className="right">Amount</th>
+                  <th className="right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoice.payments.map((row) => (
+                  <tr key={row.id}>
+                    <td>{formatDate(row.payment_date)}</td>
+                    <td>{row.method}</td>
+                    <td>{row.reference || '-'}</td>
+                    <td className="right">{formatMoney(row.amount, row.currency)}</td>
+                    <td className="right">
+                      <button className="button small danger" onClick={() => removePayment(row)}>
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        reason="Payment tracking is available on EmberFlow Pro."
+      />
     </div>
   );
 }

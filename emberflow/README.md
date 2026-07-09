@@ -14,6 +14,8 @@ EmberFlow is a production-ready MVP SaaS for freelancers to manage clients, invo
 - Settings for name, business name, email, invoice color, and invoice footer
 - Responsive Linear/Notion-inspired UI
 - Vercel-compatible deployment configuration
+- Paddle subscription checkout, customer portal, and webhook API routes
+- Free and Pro entitlement checks backed by database subscription state
 
 ## Project Structure
 
@@ -38,10 +40,11 @@ emberflow/
 ## Local Installation
 
 ```bash
-cd emberflow/frontend
+cd emberflow
 npm install
-cp ../.env.example .env.local
-npm run dev
+npm --prefix frontend install
+cp .env.example frontend/.env.local
+npm --prefix frontend run dev
 ```
 
 Update `frontend/.env.local` with your Supabase project URL and anon key:
@@ -49,6 +52,19 @@ Update `frontend/.env.local` with your Supabase project URL and anon key:
 ```bash
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+For Vercel API routes, configure these variables in Vercel:
+
+```bash
+APP_URL=https://your-production-domain.com
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+PADDLE_ENV=production
+PADDLE_API_KEY=your-paddle-api-key
+PADDLE_WEBHOOK_SECRET=your-webhook-secret
+PADDLE_PRICE_PRO_MONTHLY=pri_your_monthly_price_id
+PADDLE_PRICE_PRO_YEARLY=pri_your_yearly_price_id
 ```
 
 ## Supabase Setup
@@ -66,14 +82,31 @@ The schema creates:
 - `clients`
 - `invoices`
 - `invoice_items`
+- `payments`
 - `proposals`
+- `proposal_items`
+- `subscriptions`
 
-All tables have row-level security enabled by `policies.sql`. Users can only access rows owned by their authenticated Supabase user ID. Invoice item access is derived from ownership of the parent invoice.
+All tables have row-level security enabled by `policies.sql`. Users can only access rows owned by their authenticated Supabase user ID. Invoice and proposal item access is derived from ownership of the parent record. Subscription rows are readable by users but are only mutated by server-side Paddle webhook handling.
+
+## Paddle Setup
+
+1. Create Paddle sandbox products/prices for Pro Monthly and Pro Yearly.
+2. Add the price IDs to `PADDLE_PRICE_PRO_MONTHLY` and `PADDLE_PRICE_PRO_YEARLY`.
+3. Add your Paddle API key and webhook secret to Vercel.
+4. Configure the webhook endpoint:
+
+```text
+https://your-production-domain.com/api/paddle/webhook
+```
+
+5. Subscribe from `/app/settings`.
+6. Confirm the webhook updates `public.subscriptions`.
 
 ## Local Development
 
 ```bash
-cd emberflow/frontend
+cd emberflow
 npm run dev
 ```
 
@@ -82,7 +115,7 @@ Open the Vite URL shown in your terminal. Create an account, add a client, creat
 ## Production Build
 
 ```bash
-cd emberflow/frontend
+cd emberflow
 npm run build
 npm run preview
 ```
