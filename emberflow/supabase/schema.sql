@@ -86,6 +86,94 @@ create table if not exists public.invoice_items (
   created_at timestamptz not null default now()
 );
 
+create or replace function public.create_invoice_with_items(
+  p_invoice jsonb,
+  p_items jsonb
+)
+returns uuid
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  v_invoice_id uuid;
+  v_user_id uuid := auth.uid();
+  v_inserted_items integer;
+begin
+  if v_user_id is null then
+    raise exception 'Authentication required.';
+  end if;
+
+  if p_items is null or jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) = 0 then
+    raise exception 'At least one invoice item is required.';
+  end if;
+
+  insert into public.invoices (
+    user_id,
+    client_id,
+    invoice_number,
+    invoice_date,
+    due_date,
+    currency,
+    subtotal,
+    tax_total,
+    discount_total,
+    total,
+    status,
+    notes
+  )
+  values (
+    v_user_id,
+    (p_invoice ->> 'client_id')::uuid,
+    nullif(p_invoice ->> 'invoice_number', ''),
+    (p_invoice ->> 'invoice_date')::date,
+    (p_invoice ->> 'due_date')::date,
+    coalesce(nullif(p_invoice ->> 'currency', ''), 'USD'),
+    coalesce(nullif(p_invoice ->> 'subtotal', '')::numeric, 0),
+    coalesce(nullif(p_invoice ->> 'tax_total', '')::numeric, 0),
+    coalesce(nullif(p_invoice ->> 'discount_total', '')::numeric, 0),
+    coalesce(nullif(p_invoice ->> 'total', '')::numeric, 0),
+    coalesce(nullif(p_invoice ->> 'status', ''), 'draft'),
+    nullif(p_invoice ->> 'notes', '')
+  )
+  returning id into v_invoice_id;
+
+  insert into public.invoice_items (
+    invoice_id,
+    description,
+    quantity,
+    price,
+    tax_rate,
+    position
+  )
+  select
+    v_invoice_id,
+    item.description,
+    item.quantity,
+    item.price,
+    coalesce(item.tax_rate, 0),
+    coalesce(item.position, (row_number() over ())::integer)
+  from jsonb_to_recordset(p_items) as item(
+    description text,
+    quantity numeric,
+    price numeric,
+    tax_rate numeric,
+    position integer
+  );
+
+  get diagnostics v_inserted_items = row_count;
+
+  if v_inserted_items <> jsonb_array_length(p_items) then
+    raise exception 'Every invoice item must be valid.';
+  end if;
+
+  return v_invoice_id;
+end;
+$$;
+
+revoke all on function public.create_invoice_with_items(jsonb, jsonb) from public;
+grant execute on function public.create_invoice_with_items(jsonb, jsonb) to authenticated;
+
 create table if not exists public.payments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,

@@ -146,10 +146,14 @@ export async function getInvoice(id) {
 }
 
 export async function createInvoice(invoice, items) {
-  const created = requireData(await supabase.from('invoices').insert(invoice).select().single());
-  const rows = items.map((item, index) => ({ ...item, invoice_id: created.id, position: index + 1 }));
-  if (rows.length > 0) requireData(await supabase.from('invoice_items').insert(rows));
-  return getInvoice(created.id);
+  const rows = items.map((item, index) => ({ ...item, position: index + 1 }));
+  const invoiceId = requireData(
+    await supabase.rpc('create_invoice_with_items', {
+      p_invoice: invoice,
+      p_items: rows,
+    })
+  );
+  return getInvoice(invoiceId);
 }
 
 export async function updateInvoice(id, invoice, items) {
