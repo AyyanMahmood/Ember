@@ -15,6 +15,7 @@ create table if not exists public.profiles (
   email text not null,
   full_name text not null default '',
   business_name text not null default '',
+  avatar_url text,
   logo_url text,
   phone text,
   address text,
@@ -28,6 +29,7 @@ create table if not exists public.profiles (
   updated_at timestamptz not null default now()
 );
 
+alter table public.profiles add column if not exists avatar_url text;
 alter table public.profiles add column if not exists logo_url text;
 alter table public.profiles add column if not exists phone text;
 alter table public.profiles add column if not exists address text;
@@ -404,6 +406,13 @@ on conflict (user_id) do nothing;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('logos', 'logos', true, 1048576, array['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatars', 'avatars', true, 1048576, array['image/png', 'image/jpeg', 'image/webp'])
 on conflict (id) do update
 set public = excluded.public,
     file_size_limit = excluded.file_size_limit,

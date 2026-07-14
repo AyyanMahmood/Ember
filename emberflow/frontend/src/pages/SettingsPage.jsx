@@ -16,6 +16,7 @@ export default function SettingsPage() {
     full_name: '',
     business_name: '',
     email: '',
+    avatar_url: '',
     logo_url: '',
     phone: '',
     address: '',
@@ -28,6 +29,7 @@ export default function SettingsPage() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [billingAction, setBillingAction] = useState('');
   const [message, setMessage] = useState('');
@@ -41,6 +43,7 @@ export default function SettingsPage() {
           full_name: profile.full_name || user.user_metadata?.full_name || '',
           business_name: profile.business_name || '',
           email: profile.email || user.email || '',
+          avatar_url: profile.avatar_url || '',
           logo_url: profile.logo_url || '',
           phone: profile.phone || '',
           address: profile.address || '',
@@ -83,6 +86,28 @@ export default function SettingsPage() {
       setError(err.message);
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function handleAvatarUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    setError('');
+    try {
+      const extension = file.name.split('.').pop()?.toLowerCase() || 'png';
+      const path = `${user.id}/${Date.now()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, {
+        upsert: true,
+        contentType: file.type,
+      });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+      updateField('avatar_url', data.publicUrl);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploadingAvatar(false);
     }
   }
 
@@ -149,6 +174,18 @@ export default function SettingsPage() {
 
       <form className="panel form-grid" onSubmit={handleSubmit}>
         {message ? <p className="form-success span-2">{message}</p> : null}
+        <div className="span-2 avatar-settings-row">
+          {form.avatar_url ? (
+            <img className="avatar-preview large" src={form.avatar_url} alt="Profile avatar" />
+          ) : (
+            <div className="avatar-fallback large">{(form.full_name || form.email || 'U').slice(0, 2).toUpperCase()}</div>
+          )}
+          <label className="file-upload">
+            <Upload size={16} />
+            {uploadingAvatar ? 'Uploading...' : 'Upload avatar'}
+            <input type="file" accept="image/png,image/jpeg,image/webp" onChange={handleAvatarUpload} />
+          </label>
+        </div>
         <label>
           Name
           <input required value={form.full_name} onChange={(event) => updateField('full_name', event.target.value)} />

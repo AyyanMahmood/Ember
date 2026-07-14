@@ -644,6 +644,19 @@ label {
   margin-top: auto;
 }
 
+.account-summary {
+  align-items: center;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: 2.4rem minmax(0, 1fr);
+}
+
+.account-copy {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
 .main-area {
   min-width: 0;
 }
@@ -957,6 +970,45 @@ label {
   height: 4.8rem;
   object-fit: contain;
   width: 8rem;
+}
+
+.avatar-settings-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+
+.avatar-preview,
+.avatar-fallback {
+  border-radius: 50%;
+  height: 2.4rem;
+  width: 2.4rem;
+}
+
+.avatar-preview {
+  border: 1px solid var(--line);
+  object-fit: cover;
+}
+
+.avatar-preview.large,
+.avatar-fallback.large {
+  height: 4rem;
+  width: 4rem;
+}
+
+.avatar-fallback {
+  align-items: center;
+  background: #e7ddcb;
+  color: var(--ink);
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 900;
+  justify-content: center;
+}
+
+.avatar-fallback.large {
+  font-size: 1.15rem;
 }
 
 .logo-placeholder {

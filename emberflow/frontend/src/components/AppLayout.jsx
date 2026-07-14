@@ -2,6 +2,7 @@ import { BarChart3, FileText, Home, LineChart, LogOut, Menu, Settings, Users, X 
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
+import { useProfile } from '../hooks/useProfile.js';
 
 const navItems = [
   { to: '/app', label: 'Dashboard', icon: Home, end: true },
@@ -15,7 +16,9 @@ const navItems = [
 export default function AppLayout() {
   const [open, setOpen] = useState(false);
   const { signOut, user } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
+  const initials = (profile?.full_name || user?.email || 'U').slice(0, 2).toUpperCase();
 
   async function handleLogout() {
     await signOut();
@@ -51,7 +54,17 @@ export default function AppLayout() {
           })}
         </nav>
         <div className="sidebar-footer">
-          <span className="muted small truncate">{user?.email}</span>
+          <div className="account-summary">
+            {profile?.avatar_url ? (
+              <img className="avatar-preview" src={profile.avatar_url} alt="Profile avatar" />
+            ) : (
+              <span className="avatar-fallback">{initials}</span>
+            )}
+            <div className="account-copy">
+              <strong className="truncate">{profile?.full_name || 'Account'}</strong>
+              <span className="muted small truncate">{user?.email}</span>
+            </div>
+          </div>
           <button className="button ghost full" onClick={handleLogout}>
             <LogOut size={16} />
             Logout
