@@ -89,13 +89,9 @@ if (!allowed) return;
       await upsertSubscription(supabase, userId, data);
     }
 
-    return sendJson(res, 200, { received: true });
-  }   return sendJson(res, 400, { error: err.message });
-}catch (err) {
-  console.error(err);
+        return sendJson(res, 200, { received: true });
 
-  return sendJson(res, 400, {
-    error: err.message,
-  });
-}
+  } catch (err) {
+    return sendJson(res, 400, { error: err.message });
+  }
 };

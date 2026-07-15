@@ -43,12 +43,7 @@ if (!allowed) return;
     if (!url) throw new Error('Paddle did not return a customer portal URL.');
 
     return sendJson(res, 200, { url });
-  }   return sendJson(res, 400, { error: err.message });
-}catch (err) {
-  console.error(err);
-
-  return sendJson(res, 400, {
-    error: err.message,
-  });
-}
+  } catch (err) {
+    return sendJson(res, 400, { error: err.message });
+  }
 };

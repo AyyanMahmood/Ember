@@ -69,13 +69,9 @@ if (!allowed) return;
     const checkoutUrl = transaction?.checkout?.url;
     if (!checkoutUrl) throw new Error('Paddle did not return a checkout URL.');
 
-    return sendJson(res, 200, { url: checkoutUrl });
-  }   return sendJson(res, 400, { error: err.message });
-}catch (err) {
-  console.error(err);
+        return sendJson(res, 200, { url: checkoutUrl });
 
-  return sendJson(res, 400, {
-    error: err.message,
-  });
-}
+  } catch (err) {
+    return sendJson(res, 400, { error: err.message });
+  }
 };
