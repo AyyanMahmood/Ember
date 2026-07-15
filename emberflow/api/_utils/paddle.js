@@ -10,6 +10,10 @@ function paddleBaseUrl() {
 }
 
 function getPriceId(plan) {
+  if (typeof plan !== "string") {
+    throw new Error("Invalid billing plan.");
+  }
+
   const envName = PLAN_BY_PRICE_ENV[plan];
   if (!envName) throw new Error('Unsupported billing plan.');
   const priceId = process.env[envName];

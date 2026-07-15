@@ -1,9 +1,16 @@
 const { getAuthenticatedUser } = require('../_utils/supabaseAdmin');
 const { getBaseUrl, methodNotAllowed, sendJson } = require('../_utils/http');
 const { getPriceId, paddleFetch } = require('../_utils/paddle');
-
+const { rateLimit } = require("../_utils/rateLimit");
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return methodNotAllowed(res);
+const allowed = await rateLimit(req, res, {
+  prefix: "checkout",
+  limit: 5,
+  windowSeconds: 60,
+});
+
+if (!allowed) return;
 
   try {
     const { supabase, user } = await getAuthenticatedUser(req);
@@ -63,7 +70,12 @@ module.exports = async function handler(req, res) {
     if (!checkoutUrl) throw new Error('Paddle did not return a checkout URL.');
 
     return sendJson(res, 200, { url: checkoutUrl });
-  } catch (err) {
-    return sendJson(res, 400, { error: err.message });
-  }
+  }   return sendJson(res, 400, { error: err.message });
+}catch (err) {
+  console.error(err);
+
+  return sendJson(res, 400, {
+    error: err.message,
+  });
+}
 };

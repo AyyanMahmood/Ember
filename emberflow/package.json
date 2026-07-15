@@ -8,7 +8,8 @@
     "preview": "npm --prefix frontend run preview"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.50.0"
+    "@supabase/supabase-js": "2.50.0",
+    "@upstash/redis": "^1.38.0"
   },
   "engines": {
     "node": ">=18.13.0"

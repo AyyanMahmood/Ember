@@ -1,7 +1,7 @@
 const { getSupabaseAdmin } = require('../_utils/supabaseAdmin');
 const { methodNotAllowed, readRawBody, sendJson } = require('../_utils/http');
 const { extractUserId, normalizeSubscriptionPayload, verifyPaddleSignature } = require('../_utils/paddle');
-
+const { rateLimit } = require("../_utils/rateLimit");
 module.exports.config = {
   api: {
     bodyParser: false,
@@ -62,7 +62,13 @@ async function upsertSubscription(supabase, userId, data) {
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return methodNotAllowed(res);
+const allowed = await rateLimit(req, res, {
+  prefix: "webhook",
+  limit: 60,
+  windowSeconds: 60,
+});
 
+if (!allowed) return;
   try {
     const rawBody = await readRawBody(req);
     const signature = req.headers['paddle-signature'];
@@ -84,7 +90,12 @@ module.exports = async function handler(req, res) {
     }
 
     return sendJson(res, 200, { received: true });
-  } catch (err) {
-    return sendJson(res, 400, { error: err.message });
-  }
+  }   return sendJson(res, 400, { error: err.message });
+}catch (err) {
+  console.error(err);
+
+  return sendJson(res, 400, {
+    error: err.message,
+  });
+}
 };
