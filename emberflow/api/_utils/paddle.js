@@ -47,12 +47,17 @@ async function paddleFetch(path, options = {}) {
   });
 
   const payload = await response.json().catch(() => ({}));
+
   if (!response.ok) {
-    const message = payload?.error?.detail || payload?.error?.message || 'Paddle API request failed.';
-    throw new Error(message);
+    console.error("Paddle API Error:");
+    console.error(JSON.stringify(payload, null, 2));
+  
+    throw new Error(
+      JSON.stringify(payload.error || payload)
+    );
   }
+  
   return payload.data;
-}
 
 function verifyPaddleSignature(rawBody, signatureHeader) {
   const secret = process.env.PADDLE_WEBHOOK_SECRET;
