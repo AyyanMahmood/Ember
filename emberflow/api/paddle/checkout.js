@@ -71,7 +71,12 @@ if (!allowed) return;
 
         return sendJson(res, 200, { url: checkoutUrl });
 
-  } catch (err) {
-    return sendJson(res, 400, { error: err.message });
-  }
+      } catch (err) {
+        console.error("CHECKOUT ERROR:");
+        console.error(err);
+      
+        return sendJson(res, 400, {
+          error: err.message,
+        });
+      }
 };
