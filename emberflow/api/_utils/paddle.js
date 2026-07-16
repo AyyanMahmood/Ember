@@ -58,6 +58,7 @@ async function paddleFetch(path, options = {}) {
   }
   
   return payload.data;
+}
 
 function verifyPaddleSignature(rawBody, signatureHeader) {
   const secret = process.env.PADDLE_WEBHOOK_SECRET;
