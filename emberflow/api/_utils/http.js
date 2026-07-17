@@ -6,8 +6,20 @@ function sendJson(res, statusCode, payload) {
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "no-referrer");
   res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   res.end(JSON.stringify(payload));
+}
+
+function optionsHandler(res) {
+  res.statusCode = 204;
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Max-Age", "86400");
+  res.end();
 }
 
 function methodNotAllowed(res) {
@@ -30,9 +42,19 @@ function readRawBody(req) {
   });
 }
 
+function sendError(res, err) {
+  console.error('API Error:', err);
+  const message = process.env.NODE_ENV === 'production'
+    ? 'An unexpected error occurred.'
+    : err.message || 'An unexpected error occurred.';
+  sendJson(res, 400, { error: message });
+}
+
 module.exports = {
   sendJson,
+  sendError,
   methodNotAllowed,
+  optionsHandler,
   getBaseUrl,
   readRawBody,
 };

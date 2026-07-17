@@ -130,6 +130,11 @@ with check (
   )
 );
 
+drop policy if exists "Payments are updateable by owner" on public.payments;
+create policy "Payments are updateable by owner" on public.payments for update
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
 drop policy if exists "Payments are deletable by owner" on public.payments;
 create policy "Payments are deletable by owner" on public.payments for delete
 using (auth.uid() = user_id);
@@ -142,14 +147,38 @@ drop policy if exists "Proposals are insertable by owner" on public.proposals;
 create policy "Proposals are insertable by owner" on public.proposals for insert
 with check (auth.uid() = user_id);
 
-drop policy if exists "Proposals are updateable by owner" on public.proposals;
-create policy "Proposals are updateable by owner" on public.proposals for update
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
+drop policy if exists "Proposals are updateable by active pro users" on public.proposals;
+create policy "Proposals are updateable by active pro users" on public.proposals for update
+using (
+  auth.uid() = user_id
+  and exists (
+    select 1 from public.subscriptions
+    where subscriptions.user_id = auth.uid()
+      and subscriptions.plan in ('pro_monthly', 'pro_yearly')
+      and subscriptions.status in ('active', 'trialing')
+  )
+)
+with check (
+  auth.uid() = user_id
+  and exists (
+    select 1 from public.subscriptions
+    where subscriptions.user_id = auth.uid()
+      and subscriptions.plan in ('pro_monthly', 'pro_yearly')
+      and subscriptions.status in ('active', 'trialing')
+  )
+);
 
-drop policy if exists "Proposals are deletable by owner" on public.proposals;
-create policy "Proposals are deletable by owner" on public.proposals for delete
-using (auth.uid() = user_id);
+drop policy if exists "Proposals are deletable by active pro users" on public.proposals;
+create policy "Proposals are deletable by active pro users" on public.proposals for delete
+using (
+  auth.uid() = user_id
+  and exists (
+    select 1 from public.subscriptions
+    where subscriptions.user_id = auth.uid()
+      and subscriptions.plan in ('pro_monthly', 'pro_yearly')
+      and subscriptions.status in ('active', 'trialing')
+  )
+);
 
 drop policy if exists "Proposal items are viewable by proposal owner" on public.proposal_items;
 create policy "Proposal items are viewable by proposal owner" on public.proposal_items for select
@@ -171,13 +200,39 @@ with check (
   )
 );
 
-drop policy if exists "Proposal items are deletable by proposal owner" on public.proposal_items;
-create policy "Proposal items are deletable by proposal owner" on public.proposal_items for delete
+drop policy if exists "Proposal items are updateable by active pro users" on public.proposal_items;
+create policy "Proposal items are updateable by active pro users" on public.proposal_items for update
 using (
   exists (
     select 1 from public.proposals
+    join public.subscriptions on subscriptions.user_id = proposals.user_id
     where proposals.id = proposal_items.proposal_id
       and proposals.user_id = auth.uid()
+      and subscriptions.plan in ('pro_monthly', 'pro_yearly')
+      and subscriptions.status in ('active', 'trialing')
+  )
+)
+with check (
+  exists (
+    select 1 from public.proposals
+    join public.subscriptions on subscriptions.user_id = proposals.user_id
+    where proposals.id = proposal_items.proposal_id
+      and proposals.user_id = auth.uid()
+      and subscriptions.plan in ('pro_monthly', 'pro_yearly')
+      and subscriptions.status in ('active', 'trialing')
+  )
+);
+
+drop policy if exists "Proposal items are deletable by active pro users" on public.proposal_items;
+create policy "Proposal items are deletable by active pro users" on public.proposal_items for delete
+using (
+  exists (
+    select 1 from public.proposals
+    join public.subscriptions on subscriptions.user_id = proposals.user_id
+    where proposals.id = proposal_items.proposal_id
+      and proposals.user_id = auth.uid()
+      and subscriptions.plan in ('pro_monthly', 'pro_yearly')
+      and subscriptions.status in ('active', 'trialing')
   )
 );
 

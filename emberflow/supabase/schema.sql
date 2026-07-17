@@ -2,8 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict sR42XQkdLp379nMqynseWL7p3e0fqqUmKvBxFDidCRjXR2qRN1bSiYagSmbgxee
-
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 18.4
 
@@ -445,6 +443,11 @@ CREATE TABLE public.payments (
     invoice_id uuid,
     user_id uuid,
     amount numeric DEFAULT 0,
+    currency text DEFAULT 'USD'::text,
+    payment_date date,
+    method text DEFAULT 'manual'::text,
+    reference text,
+    notes text,
     status text DEFAULT 'pending'::text,
     created_at timestamp with time zone DEFAULT now()
 );
@@ -527,6 +530,15 @@ CREATE TABLE public.subscriptions (
     user_id uuid,
     plan text DEFAULT 'free'::text,
     status text DEFAULT 'active'::text,
+    billing_cycle text DEFAULT 'free'::text,
+    paddle_customer_id text,
+    paddle_subscription_id text,
+    paddle_price_id text,
+    paddle_product_id text,
+    current_period_start timestamp with time zone,
+    current_period_end timestamp with time zone,
+    cancel_at_period_end boolean DEFAULT false,
+    trial_ends_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
@@ -535,22 +547,23 @@ CREATE TABLE public.subscriptions (
 ALTER TABLE public.subscriptions OWNER TO postgres;
 
 --
+-- Name: webhook_events; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.webhook_events (
+    id text NOT NULL,
+    event_type text NOT NULL,
+    processed_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.webhook_events OWNER TO postgres;
+
+--
 -- Data for Name: clients; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.clients (id, user_id, name, email, company, phone, country, notes, created_at, updated_at) FROM stdin;
-febfdefb-5ea5-43cd-a2e5-90ad3db9837c	0bb882a5-b78d-434d-a963-09e7cb79262f	ayyan	ayyan@gmail.com	ayyan.inc	04267886885	pkr		2026-07-09 14:57:12.434459+00	2026-07-09 14:57:12.434459+00
-975f4e95-8953-40cc-ac4e-94bfb7150459	0bb882a5-b78d-434d-a963-09e7cb79262f	AYYAN Mahmood	ayyanmahmood978@gmail.com	ember.inc	03267885883	Pakistan	very imp vip vlient\n	2026-07-14 08:18:27.377854+00	2026-07-14 08:18:27.377854+00
-c738be39-5714-4204-8e70-76a862da27d7	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	Ayyan	ayyan@gmail.com	ayyan.inc	03267885884	Australia	Software Testers	2026-07-14 13:35:34.16394+00	2026-07-14 13:35:34.16394+00
-e367f044-475d-405b-bb9f-fb87a7cf27cb	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	ddhhdh	jsjsjs@gnail.xom	jsjsjs	jzjsjsj	jzjsj	\n\n\n\n\n\n\n	2026-07-14 14:03:00.577472+00	2026-07-14 14:03:00.577472+00
-7b77d397-882e-4f1c-914e-e6328ae5a3b9	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	hwnsjsj	ksjsjs@gmail.ckm	dmmsmsm	mmsmss	msmsjm		2026-07-14 14:03:39.023928+00	2026-07-14 14:03:39.023928+00
-377936ae-e4a7-44cf-b932-29ea92b23cae	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	uendnddn	nendnd@gmail.com	jdndj	ndndjd	nsndj	ndndn	2026-07-14 14:03:55.637899+00	2026-07-14 14:03:55.637899+00
-27ad41f8-cfbf-47fa-9976-aa450618a1d8	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	ejdhdh	i@gmaik.ckm	bddjjdj	jdndjd	jxndn		2026-07-14 14:04:11.708488+00	2026-07-14 14:04:11.708488+00
-4b834d81-41bc-4a3c-b4ff-2ec18d337a41	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	Mahmood	mehmood@gmail.ckm	mehmood.inc	mehmoods number	pak		2026-07-14 14:04:48.920966+00	2026-07-14 14:04:48.920966+00
-a7bb2943-272a-428c-a1b3-92bf0408c8d1	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	Ahmad Ali	bnda@gmail.clm	bnda	bnda	bnda		2026-07-14 14:05:06.707473+00	2026-07-14 14:05:06.707473+00
-fd407e2f-799e-4384-b750-99003d8cc0f0	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	hi	hi@gnaik.com	n	n	n		2026-07-14 14:05:21.979866+00	2026-07-14 14:05:21.979866+00
-ac0c26da-34fc-4ad7-934c-145c9d2c0c46	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	usman	usman@gmail.com	usman	usman	usman		2026-07-14 14:06:01.682973+00	2026-07-14 14:06:01.682973+00
-8cc74c52-b452-462b-bb5d-33414d40aecf	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	b	h@gmaio.com	n	n			2026-07-14 14:06:35.030834+00	2026-07-14 14:06:35.030834+00
 \.
 
 
@@ -559,13 +572,6 @@ ac0c26da-34fc-4ad7-934c-145c9d2c0c46	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	usman	
 --
 
 COPY public.invoice_items (id, invoice_id, description, quantity, price, tax_rate, "position", created_at) FROM stdin;
-9106a838-8a44-41d8-a979-fff236a9b532	b2d86cdc-288d-4142-af9e-ec6d44283777	h	5.00	690.00	10.00	1	2026-07-09 15:09:46.363853+00
-fc0e9555-f7b7-4959-b69e-84d9d2035870	968ca536-a444-415d-ae48-b8f34c572b35	dd	90.00	200.00	20.00	1	2026-07-09 17:24:47.356546+00
-3782e5f3-a7c0-45bc-9bba-137a8a11c433	6df0f8c5-e21b-4b8b-a591-112b62e13630	Charges Additionals added.	10.00	495.00	0.25	1	2026-07-14 08:21:20.168467+00
-8286304d-7e5c-4fdf-ba7d-be05c5a9d29c	7158ab95-4352-4495-96c0-40fd477b82f7	h	1.00	200.00	0.00	1	2026-07-14 11:37:40.667932+00
-e115d9aa-88e8-46bb-a959-6434c3277c1b	e2c161a7-9b09-4e44-9aff-14e42949ea23	s	4.00	15.00	0.25	1	2026-07-14 13:29:08.714432+00
-eb0ea5a2-068e-4732-af6b-9ee27075c6d5	de8d7eec-7245-4513-84f5-a5a32f997ff6	s	4.00	15.00	0.25	1	2026-07-14 13:29:51.933137+00
-21dc6d31-e4db-46e3-95a8-78909d9fd9b5	47844d4f-a64a-48fd-bb72-b88d73dcba9d	h	1.00	0.00	0.00	1	2026-07-14 13:48:07.88908+00
 \.
 
 
@@ -574,7 +580,6 @@ eb0ea5a2-068e-4732-af6b-9ee27075c6d5	de8d7eec-7245-4513-84f5-a5a32f997ff6	s	4.00
 --
 
 COPY public.invoice_usage (id, user_id, usage_month, invoice_count, created_at, updated_at) FROM stdin;
-80e324dd-7145-4656-9e47-bcfa502e153d	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	2026-07-01	1	2026-07-14 13:48:07.88908+00	2026-07-14 13:48:07.88908+00
 \.
 
 
@@ -583,13 +588,6 @@ COPY public.invoice_usage (id, user_id, usage_month, invoice_count, created_at, 
 --
 
 COPY public.invoices (id, user_id, client_id, invoice_number, invoice_date, due_date, currency, subtotal, tax_total, total, status, created_at, updated_at, discount_total, notes, sent_at, paid_at) FROM stdin;
-b2d86cdc-288d-4142-af9e-ec6d44283777	0bb882a5-b78d-434d-a963-09e7cb79262f	febfdefb-5ea5-43cd-a2e5-90ad3db9837c	INV-20260709-7578	2026-07-09	2026-07-23	USD	3450.00	345.00	3558.00	paid	2026-07-09 15:09:46.010565+00	2026-07-09 16:06:15.136668+00	237	nn	\N	2026-07-09 16:06:14.649+00
-968ca536-a444-415d-ae48-b8f34c572b35	0bb882a5-b78d-434d-a963-09e7cb79262f	febfdefb-5ea5-43cd-a2e5-90ad3db9837c	Invoice for Landing Page	2026-07-09	2026-07-23	USD	18000.00	3600.00	21033.01	paid	2026-07-09 15:14:56.218813+00	2026-07-09 17:24:46.5281+00	566.99	fffff	\N	2026-07-09 15:15:50.258+00
-de8d7eec-7245-4513-84f5-a5a32f997ff6	0bb882a5-b78d-434d-a963-09e7cb79262f	975f4e95-8953-40cc-ac4e-94bfb7150459	INV-20260714-1805	2026-07-14	2026-07-28	USD	60.00	0.15	0.00	paid	2026-07-14 13:29:51.637946+00	2026-07-14 13:29:55.494998+00	60.15	buhhahahah	\N	2026-07-14 13:29:45.721+00
-47844d4f-a64a-48fd-bb72-b88d73dcba9d	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	c738be39-5714-4204-8e70-76a862da27d7	INV-20260714-2221	2026-07-14	2026-07-28	USD	0.00	0.00	0.00	draft	2026-07-14 13:48:07.88908+00	2026-07-14 13:48:07.88908+00	0	\N	\N	\N
-e2c161a7-9b09-4e44-9aff-14e42949ea23	0bb882a5-b78d-434d-a963-09e7cb79262f	975f4e95-8953-40cc-ac4e-94bfb7150459	INV-20260714-1524	2026-07-14	2026-07-28	USD	60.00	0.15	0.00	paid	2026-07-14 13:29:08.334474+00	2026-07-14 18:15:59.994532+00	60.15	buhhahahah	\N	2026-07-14 18:15:59.096+00
-7158ab95-4352-4495-96c0-40fd477b82f7	0bb882a5-b78d-434d-a963-09e7cb79262f	975f4e95-8953-40cc-ac4e-94bfb7150459	INV-20260714-6130	2026-07-14	2026-07-28	USD	200.00	0.00	200.00	paid	2026-07-14 11:37:40.667932+00	2026-07-14 18:16:01.925019+00	0	\N	\N	2026-07-14 18:16:01.03+00
-6df0f8c5-e21b-4b8b-a591-112b62e13630	0bb882a5-b78d-434d-a963-09e7cb79262f	975f4e95-8953-40cc-ac4e-94bfb7150459	Invoice for Ember.inc	2026-10-22	2026-10-31	PKR	4950.00	12.38	4957.38	paid	2026-07-14 08:21:20.168467+00	2026-07-14 18:16:03.501284+00	5	Work will be completed in 4 days time. Thanks for choosing ember.inc.	\N	2026-07-14 18:16:02.629+00
 \.
 
 
@@ -597,7 +595,7 @@ e2c161a7-9b09-4e44-9aff-14e42949ea23	0bb882a5-b78d-434d-a963-09e7cb79262f	975f4e
 -- Data for Name: payments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.payments (id, invoice_id, user_id, amount, status, created_at) FROM stdin;
+COPY public.payments (id, invoice_id, user_id, amount, currency, payment_date, method, reference, notes, status, created_at) FROM stdin;
 \.
 
 
@@ -606,8 +604,6 @@ COPY public.payments (id, invoice_id, user_id, amount, status, created_at) FROM 
 --
 
 COPY public.profiles (id, email, full_name, business_name, invoice_brand_color, invoice_footer, created_at, updated_at, avatar_url, address, phone, country, currency, payment_instructions, invoice_prefix, logo_url) FROM stdin;
-50aeb62b-d817-4a1f-8cdb-4bff481d4a87	ayyanmahmood431@gmail.com	Ayyan		#2563eb	Thank you for your business.	2026-07-14 13:34:36.10757+00	2026-07-14 13:34:36.10757+00	\N	\N	\N	\N	USD	\N	INV	\N
-0bb882a5-b78d-434d-a963-09e7cb79262f	ayyanmahmood978@gmail.com	Ayyan	guigif	#69ebd9	Thank you for your business.	2026-07-09 14:49:57.948023+00	2026-07-14 18:17:41.390953+00	https://rzwgbrwjrzapbagbksof.supabase.co/storage/v1/object/public/avatars/0bb882a5-b78d-434d-a963-09e7cb79262f/1784053038444.png	ffjfhj	120309393	vhjfchfghm jyjf	USD	vhkvkh	INV	
 \.
 
 
@@ -616,8 +612,6 @@ COPY public.profiles (id, email, full_name, business_name, invoice_brand_color, 
 --
 
 COPY public.proposal_items (id, proposal_id, title, description, amount, created_at, updated_at, "position") FROM stdin;
-1287ca47-bb83-489a-afae-f15641c33659	8cbc37af-e22d-469c-9e67-f99da5380d97	Discovery and architecture	Project goals, sitemap, and page planning.	750	2026-07-14 18:15:03.722421+00	2026-07-14 18:15:03.722421+00	1
-f6acb760-b650-439c-9a21-5b482d95bab3	8cbc37af-e22d-469c-9e67-f99da5380d97	Design and build	Responsive frontend implementation and launch handoff.	2750	2026-07-14 18:15:03.722421+00	2026-07-14 18:15:03.722421+00	2
 \.
 
 
@@ -626,10 +620,6 @@ f6acb760-b650-439c-9a21-5b482d95bab3	8cbc37af-e22d-469c-9e67-f99da5380d97	Design
 --
 
 COPY public.proposals (id, user_id, template, client_name, title, project_summary, scope, timeline, amount, currency, created_at, updated_at) FROM stdin;
-c962e882-a042-4a11-bdf4-49e3620032ef	0bb882a5-b78d-434d-a963-09e7cb79262f	Website development	Ayyani bhai	Website build proposal	A responsive, conversion-focused website designed to present the brand clearly and generate leads.	Discovery, site architecture, visual design, responsive frontend build, CMS handoff, launch support.	4 weeks	3500.00	USD	2026-07-14 16:50:56.643054+00	2026-07-14 16:50:56.643054+00
-31774aa1-879a-4d4d-85ff-a189b0b76b4b	0bb882a5-b78d-434d-a963-09e7cb79262f	Website development	Sultan Mehmed Ayyan Mahmood Ahmad Han	Web-Design Proposal	A responsive, conversion-focused website designed to present the brand clearly and generate leads.	Discovery, site architecture, visual design, responsive frontend build, CMS handoff, launch support.	4 weeks	4500.00	USD	2026-07-14 17:50:28.347628+00	2026-07-14 17:50:28.347628+00
-08f71e02-ecf1-4605-9ef3-bfe1c6f45f16	0bb882a5-b78d-434d-a963-09e7cb79262f	Website development	Sultan Mehmed Ayyan Mahmood Ahmad Han	Web-Design Proposal	A responsive, conversion-focused website designed to present the brand clearly and generate leads.	Discovery, site architecture, visual design, responsive frontend build, CMS handoff, launch support.	4 weeks	4500.00	USD	2026-07-14 18:10:04.728607+00	2026-07-14 18:10:04.728607+00
-8cbc37af-e22d-469c-9e67-f99da5380d97	0bb882a5-b78d-434d-a963-09e7cb79262f	Website development	hh	Website build proposal	A responsive, conversion-focused website designed to present the brand clearly and generate leads.	Discovery, site architecture, visual design, responsive frontend build, CMS handoff, launch support.	4 weeks	3500.00	USD	2026-07-14 18:15:03.430647+00	2026-07-14 18:15:03.430647+00
 \.
 
 
@@ -638,8 +628,6 @@ c962e882-a042-4a11-bdf4-49e3620032ef	0bb882a5-b78d-434d-a963-09e7cb79262f	Websit
 --
 
 COPY public.subscriptions (id, user_id, plan, status, created_at, updated_at) FROM stdin;
-e64fa558-29e2-49a6-bbe0-fab34476f45c	0bb882a5-b78d-434d-a963-09e7cb79262f	pro_monthly	active	2026-07-14 10:38:41.067933+00	2026-07-14 10:38:41.067933+00
-4401b2d8-30d8-4fb1-a524-a890201068a1	50aeb62b-d817-4a1f-8cdb-4bff481d4a87	free	active	2026-07-14 13:34:36.10757+00	2026-07-14 13:34:36.10757+00
 \.
 
 
@@ -729,6 +717,14 @@ ALTER TABLE ONLY public.proposals
 
 ALTER TABLE ONLY public.subscriptions
     ADD CONSTRAINT subscriptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: webhook_events webhook_events_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.webhook_events
+    ADD CONSTRAINT webhook_events_pkey PRIMARY KEY (id);
 
 
 --
@@ -1037,6 +1033,36 @@ CREATE POLICY "Invoices are viewable by owner" ON public.invoices FOR SELECT USI
 
 
 --
+-- Name: payments Payments are deletable by owner; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Payments are deletable by owner" ON public.payments FOR DELETE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: payments Payments are insertable by owner; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Payments are insertable by owner" ON public.payments FOR INSERT WITH CHECK (((auth.uid() = user_id) AND (EXISTS ( SELECT 1
+   FROM public.invoices
+  WHERE ((invoices.id = payments.invoice_id) AND (invoices.user_id = auth.uid()))))));
+
+
+--
+-- Name: payments Payments are updateable by owner; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Payments are updateable by owner" ON public.payments FOR UPDATE USING ((auth.uid() = user_id)) WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: payments Payments are viewable by owner; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Payments are viewable by owner" ON public.payments FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
 -- Name: profiles Profiles are insertable by owner; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -1215,6 +1241,12 @@ ALTER TABLE public.proposals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: webhook_events; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
 --
 
@@ -1361,6 +1393,15 @@ GRANT ALL ON TABLE public.subscriptions TO service_role;
 
 
 --
+-- Name: TABLE webhook_events; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.webhook_events TO anon;
+GRANT ALL ON TABLE public.webhook_events TO authenticated;
+GRANT ALL ON TABLE public.webhook_events TO service_role;
+
+
+--
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: postgres
 --
 
@@ -1423,6 +1464,4 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON T
 --
 -- PostgreSQL database dump complete
 --
-
-\unrestrict sR42XQkdLp379nMqynseWL7p3e0fqqUmKvBxFDidCRjXR2qRN1bSiYagSmbgxee
 

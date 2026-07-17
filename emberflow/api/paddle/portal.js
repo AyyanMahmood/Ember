@@ -1,5 +1,5 @@
 const { getAuthenticatedUser } = require('../_utils/supabaseAdmin');
-const { methodNotAllowed, sendJson } = require('../_utils/http');
+const { methodNotAllowed, optionsHandler, sendError, sendJson } = require('../_utils/http');
 const { paddleFetch } = require('../_utils/paddle');
 const { rateLimit } = require("../_utils/rateLimit");
 function pickPortalUrl(session) {
@@ -13,14 +13,15 @@ function pickPortalUrl(session) {
 }
 
 module.exports = async function handler(req, res) {
+  if (req.method === 'OPTIONS') return optionsHandler(res);
   if (req.method !== 'POST') return methodNotAllowed(res);
-const allowed = await rateLimit(req, res, {
-  prefix: "portal",
-  limit: 5,
-  windowSeconds: 60,
-});
+  const allowed = await rateLimit(req, res, {
+    prefix: "portal",
+    limit: 5,
+    windowSeconds: 60,
+  });
 
-if (!allowed) return;
+  if (!allowed) return;
   try {
     const { supabase, user } = await getAuthenticatedUser(req);
     const { data: subscription, error } = await supabase
@@ -44,6 +45,6 @@ if (!allowed) return;
 
     return sendJson(res, 200, { url });
   } catch (err) {
-    return sendJson(res, 400, { error: err.message });
+    return sendError(res, err);
   }
 };

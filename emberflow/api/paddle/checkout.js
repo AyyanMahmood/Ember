@@ -1,16 +1,17 @@
 const { getAuthenticatedUser } = require('../_utils/supabaseAdmin');
-const { getBaseUrl, methodNotAllowed, sendJson } = require('../_utils/http');
+const { getBaseUrl, methodNotAllowed, optionsHandler, sendError, sendJson } = require('../_utils/http');
 const { getPriceId, paddleFetch } = require('../_utils/paddle');
 const { rateLimit } = require("../_utils/rateLimit");
 module.exports = async function handler(req, res) {
+  if (req.method === 'OPTIONS') return optionsHandler(res);
   if (req.method !== 'POST') return methodNotAllowed(res);
-const allowed = await rateLimit(req, res, {
-  prefix: "checkout",
-  limit: 5,
-  windowSeconds: 60,
-});
+  const allowed = await rateLimit(req, res, {
+    prefix: "checkout",
+    limit: 5,
+    windowSeconds: 60,
+  });
 
-if (!allowed) return;
+  if (!allowed) return;
 
   try {
     const { supabase, user } = await getAuthenticatedUser(req);
@@ -26,15 +27,22 @@ if (!allowed) return;
 
     let customerId = subscription?.paddle_customer_id;
     if (!customerId) {
-      const customer = await paddleFetch('/customers', {
-        method: 'POST',
-        body: JSON.stringify({
-          email: user.email,
-          name: profile?.full_name || user.user_metadata?.full_name || user.email,
-          custom_data: { user_id: user.id },
-        }),
-      });
-      customerId = customer.id;
+      const existing = await paddleFetch(`/customers?email=${encodeURIComponent(user.email)}`);
+console.log("Existing customer search:");
+console.log(JSON.stringify(existing, null, 2));
+      if (existing && existing.length > 0) {
+        customerId = existing[0].id;
+      } else {
+        const customer = await paddleFetch('/customers', {
+          method: 'POST',
+          body: JSON.stringify({
+            email: user.email,
+            name: profile?.full_name || user.user_metadata?.full_name || user.email,
+            custom_data: { user_id: user.id },
+          }),
+        });
+        customerId = customer.id;
+      }
       await supabase
         .from('subscriptions')
         .upsert(
@@ -72,11 +80,10 @@ if (!allowed) return;
         return sendJson(res, 200, { url: checkoutUrl });
 
       } catch (err) {
-        console.error("CHECKOUT ERROR:");
-        console.error(err);
-      
-        return sendJson(res, 400, {
-          error: err.message,
-        });
+        console.error('\n--- Paddle Checkout Error ---');
+        console.error('Response:', err.message);
+        console.error('Stack:', err.stack);
+        console.error('-----------------------------\n');
+        return sendError(res, err);
       }
 };

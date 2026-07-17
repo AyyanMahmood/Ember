@@ -27,12 +27,9 @@ async function getAuthenticatedUser(req) {
     error,
   } = await supabase.auth.getUser(token);
 
-  console.error("Supabase auth error:", error);
-console.error("User:", user);
-
-if (error || !user) {
-  throw new Error(error?.message || "Invalid authorization token.");
-}
+  if (error || !user) {
+    throw new Error(error?.message || "Invalid authorization token.");
+  }
   return { supabase, user };
 }
 

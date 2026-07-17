@@ -173,6 +173,8 @@ export default function LandingPage() {
         <Link to="/">EmberFlow</Link>
         <Link to="/terms">Terms</Link>
         <Link to="/privacy">Privacy</Link>
+        <Link to="/refund">Refunds</Link>
+        <Link to="/contact">Contact</Link>
       </footer>
     </>
   );

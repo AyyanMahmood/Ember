@@ -1,7 +1,8 @@
 const { getSupabaseAdmin } = require('../_utils/supabaseAdmin');
-const { methodNotAllowed, readRawBody, sendJson } = require('../_utils/http');
+const { methodNotAllowed, optionsHandler, readRawBody, sendError, sendJson } = require('../_utils/http');
 const { extractUserId, normalizeSubscriptionPayload, verifyPaddleSignature } = require('../_utils/paddle');
 const { rateLimit } = require("../_utils/rateLimit");
+
 module.exports.config = {
   api: {
     bodyParser: false,
@@ -60,15 +61,27 @@ async function upsertSubscription(supabase, userId, data) {
   }
 }
 
-module.exports = async function handler(req, res) {
-  if (req.method !== 'POST') return methodNotAllowed(res);
-const allowed = await rateLimit(req, res, {
-  prefix: "webhook",
-  limit: 60,
-  windowSeconds: 60,
-});
+async function markEventProcessed(supabase, eventId, eventType) {
+  try {
+    await supabase.from('webhook_events').insert({
+      id: eventId,
+      event_type: eventType,
+    });
+  } catch (err) {
+    console.error('Failed to record webhook event:', err.message);
+  }
+}
 
-if (!allowed) return;
+module.exports = async function handler(req, res) {
+  if (req.method === 'OPTIONS') return optionsHandler(res);
+  if (req.method !== 'POST') return methodNotAllowed(res);
+  const allowed = await rateLimit(req, res, {
+    prefix: "webhook",
+    limit: 60,
+    windowSeconds: 60,
+  });
+
+  if (!allowed) return;
   try {
     const rawBody = await readRawBody(req);
     const signature = req.headers['paddle-signature'];
@@ -77,7 +90,22 @@ if (!allowed) return;
     }
 
     const event = JSON.parse(rawBody);
+    const eventId = event.event_id;
+
     const supabase = getSupabaseAdmin();
+
+    if (eventId) {
+      const { data: existing } = await supabase
+        .from('webhook_events')
+        .select('id')
+        .eq('id', eventId)
+        .maybeSingle();
+
+      if (existing) {
+        return sendJson(res, 200, { received: true, duplicate: true });
+      }
+    }
+
     const data = event.data || {};
     const userId = await resolveUserId(supabase, data);
 
@@ -89,9 +117,13 @@ if (!allowed) return;
       await upsertSubscription(supabase, userId, data);
     }
 
-        return sendJson(res, 200, { received: true });
+    if (eventId) {
+      await markEventProcessed(supabase, eventId, event.event_type);
+    }
+
+    return sendJson(res, 200, { received: true });
 
   } catch (err) {
-    return sendJson(res, 400, { error: err.message });
+    return sendError(res, err);
   }
 };

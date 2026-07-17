@@ -21,6 +21,8 @@ import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import TermsPage from './pages/TermsPage.jsx';
 import PrivacyPage from './pages/PrivacyPage.jsx';
+import RefundPolicy from './pages/RefundPolicy.jsx';
+import ContactPage from './pages/ContactPage.jsx';
 
 export default function App() {
   return (
@@ -31,6 +33,8 @@ export default function App() {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/refund" element={<RefundPolicy />} />
+        <Route path="/contact" element={<ContactPage />} />
       </Route>
       <Route path="/login" element={<AuthPage mode="login" />} />
       <Route path="/signup" element={<AuthPage mode="signup" />} />

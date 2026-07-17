@@ -581,11 +581,166 @@ label {
   align-items: center;
   border-top: 1px solid var(--line);
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   justify-content: center;
   margin: 0 auto;
   max-width: 1180px;
   padding: 2rem 1.25rem;
+}
+
+.marketing-footer a {
+  color: var(--muted);
+  font-weight: 750;
+}
+
+/* Legal pages */
+.legal-page {
+  text-align: left;
+}
+
+.legal-page > .eyebrow {
+  text-align: center;
+}
+
+.legal-page > h1 {
+  text-align: center;
+}
+
+.legal-updated {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin-top: -0.5rem;
+  text-align: center;
+}
+
+.legal-subtitle {
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.65;
+  margin: 0 auto;
+  max-width: 36rem;
+  text-align: center;
+}
+
+.legal-section {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0.7rem;
+  padding: 2rem 0;
+}
+
+.legal-section h2 {
+  align-items: center;
+  display: flex;
+  font-size: 1.25rem;
+  font-weight: 800;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.legal-section h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.legal-section p {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.legal-section ul {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.legal-section ul li {
+  color: var(--muted);
+  line-height: 1.6;
+  padding-left: 1.2rem;
+  position: relative;
+}
+
+.legal-section ul li::before {
+  content: "\2022";
+  color: var(--blue);
+  font-weight: 900;
+  left: 0;
+  position: absolute;
+}
+
+.legal-section a {
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.legal-section a:hover {
+  text-decoration: underline;
+}
+
+.legal-contact-cta {
+  border-top: 1px solid var(--line);
+  padding-top: 2rem;
+  text-align: center;
+}
+
+.legal-contact-cta p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.legal-contact-cta a {
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.legal-contact-cta a:hover {
+  text-decoration: underline;
+}
+
+/* Contact page */
+.contact-methods {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 1.5rem 0;
+}
+
+.contact-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 0.65rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.contact-card h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.contact-card p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.contact-card .button {
+  display: inline-flex;
+  justify-self: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .app-shell {
@@ -1172,5 +1327,13 @@ label {
   .upgrade-inline {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .contact-methods {
+    grid-template-columns: 1fr;
+  }
+
+  .legal-section {
+    padding: 1.4rem 0;
   }
 }

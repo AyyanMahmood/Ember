@@ -17,6 +17,13 @@ export default function PublicLayout() {
         </nav>
       </header>
       <Outlet />
+      <footer className="marketing-footer">
+        <Link to="/">EmberFlow</Link>
+        <Link to="/terms">Terms</Link>
+        <Link to="/privacy">Privacy</Link>
+        <Link to="/refund">Refunds</Link>
+        <Link to="/contact">Contact</Link>
+      </footer>
     </div>
   );
 }
