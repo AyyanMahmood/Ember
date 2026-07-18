@@ -1,0 +1,207 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: var(--weight-extrabold);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.button:disabled,
+.button[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.button--sm {
+  height: 2rem;
+  padding: 0 0.625rem;
+  font-size: var(--text-body-sm);
+  gap: var(--space-1);
+}
+
+.button--md {
+  height: 2.5rem;
+  padding: 0 1rem;
+  font-size: var(--text-body);
+  gap: var(--space-2);
+}
+
+.button--lg {
+  height: 3rem;
+  padding: 0 1.25rem;
+  font-size: var(--text-body-lg);
+  gap: var(--space-2);
+}
+
+.button--full { width: 100%; }
+
+.button--primary {
+  background: var(--color-blue);
+  color: #FFFFFF;
+  border-color: transparent;
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--color-blue-dark);
+  transform: translateY(-1px);
+}
+
+.button--primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button--secondary {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-line);
+}
+
+.button--secondary:hover:not(:disabled) {
+  background: var(--color-bg);
+  border-color: var(--color-muted);
+  transform: translateY(-1px);
+}
+
+.button--secondary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button--ghost {
+  background: transparent;
+  color: var(--color-ink);
+  border-color: transparent;
+}
+
+.button--ghost:hover:not(:disabled) {
+  background: var(--color-bg);
+  transform: translateY(-1px);
+}
+
+.button--ghost:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button--danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.button--danger:hover:not(:disabled) {
+  background: var(--color-danger);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.button--danger:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button--success {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.button--success:hover:not(:disabled) {
+  background: var(--color-success);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.button--success:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button--warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.button--warning:hover:not(:disabled) {
+  background: var(--color-warning);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.button--warning:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.icon-button:hover:not(:disabled) {
+  background: var(--color-bg);
+  border-color: var(--color-muted);
+}
+
+.icon-button:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.icon-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.icon-button--sm {
+  width: 2rem;
+  height: 2rem;
+}
+
+.icon-button--lg {
+  width: 3rem;
+  height: 3rem;
+}
+
+.icon-button svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.icon-button--sm svg {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-button--lg svg {
+  width: 20px;
+  height: 20px;
+}

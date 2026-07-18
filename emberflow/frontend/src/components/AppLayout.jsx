@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { useProfile } from '../hooks/useProfile.js';
+import { Avatar } from './ui/Avatar.jsx';
+import { Button } from './ui/Button.jsx';
 
 const navItems = [
   { to: '/app', label: 'Dashboard', icon: Home, end: true },
@@ -27,7 +29,7 @@ export default function AppLayout() {
 
   return (
     <div className="app-shell">
-      <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
+      <aside className={`sidebar ${open ? 'sidebar--open' : ''}`}>
         <div className="brand-row">
           <NavLink to="/app" className="brand-mark" onClick={() => setOpen(false)}>
             EmberFlow
@@ -55,20 +57,21 @@ export default function AppLayout() {
         </nav>
         <div className="sidebar-footer">
           <div className="account-summary">
-            {profile?.avatar_url ? (
-              <img className="avatar-preview" src={profile.avatar_url} alt="Profile avatar" />
-            ) : (
-              <span className="avatar-fallback">{initials}</span>
-            )}
+            <Avatar
+              src={profile?.avatar_url}
+              name={profile?.full_name}
+              size="md"
+              alt="Profile avatar"
+            />
             <div className="account-copy">
               <strong className="truncate">{profile?.full_name || 'Account'}</strong>
               <span className="muted small truncate">{user?.email}</span>
             </div>
           </div>
-          <button className="button ghost full" onClick={handleLogout}>
+          <Button variant="ghost" fullWidth onClick={handleLogout} className="sidebar__logout">
             <LogOut size={16} />
             Logout
-          </button>
+          </Button>
         </div>
       </aside>
 
@@ -77,9 +80,17 @@ export default function AppLayout() {
           <button className="icon-button mobile-only" onClick={() => setOpen(true)} aria-label="Open navigation">
             <Menu size={20} />
           </button>
-          <div>
-            <p className="eyebrow">Freelancer finance workspace</p>
-            <h1>EmberFlow</h1>
+          <div className="topbar__left">
+            <p className="topbar__eyebrow">Freelancer finance workspace</p>
+            <h1 className="topbar__title">EmberFlow</h1>
+          </div>
+          <div className="topbar__right">
+            <Avatar
+              src={profile?.avatar_url}
+              name={profile?.full_name}
+              size="md"
+              alt="Profile avatar"
+            />
           </div>
         </header>
         <main className="content">

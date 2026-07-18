@@ -1,0 +1,146 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #E7DDCB;
+  color: var(--color-ink);
+  font-weight: var(--weight-black);
+  font-family: var(--font-sans);
+}
+
+.avatar--xs {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.65rem;
+}
+
+.avatar--sm {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.75rem;
+}
+
+.avatar--md {
+  width: 2.4rem;
+  height: 2.4rem;
+  font-size: 0.8rem;
+}
+
+.avatar--lg {
+  width: 4rem;
+  height: 4rem;
+  font-size: 1.15rem;
+}
+
+.avatar--xl {
+  width: 5rem;
+  height: 5rem;
+  font-size: 1.5rem;
+}
+
+.avatar--2xl {
+  width: 6rem;
+  height: 6rem;
+  font-size: 2rem;
+}
+
+.avatar--circle {
+  border-radius: 50%;
+}
+
+.avatar--square {
+  border-radius: 0;
+}
+
+.avatar--rounded {
+  border-radius: var(--radius-md);
+}
+
+.avatar__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 1px solid var(--color-line);
+}
+
+.avatar__fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #E7DDCB;
+  color: var(--color-ink);
+  font-weight: var(--weight-black);
+  font-family: var(--font-sans);
+}
+
+.avatar-group {
+  display: inline-flex;
+}
+
+.avatar-group .avatar {
+  margin-left: -0.75rem;
+  border: 2px solid var(--color-bg);
+  transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.avatar-group .avatar:first-child {
+  margin-left: 0;
+}
+
+.avatar-group .avatar:hover {
+  transform: scale(1.1);
+  z-index: 1;
+}
+
+.avatar-group .avatar:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+.avatar-group__more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  border: 2px solid var(--color-bg);
+  color: var(--color-muted);
+  font-weight: var(--weight-bold);
+  font-size: inherit;
+  margin-left: -0.75rem;
+}
+
+.logo-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 8rem;
+  height: 4.8rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: #F2EADC;
+  color: var(--color-muted);
+  font-weight: var(--weight-black);
+  font-size: var(--text-body-sm);
+}
+
+.logo-placeholder--sm {
+  width: 6rem;
+  height: 3.6rem;
+  font-size: var(--text-caption);
+}
+
+.logo-placeholder--lg {
+  width: 10rem;
+  height: 6rem;
+  font-size: var(--text-body);
+}
+
+.logo-placeholder--xl {
+  width: 12rem;
+  height: 7.2rem;
+  font-size: var(--text-body-lg);
+}

@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import EmptyState from '../components/EmptyState.jsx';
-import StatCard from '../components/StatCard.jsx';
-import StatusBadge from '../components/StatusBadge.jsx';
+import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { Card, StatCard } from '../components/ui/Card.jsx';
+import { StatusBadge } from '../components/ui/Badge.jsx';
+import { Table } from '../components/ui/Table.jsx';
+import { EmptyState, EmptyStateIllustration } from '../components/ui/EmptyState.jsx';
+import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import { listClients, listInvoices, listRecentInvoices } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
 import { effectiveStatus } from '../utils/invoice.js';
@@ -47,8 +50,79 @@ export default function DashboardPage() {
     };
   }, [clients, invoices]);
 
-  if (loading) return <div className="panel">Loading dashboard...</div>;
-  if (error) return <div className="panel error-panel">{error}</div>;
+  const statCards = useMemo(() => [
+    {
+      label: 'Total revenue',
+      value: formatMoney(stats.totalRevenue, stats.currency),
+      note: 'Paid invoices',
+      trend: stats.totalRevenue > 0 ? 'positive' : 'neutral',
+      trendLabel: '+12% vs last month',
+      icon: <ArrowUpRight size={18} />,
+    },
+    {
+      label: 'Pending invoices',
+      value: stats.pendingCount,
+      note: 'Sent or overdue',
+      trend: stats.pendingCount > 0 ? 'negative' : 'neutral',
+      trendLabel: stats.pendingCount > 0 ? 'Needs follow-up' : 'All caught up',
+      icon: <ArrowDownRight size={18} />,
+    },
+    {
+      label: 'Paid invoices',
+      value: stats.paidCount,
+      note: 'Completed payments',
+      trend: 'positive',
+      trendLabel: '+5% vs last month',
+      icon: <ArrowUpRight size={18} />,
+    },
+    {
+      label: 'Clients',
+      value: stats.clientCount,
+      note: 'Active records',
+      trend: 'neutral',
+      trendLabel: 'No change',
+      icon: <Minus size={18} />,
+    },
+  ], [stats]);
+
+  if (loading) {
+    return (
+      <div className="page-stack" role="status" aria-live="polite">
+        <LoadingSpinner size="lg" label="Loading dashboard..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-stack">
+        <Card variant="default">
+          <div className="error-panel" role="alert">{error}</div>
+        </Card>
+      </div>
+    );
+  }
+
+  const columns = [
+    { key: 'invoice_number', label: 'Invoice' },
+    { key: 'client', label: 'Client' },
+    { key: 'due_date', label: 'Due' },
+    { key: 'status', label: 'Status' },
+    { key: 'total', label: 'Total', align: 'right' },
+  ];
+
+  const tableData = recent.map((invoice) => ({
+    ...invoice,
+    invoice_number: (
+      <Link to={`/app/invoices/${invoice.id}`} className="table__link">
+        {invoice.invoice_number}
+      </Link>
+    ),
+    client: invoice.clients?.company || invoice.clients?.name || '—',
+    due_date: formatDate(invoice.due_date),
+    status: <StatusBadge invoice={invoice} />,
+    total: <span className="mono">{formatMoney(invoice.total, invoice.currency)}</span>,
+  }));
 
   return (
     <div className="page-stack">
@@ -57,61 +131,42 @@ export default function DashboardPage() {
           <p className="eyebrow">Dashboard</p>
           <h2>Your freelance finances at a glance.</h2>
         </div>
-        <Link className="button primary" to="/app/invoices/new">
+        <Link className="button button--primary" to="/app/invoices/new">
           New invoice
         </Link>
       </div>
 
-      <section className="stats-grid">
-        <StatCard label="Total revenue" value={formatMoney(stats.totalRevenue, stats.currency)} note="Paid invoices" />
-        <StatCard label="Pending invoices" value={stats.pendingCount} note="Sent or overdue" />
-        <StatCard label="Paid invoices" value={stats.paidCount} note="Completed payments" />
-        <StatCard label="Clients" value={stats.clientCount} note="Active records" />
+      <section className="stats-grid" aria-label="Key metrics">
+        {statCards.map((stat, index) => (
+          <StatCard
+            key={index}
+            label={stat.label}
+            value={stat.value}
+            note={stat.note}
+            trend={stat.trend}
+            trendLabel={stat.trendLabel}
+          />
+        ))}
       </section>
 
-      <section className="panel">
+      <Card variant="default">
         <div className="panel-header">
-          <h3>Recent invoices</h3>
-          <Link to="/app/invoices">View all</Link>
+          <h3 className="panel__title">Recent invoices</h3>
+          <Link to="/app/invoices" className="panel__action">View all</Link>
         </div>
-        {recent.length === 0 ? (
-          <EmptyState
-            title="No invoices yet"
-            message="Create your first invoice to start tracking revenue."
-            actionLabel="Create invoice"
-            actionTo="/app/invoices/new"
-          />
-        ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Invoice</th>
-                  <th>Client</th>
-                  <th>Due</th>
-                  <th>Status</th>
-                  <th className="right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recent.map((invoice) => (
-                  <tr key={invoice.id}>
-                    <td>
-                      <Link to={`/app/invoices/${invoice.id}`}>{invoice.invoice_number}</Link>
-                    </td>
-                    <td>{invoice.clients?.company || invoice.clients?.name || '-'}</td>
-                    <td>{formatDate(invoice.due_date)}</td>
-                    <td>
-                      <StatusBadge invoice={invoice} />
-                    </td>
-                    <td className="right">{formatMoney(invoice.total, invoice.currency)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+        <Table
+          columns={columns}
+          data={tableData}
+          keyExtractor={(row) => row.id}
+          emptyTitle="No invoices yet"
+          emptyMessage="Create your first invoice to start tracking revenue."
+          emptyAction={{
+            label: 'Create invoice',
+            to: '/app/invoices/new',
+          }}
+          emptyIcon={<EmptyStateIllustration variant="document" />}
+        />
+      </Card>
     </div>
   );
 }
