@@ -1,7 +1,8 @@
 import { Download, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import EmptyState from '../components/EmptyState.jsx';
+import { Button } from '../components/ui/Button.jsx';
+import { EmptyState } from '../components/ui/EmptyState.jsx';
 import FeatureGate from '../components/FeatureGate.jsx';
 import { deleteProposal, getProfile, listProposals } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
@@ -51,10 +52,9 @@ export default function ProposalsPage() {
           <p className="eyebrow">Proposals</p>
           <h2>Reusable project proposals for new work.</h2>
         </div>
-        <Link className="button primary" to="/app/proposals/new">
-          <Plus size={16} />
+        <Button as={Link} variant="primary" to="/app/proposals/new" leftIcon={<Plus size={16} />}>
           New proposal
-        </Link>
+        </Button>
       </div>
 
       {error ? <div className="panel error-panel">{error}</div> : null}

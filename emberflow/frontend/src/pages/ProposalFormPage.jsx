@@ -1,6 +1,9 @@
 import { Download, Minus, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
+import { Input, Select, Textarea } from '../components/ui/Input.jsx';
 import FeatureGate from '../components/FeatureGate.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { createProposal, getProfile } from '../services/api.js';
@@ -148,104 +151,46 @@ export default function ProposalFormPage() {
           <h2>Start from a template and tailor the scope.</h2>
         </div>
       </div>
-      <form className="panel form-grid" onSubmit={handleSubmit}>
-        {error ? <p className="form-error span-2">{error}</p> : null}
-        <label>
-          Template
-          <select value={template} onChange={(event) => applyTemplate(event.target.value)}>
-            {Object.keys(templates).map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Client name
-          <input required value={form.client_name} onChange={(event) => updateField('client_name', event.target.value)} />
-        </label>
-        <label className="span-2">
-          Proposal title
-          <input required value={form.title} onChange={(event) => updateField('title', event.target.value)} />
-        </label>
-        <label className="span-2">
-          Project details
-          <textarea
-            required
-            rows="4"
-            value={form.project_summary}
-            onChange={(event) => updateField('project_summary', event.target.value)}
-          />
-        </label>
-        <label className="span-2">
-          Scope
-          <textarea required rows="5" value={form.scope} onChange={(event) => updateField('scope', event.target.value)} />
-        </label>
-        <label>
-          Timeline
-          <input required value={form.timeline} onChange={(event) => updateField('timeline', event.target.value)} />
-        </label>
-        <label>
-          Currency
-          <select value={form.currency} onChange={(event) => updateField('currency', event.target.value)}>
-            {CURRENCIES.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="span-2 items-editor">
-          <div className="panel-header">
-            <h3>Pricing</h3>
-            <button type="button" className="button ghost small" onClick={addItem}>
-              <Plus size={15} />
-              Add item
-            </button>
-          </div>
-          {items.map((item, index) => (
-            <div className="proposal-item-row" key={`${index}-${item.title}`}>
-              <label>
-                Title
-                <input required value={item.title} onChange={(event) => updateItem(index, 'title', event.target.value)} />
-              </label>
-              <label>
-                Description
-                <input value={item.description} onChange={(event) => updateItem(index, 'description', event.target.value)} />
-              </label>
-              <label>
-                Amount
-                <input
-                  required
-                  min="0"
-                  step="0.01"
-                  type="number"
-                  value={item.amount}
-                  onChange={(event) => updateItem(index, 'amount', event.target.value)}
-                />
-              </label>
-              <button type="button" className="icon-button item-remove" onClick={() => removeItem(index)} aria-label="Remove proposal item">
-                <Minus size={16} />
-              </button>
+      <Card variant="default">
+        <form className="form-grid" onSubmit={handleSubmit}>
+          {error ? <p className="form-error span-2">{error}</p> : null}
+          <Select label="Template" value={template} onChange={(e) => applyTemplate(e.target.value)} options={Object.keys(templates).map((name) => ({ value: name, label: name }))} />
+          <Input label="Client name" required value={form.client_name} onChange={(e) => updateField('client_name', e.target.value)} />
+          <Input label="Proposal title" required className="span-2" value={form.title} onChange={(e) => updateField('title', e.target.value)} />
+          <Textarea label="Project details" required rows={4} className="span-2" value={form.project_summary} onChange={(e) => updateField('project_summary', e.target.value)} />
+          <Textarea label="Scope" required rows={5} className="span-2" value={form.scope} onChange={(e) => updateField('scope', e.target.value)} />
+          <Input label="Timeline" required value={form.timeline} onChange={(e) => updateField('timeline', e.target.value)} />
+          <Select label="Currency" value={form.currency} onChange={(e) => updateField('currency', e.target.value)} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
+          <div className="span-2 items-editor">
+            <div className="panel-header">
+              <h3>Pricing</h3>
+              <Button variant="ghost" size="sm" type="button" onClick={addItem} leftIcon={<Plus size={15} />}>Add item</Button>
             </div>
-          ))}
-        </div>
-        <div className="totals-box span-2">
-          <strong>Total {new Intl.NumberFormat('en-US', { style: 'currency', currency: form.currency }).format(amount)}</strong>
-        </div>
-        <div className="form-actions span-2">
-          <Link className="button ghost" to="/app/proposals">
-            Cancel
-          </Link>
-          <button type="button" className="button ghost" onClick={exportDraft}>
-            <Download size={16} />
-            Export PDF
-          </button>
-          <button className="button primary" disabled={saving} type="submit">
-            {saving ? 'Saving...' : 'Save proposal'}
-          </button>
-        </div>
-      </form>
+            {items.map((item, index) => (
+              <div className="proposal-item-row" key={`${index}-${item.title}`}>
+                <Input label="Title" required value={item.title} onChange={(e) => updateItem(index, 'title', e.target.value)} />
+                <Input label="Description" value={item.description} onChange={(e) => updateItem(index, 'description', e.target.value)} />
+                <Input label="Amount" required type="number" min="0" step="0.01" value={item.amount} onChange={(e) => updateItem(index, 'amount', e.target.value)} />
+                <button type="button" className="icon-button item-remove" onClick={() => removeItem(index)} aria-label="Remove proposal item">
+                  <Minus size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="totals-box span-2">
+            <strong>Total {new Intl.NumberFormat('en-US', { style: 'currency', currency: form.currency }).format(amount)}</strong>
+          </div>
+          <div className="form-actions span-2">
+            <Button as={Link} variant="ghost" to="/app/proposals">Cancel</Button>
+            <Button variant="ghost" type="button" onClick={exportDraft} leftIcon={<Download size={16} />}>
+              Export PDF
+            </Button>
+            <Button variant="primary" disabled={saving} type="submit">
+              {saving ? 'Saving...' : 'Save proposal'}
+            </Button>
+          </div>
+        </form>
+      </Card>
       </div>
     </FeatureGate>
   );

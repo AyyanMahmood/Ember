@@ -1,4 +1,5 @@
 import { BarChart3, FileText, HandCoins, PanelsTopLeft, Users } from 'lucide-react';
+import { Card } from '../components/ui/Card.jsx';
 
 const groups = [
   ['CRM', 'Client profiles, notes, contact data, and history.', Users],
@@ -17,11 +18,11 @@ export default function FeaturesPage() {
       </div>
       <div className="feature-grid">
         {groups.map(([title, description, Icon]) => (
-          <article key={title}>
+          <Card variant="default" key={title}>
             <Icon size={24} />
             <h3>{title}</h3>
             <p>{description}</p>
-          </article>
+          </Card>
         ))}
       </div>
     </main>

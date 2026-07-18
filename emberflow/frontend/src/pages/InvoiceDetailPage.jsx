@@ -1,13 +1,16 @@
-import { Copy, Download, Edit, Send, Trash2 } from 'lucide-react';
+import { Check, Copy, Download, Edit, Send, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import StatusBadge from '../components/StatusBadge.jsx';
+import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
+import { Input, Select } from '../components/ui/Input.jsx';
+import { StatusBadge } from '../components/ui/Badge.jsx';
 import UpgradeModal from '../components/UpgradeModal.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
 import { createPayment, deleteInvoice, deletePayment, duplicateInvoice, getInvoice, getProfile, updateInvoiceStatus } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
-import { nextInvoiceNumber } from '../utils/invoice.js';
+import { effectiveStatus, nextInvoiceNumber } from '../utils/invoice.js';
 import { exportInvoicePdf } from '../utils/pdf.js';
 
 export default function InvoiceDetailPage() {
@@ -127,8 +130,8 @@ export default function InvoiceDetailPage() {
     }
   }
 
-  if (loading) return <div className="panel">Loading invoice...</div>;
-  if (error) return <div className="panel error-panel">{error}</div>;
+  if (loading) return <Card variant="default">Loading invoice...</Card>;
+  if (error) return <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>;
 
   const paidAmount = (invoice.payments || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
   const balanceDue = Math.max(Number(invoice.total || 0) - paidAmount, 0);
@@ -142,42 +145,37 @@ export default function InvoiceDetailPage() {
         </div>
         <div className="actions">
           {invoice.status === 'draft' ? (
-            <button className="button ghost" onClick={markSent}>
-              <Send size={16} />
+            <Button variant="ghost" onClick={markSent} leftIcon={<Send size={16} />}>
               Mark sent
-            </button>
+            </Button>
           ) : null}
           {invoice.status !== 'paid' ? (
-            <button className="button ghost" onClick={markPaid}>
+            <Button variant="ghost" onClick={markPaid} leftIcon={<Check size={16} />}>
               Mark paid
-            </button>
+            </Button>
           ) : null}
-          <button className="button ghost" onClick={duplicateCurrentInvoice}>
-            <Copy size={16} />
+          <Button variant="ghost" onClick={duplicateCurrentInvoice} leftIcon={<Copy size={16} />}>
             Duplicate
-          </button>
-          <button className="button ghost" onClick={() => exportInvoicePdf(invoice, profile).catch((err) => setError(err.message))}>
-            <Download size={16} />
+          </Button>
+          <Button variant="ghost" onClick={() => exportInvoicePdf(invoice, profile).catch((err) => setError(err.message))} leftIcon={<Download size={16} />}>
             PDF
-          </button>
-          <Link className="button ghost" to={`/app/invoices/${id}/edit`}>
-            <Edit size={16} />
+          </Button>
+          <Button as={Link} variant="ghost" to={`/app/invoices/${id}/edit`} leftIcon={<Edit size={16} />}>
             Edit
-          </Link>
-          <button className="button danger" onClick={handleDelete}>
-            <Trash2 size={16} />
+          </Button>
+          <Button variant="danger" onClick={handleDelete} leftIcon={<Trash2 size={16} />}>
             Delete
-          </button>
+          </Button>
         </div>
       </div>
 
-      <section className="invoice-preview panel">
+      <Card variant="default" className="invoice-preview">
         <div className="invoice-head">
           <div>
             <h3>{profile?.business_name || profile?.full_name || 'Freelancer'}</h3>
             <p>{profile?.email}</p>
           </div>
-          <StatusBadge invoice={invoice} />
+          <StatusBadge status={effectiveStatus(invoice)} />
         </div>
         <div className="detail-grid">
           <div>
@@ -231,63 +229,36 @@ export default function InvoiceDetailPage() {
           <span>Discount {formatMoney(invoice.discount_total || 0, invoice.currency)}</span>
           <strong>Total {formatMoney(invoice.total, invoice.currency)}</strong>
         </div>
-      </section>
+      </Card>
 
-      <section className="panel">
+      <Card variant="default">
         <div className="panel-header">
           <h3>Payments</h3>
           <span className="muted small">Balance due {formatMoney(balanceDue, invoice.currency)}</span>
         </div>
         {subscription.isPro ? (
           <form className="payment-form" onSubmit={handlePaymentSubmit}>
-            <label>
-              Amount
-              <input
-                required
-                min="0.01"
-                step="0.01"
-                type="number"
-                value={payment.amount}
-                onChange={(event) => setPayment({ ...payment, amount: event.target.value })}
-              />
-            </label>
-            <label>
-              Date
-              <input
-                required
-                type="date"
-                value={payment.payment_date}
-                onChange={(event) => setPayment({ ...payment, payment_date: event.target.value })}
-              />
-            </label>
-            <label>
-              Method
-              <select value={payment.method} onChange={(event) => setPayment({ ...payment, method: event.target.value })}>
-                <option value="manual">Manual</option>
-                <option value="bank_transfer">Bank transfer</option>
-                <option value="card">Card</option>
-                <option value="cash">Cash</option>
-                <option value="other">Other</option>
-              </select>
-            </label>
-            <label>
-              Reference
-              <input value={payment.reference} onChange={(event) => setPayment({ ...payment, reference: event.target.value })} />
-            </label>
-            <label className="span-2">
-              Notes
-              <input value={payment.notes} onChange={(event) => setPayment({ ...payment, notes: event.target.value })} />
-            </label>
-            <button className="button primary" disabled={savingPayment} type="submit">
+            <Input label="Amount" type="number" required min="0.01" step="0.01" value={payment.amount} onChange={(e) => setPayment({ ...payment, amount: e.target.value })} />
+            <Input label="Date" type="date" required value={payment.payment_date} onChange={(e) => setPayment({ ...payment, payment_date: e.target.value })} />
+            <Select label="Method" value={payment.method} onChange={(e) => setPayment({ ...payment, method: e.target.value })} options={[
+              { value: 'manual', label: 'Manual' },
+              { value: 'bank_transfer', label: 'Bank transfer' },
+              { value: 'card', label: 'Card' },
+              { value: 'cash', label: 'Cash' },
+              { value: 'other', label: 'Other' },
+            ]} />
+            <Input label="Reference" value={payment.reference} onChange={(e) => setPayment({ ...payment, reference: e.target.value })} />
+            <Input label="Notes" value={payment.notes} onChange={(e) => setPayment({ ...payment, notes: e.target.value })} className="span-2" />
+            <Button variant="primary" disabled={savingPayment} type="submit">
               {savingPayment ? 'Recording...' : 'Record payment'}
-            </button>
+            </Button>
           </form>
         ) : (
           <div className="upgrade-inline">
             <p className="muted">Payment tracking is included in EmberFlow Pro.</p>
-            <button className="button primary" type="button" onClick={() => setUpgradeOpen(true)}>
+            <Button variant="primary" type="button" onClick={() => setUpgradeOpen(true)}>
               Upgrade to Pro
-            </button>
+            </Button>
           </div>
         )}
 
@@ -313,9 +284,9 @@ export default function InvoiceDetailPage() {
                     <td>{row.reference || '-'}</td>
                     <td className="right">{formatMoney(row.amount, row.currency)}</td>
                     <td className="right">
-                      <button className="button small danger" onClick={() => removePayment(row)}>
+                      <Button variant="danger" size="sm" onClick={() => removePayment(row)}>
                         Delete
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -323,7 +294,7 @@ export default function InvoiceDetailPage() {
             </table>
           </div>
         )}
-      </section>
+      </Card>
       <UpgradeModal
         open={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}

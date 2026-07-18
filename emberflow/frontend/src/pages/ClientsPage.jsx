@@ -90,10 +90,9 @@ export default function ClientsPage() {
     created_at: formatDate(client.created_at?.slice(0, 10)),
     actions: (
       <div className="table__actions">
-        <Link to={`/app/clients/${client.id}/edit`} className="button button--ghost button--sm">
-          <Edit size={14} />
+        <Button as={Link} variant="ghost" size="sm" to={`/app/clients/${client.id}/edit`} leftIcon={<Edit size={14} />}>
           Edit
-        </Link>
+        </Button>
         <Button variant="danger" size="sm" onClick={() => handleDelete(client)} leftIcon={<Trash2 size={14} />}>
           Delete
         </Button>
@@ -116,10 +115,9 @@ export default function ClientsPage() {
           <p className="eyebrow">Clients</p>
           <h2>People and companies you bill.</h2>
         </div>
-        <Link className="button button--primary" to="/app/clients/new">
-          <Plus size={16} />
+        <Button as={Link} variant="primary" to="/app/clients/new" leftIcon={<Plus size={16} />}>
           Add client
-        </Link>
+        </Button>
       </div>
 
       {error && <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>}

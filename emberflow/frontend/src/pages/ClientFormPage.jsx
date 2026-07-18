@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
+import { Input, Textarea } from '../components/ui/Input.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { createClient, getClient, updateClient } from '../services/api.js';
 
@@ -73,46 +76,21 @@ export default function ClientFormPage() {
           <h2>{editing ? 'Update client details.' : 'Add a client to your workspace.'}</h2>
         </div>
       </div>
-      <form className="panel form-grid" onSubmit={handleSubmit}>
-        {error ? <p className="form-error">{error}</p> : null}
-        <label>
-          Name
-          <input required value={form.name} onChange={(event) => updateField('name', event.target.value)} />
-        </label>
-        <label>
-          Email
-          <input
-            required
-            type="email"
-            value={form.email}
-            onChange={(event) => updateField('email', event.target.value)}
-          />
-        </label>
-        <label>
-          Company
-          <input value={form.company} onChange={(event) => updateField('company', event.target.value)} />
-        </label>
-        <label>
-          Phone
-          <input value={form.phone} onChange={(event) => updateField('phone', event.target.value)} />
-        </label>
-        <label>
-          Country
-          <input value={form.country} onChange={(event) => updateField('country', event.target.value)} />
-        </label>
-        <label className="span-2">
-          Notes
-          <textarea rows="5" value={form.notes} onChange={(event) => updateField('notes', event.target.value)} />
-        </label>
-        <div className="form-actions span-2">
-          <Link className="button ghost" to="/app/clients">
-            Cancel
-          </Link>
-          <button className="button primary" disabled={saving} type="submit">
-            {saving ? 'Saving...' : 'Save client'}
-          </button>
-        </div>
-      </form>
+      <Card variant="default">
+        <form className="form-grid" onSubmit={handleSubmit}>
+          {error ? <p className="form-error">{error}</p> : null}
+          <Input label="Name" required value={form.name} onChange={(e) => updateField('name', e.target.value)} />
+          <Input label="Email" type="email" required value={form.email} onChange={(e) => updateField('email', e.target.value)} />
+          <Input label="Company" value={form.company} onChange={(e) => updateField('company', e.target.value)} />
+          <Input label="Phone" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />
+          <Input label="Country" value={form.country} onChange={(e) => updateField('country', e.target.value)} />
+          <Textarea label="Notes" rows={5} className="span-2" value={form.notes} onChange={(e) => updateField('notes', e.target.value)} />
+          <div className="form-actions span-2">
+            <Button as={Link} variant="ghost" to="/app/clients">Cancel</Button>
+            <Button variant="primary" disabled={saving} type="submit">{saving ? 'Saving...' : 'Save client'}</Button>
+          </div>
+        </form>
+      </Card>
     </div>
   );
 }

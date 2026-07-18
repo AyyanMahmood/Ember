@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { Mail, MapPin, Clock, MessageSquare, ExternalLink } from 'lucide-react';
+import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
 
 export default function ContactPage() {
   useEffect(() => {
@@ -16,26 +18,26 @@ export default function ContactPage() {
       </p>
 
       <div className="contact-methods">
-        <div className="contact-card">
+        <Card variant="default">
           <Mail size={24} />
           <h2>Email</h2>
           <p>Send us a message any time.</p>
-          <a className="button primary" href="mailto:support@emberflow.com">
+          <Button as="a" variant="primary" href="mailto:support@emberflow.com">
             support@emberflow.com
-          </a>
-        </div>
+          </Button>
+        </Card>
 
-        <div className="contact-card">
+        <Card variant="default">
           <MapPin size={24} />
           <h2>Location</h2>
           <p>EmberFlow Inc.<br />New York, NY</p>
-        </div>
+        </Card>
 
-        <div className="contact-card">
+        <Card variant="default">
           <Clock size={24} />
           <h2>Response Time</h2>
           <p>We aim to respond to all inquiries within <strong>48 hours</strong> during regular business days.</p>
-        </div>
+        </Card>
       </div>
 
       <section className="legal-section">

@@ -1,5 +1,10 @@
 import { ExternalLink, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Avatar } from '../components/ui/Avatar.jsx';
+import { Badge } from '../components/ui/Badge.jsx';
+import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
+import { Input, Select, Textarea } from '../components/ui/Input.jsx';
 import FeatureGate from '../components/FeatureGate.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
@@ -159,7 +164,7 @@ export default function SettingsPage() {
     }
   }
 
-  if (loading) return <div className="panel">Loading settings...</div>;
+  if (loading) return <Card variant="default">Loading settings...</Card>;
 
   return (
     <div className="page-stack">
@@ -170,104 +175,66 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {error ? <div className="panel error-panel">{error}</div> : null}
+      {error ? <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card> : null}
 
-      <form className="panel form-grid" onSubmit={handleSubmit}>
-        {message ? <p className="form-success span-2">{message}</p> : null}
-        <div className="span-2 avatar-settings-row">
-          {form.avatar_url ? (
-            <img className="avatar-preview large" src={form.avatar_url} alt="Profile avatar" />
-          ) : (
-            <div className="avatar-fallback large">{(form.full_name || form.email || 'U').slice(0, 2).toUpperCase()}</div>
-          )}
-          <label className="file-upload">
-            <Upload size={16} />
-            {uploadingAvatar ? 'Uploading...' : 'Upload avatar'}
-            <input type="file" accept="image/png,image/jpeg,image/webp" onChange={handleAvatarUpload} />
-          </label>
-        </div>
-        <label>
-          Name
-          <input required value={form.full_name} onChange={(event) => updateField('full_name', event.target.value)} />
-        </label>
-        <label>
-          Business name
-          <input value={form.business_name} onChange={(event) => updateField('business_name', event.target.value)} />
-        </label>
-        <label>
-          Email
-          <input required type="email" value={form.email} onChange={(event) => updateField('email', event.target.value)} />
-        </label>
-        <label>
-          Phone
-          <input value={form.phone} onChange={(event) => updateField('phone', event.target.value)} />
-        </label>
-        <label>
-          Country
-          <input value={form.country} onChange={(event) => updateField('country', event.target.value)} />
-        </label>
-        <label>
-          Default currency
-          <select value={form.currency} onChange={(event) => updateField('currency', event.target.value)}>
-            {CURRENCIES.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="span-2">
-          Address
-          <textarea rows="3" value={form.address} onChange={(event) => updateField('address', event.target.value)} />
-        </label>
-        <label>
-          Invoice prefix
-          <input value={form.invoice_prefix} onChange={(event) => updateField('invoice_prefix', event.target.value.toUpperCase())} />
-        </label>
-        <label className="span-2">
-          Payment instructions
-          <textarea rows="4" value={form.payment_instructions} onChange={(event) => updateField('payment_instructions', event.target.value)} />
-        </label>
+      <Card variant="default">
+        <form className="form-grid" onSubmit={handleSubmit}>
+          {message ? <p className="form-success span-2">{message}</p> : null}
+          <div className="span-2 avatar-settings-row">
+            <Avatar
+              src={form.avatar_url}
+              name={form.full_name}
+              size="lg"
+            />
+            <label className="file-upload">
+              <Upload size={16} />
+              {uploadingAvatar ? 'Uploading...' : 'Upload avatar'}
+              <input type="file" accept="image/png,image/jpeg,image/webp" onChange={handleAvatarUpload} />
+            </label>
+          </div>
+          <Input label="Name" required value={form.full_name} onChange={(e) => updateField('full_name', e.target.value)} />
+          <Input label="Business name" value={form.business_name} onChange={(e) => updateField('business_name', e.target.value)} />
+          <Input label="Email" required type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} />
+          <Input label="Phone" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />
+          <Input label="Country" value={form.country} onChange={(e) => updateField('country', e.target.value)} />
+          <Select label="Default currency" value={form.currency} onChange={(e) => updateField('currency', e.target.value)} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
+          <Textarea label="Address" rows={3} className="span-2" value={form.address} onChange={(e) => updateField('address', e.target.value)} />
+          <Input label="Invoice prefix" value={form.invoice_prefix} onChange={(e) => updateField('invoice_prefix', e.target.value.toUpperCase())} />
+          <Textarea label="Payment instructions" rows={4} className="span-2" value={form.payment_instructions} onChange={(e) => updateField('payment_instructions', e.target.value)} />
 
-        <div className="span-2">
-          <FeatureGate feature="branding" title="Invoice branding" message="Upgrade to Pro to add logo and custom invoice branding.">
-            <div className="branding-box">
-              {form.logo_url ? <img src={form.logo_url} alt="Business logo" /> : <div className="logo-placeholder">Logo</div>}
-              <label className="file-upload">
-                <Upload size={16} />
-                {uploading ? 'Uploading...' : 'Upload logo'}
-                <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleLogoUpload} />
-              </label>
-              <label>
-                Invoice accent color
-                <input type="color" value={form.invoice_brand_color} onChange={(event) => updateField('invoice_brand_color', event.target.value)} />
-              </label>
-              <label className="span-2">
-                Invoice footer
-                <textarea rows="4" value={form.invoice_footer} onChange={(event) => updateField('invoice_footer', event.target.value)} />
-              </label>
-            </div>
-          </FeatureGate>
-        </div>
+          <div className="span-2">
+            <FeatureGate feature="branding" title="Invoice branding" message="Upgrade to Pro to add logo and custom invoice branding.">
+              <div className="branding-box">
+                {form.logo_url ? <img src={form.logo_url} alt="Business logo" /> : <div className="logo-placeholder">Logo</div>}
+                <label className="file-upload">
+                  <Upload size={16} />
+                  {uploading ? 'Uploading...' : 'Upload logo'}
+                  <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleLogoUpload} />
+                </label>
+                <Input label="Invoice accent color" type="color" value={form.invoice_brand_color} onChange={(e) => updateField('invoice_brand_color', e.target.value)} />
+                <Textarea label="Invoice footer" rows={4} className="span-2" value={form.invoice_footer} onChange={(e) => updateField('invoice_footer', e.target.value)} />
+              </div>
+            </FeatureGate>
+          </div>
 
-        <div className="form-actions span-2">
-          <button className="button primary" disabled={saving} type="submit">
-            {saving ? 'Saving...' : 'Save settings'}
-          </button>
-        </div>
-      </form>
+          <div className="form-actions span-2">
+            <Button variant="primary" disabled={saving} type="submit">
+              {saving ? 'Saving...' : 'Save settings'}
+            </Button>
+          </div>
+        </form>
+      </Card>
 
-      <section className="panel">
+      <Card variant="default">
         <div className="panel-header">
           <div>
             <p className="eyebrow">Subscription</p>
             <h3>{subscription.plan?.name || PLANS.free.name}</h3>
           </div>
           {subscription.subscription?.paddle_customer_id ? (
-            <button className="button ghost" type="button" onClick={manageBilling} disabled={billingAction === 'portal'}>
-              <ExternalLink size={16} />
+            <Button variant="ghost" type="button" onClick={manageBilling} disabled={billingAction === 'portal'} leftIcon={<ExternalLink size={16} />}>
               {billingAction === 'portal' ? 'Opening...' : 'Manage billing'}
-            </button>
+            </Button>
           ) : null}
         </div>
         <div className="subscription-grid">
@@ -290,15 +257,15 @@ export default function SettingsPage() {
         </div>
         {!subscription.isPro ? (
           <div className="billing-actions">
-            <button className="button primary" type="button" onClick={() => checkout('pro_monthly')} disabled={Boolean(billingAction)}>
+            <Button variant="primary" type="button" onClick={() => checkout('pro_monthly')} disabled={Boolean(billingAction)}>
               {billingAction === 'pro_monthly' ? 'Opening...' : 'Upgrade monthly'}
-            </button>
-            <button className="button ghost" type="button" onClick={() => checkout('pro_yearly')} disabled={Boolean(billingAction)}>
+            </Button>
+            <Button variant="ghost" type="button" onClick={() => checkout('pro_yearly')} disabled={Boolean(billingAction)}>
               {billingAction === 'pro_yearly' ? 'Opening...' : 'Upgrade yearly'}
-            </button>
+            </Button>
           </div>
         ) : null}
-      </section>
+      </Card>
     </div>
   );
 }

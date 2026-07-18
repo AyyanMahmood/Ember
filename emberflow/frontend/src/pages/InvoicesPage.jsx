@@ -119,13 +119,9 @@ export default function InvoicesPage() {
             Mark paid
           </Button>
         )}
-        <Link
-          to={`/app/invoices/${invoice.id}/edit`}
-          className="button button--ghost button--sm"
-        >
-          <Edit size={14} />
+        <Button as={Link} variant="ghost" size="sm" to={`/app/invoices/${invoice.id}/edit`} leftIcon={<Edit size={14} />}>
           Edit
-        </Link>
+        </Button>
         <Button
           variant="danger"
           size="sm"
@@ -153,10 +149,9 @@ export default function InvoicesPage() {
           <p className="eyebrow">Invoices</p>
           <h2>Create, send, and track client invoices.</h2>
         </div>
-        <Link className="button button--primary" to="/app/invoices/new">
-          <Plus size={16} />
+        <Button as={Link} variant="primary" to="/app/invoices/new" leftIcon={<Plus size={16} />}>
           New invoice
-        </Link>
+        </Button>
       </div>
 
       {error && <div className="error-panel" role="alert">{error}</div>}

@@ -581,22 +581,22 @@ Every UI PR must pass:
 | InvoicesPage | ✅ Complete | Table, Button, StatusBadge, Card, LoadingSpinner | |
 | ClientsPage | ✅ Complete | Table, Input, Select, Card, Button, EmptyState | |
 | AnalyticsPage | ✅ Complete | StatCard, Card, LoadingSpinner | |
-| SettingsPage | 🔄 In Progress | Forms, branding, billing, usage — needs Input, Textarea, Select, Card, Avatar, Button, Badge, FileUpload | Target: next sprint |
-| InvoiceFormPage | ⏳ Legacy | Line items editor, complex form | Tier 1 |
-| InvoiceDetailPage | ⏳ Legacy | Read-only detail, PDF actions | Tier 1 |
-| ClientFormPage | ⏳ Legacy | Create/edit client | Tier 1 |
-| ClientDetailPage | ⏳ Legacy | Client detail + related invoices | Tier 1 |
-| ProposalsPage | ⏳ Legacy | Proposal list | Tier 2 (Pro) |
-| ProposalFormPage | ⏳ Legacy | Proposal editor | Tier 2 (Pro) |
-| LandingPage | ⏳ Legacy | Marketing hero, features, testimonials | Tier 3 |
-| PricingPage | ⏳ Legacy | Comparison cards, checkout CTAs | Tier 3 |
-| FeaturesPage | ⏳ Legacy | Feature detail grid | Tier 3 |
-| AuthPage | ⏳ Legacy | Login/signup forms | Tier 3 |
-| ForgotPasswordPage | ⏳ Legacy | Auth form | Tier 3 |
-| ResetPasswordPage | ⏳ Legacy | Auth form | Tier 3 |
-| Legal Pages (4) | ⏳ Legacy | Static content | Tier 4 |
+| SettingsPage | ✅ Complete | Forms, branding, billing, usage — all canonical | |
+| InvoiceFormPage | ✅ Complete | Line items editor fully migrated | |
+| InvoiceDetailPage | ✅ Complete | Read-only detail, PDF actions | |
+| ClientFormPage | ✅ Complete | Create/edit client | |
+| ClientDetailPage | ✅ Complete | Client detail + related invoices | |
+| ProposalsPage | ✅ Complete | Proposal list | |
+| ProposalFormPage | ✅ Complete | Proposal editor | |
+| LandingPage | ✅ Complete | Marketing hero, features, testimonials | |
+| PricingPage | ✅ Complete | Comparison cards, checkout CTAs | |
+| FeaturesPage | ✅ Complete | Feature detail grid | |
+| AuthPage | ✅ Complete | Login/signup forms | |
+| ForgotPasswordPage | ✅ Complete | Auth form | |
+| ResetPasswordPage | ✅ Complete | Auth form | |
+| Legal Pages (4) | ✅ Complete | Static content | |
 
-**Legend:** ✅ Complete — fully migrated to design system | 🔄 In Progress — active migration | ⏳ Legacy — uses old components, pending migration
+**Legend:** ✅ Complete — fully migrated to design system
 
 ---
 

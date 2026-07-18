@@ -6,6 +6,7 @@ import { StatusBadge } from '../components/ui/Badge.jsx';
 import { Table } from '../components/ui/Table.jsx';
 import { EmptyState, EmptyStateIllustration } from '../components/ui/EmptyState.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
+import { Button } from '../components/ui/Button.jsx';
 import { listClients, listInvoices, listRecentInvoices } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
 import { effectiveStatus } from '../utils/invoice.js';
@@ -131,9 +132,9 @@ export default function DashboardPage() {
           <p className="eyebrow">Dashboard</p>
           <h2>Your freelance finances at a glance.</h2>
         </div>
-        <Link className="button button--primary" to="/app/invoices/new">
+        <Button as={Link} variant="primary" to="/app/invoices/new">
           New invoice
-        </Link>
+        </Button>
       </div>
 
       <section className="stats-grid" aria-label="Key metrics">

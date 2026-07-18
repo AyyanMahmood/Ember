@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
 import { deleteClient, getClient, listInvoices } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
 
@@ -36,8 +38,8 @@ export default function ClientDetailPage() {
     }
   }
 
-  if (loading) return <div className="panel">Loading client...</div>;
-  if (error) return <div className="panel error-panel">{error}</div>;
+  if (loading) return <Card variant="default">Loading client...</Card>;
+  if (error) return <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>;
 
   return (
     <div className="page-stack">
@@ -47,17 +49,13 @@ export default function ClientDetailPage() {
           <h2>{client.name}</h2>
         </div>
         <div className="actions">
-          <Link className="button ghost" to={`/app/clients/${id}/edit`}>
-            Edit
-          </Link>
-          <button className="button danger" onClick={handleDelete}>
-            Delete
-          </button>
+          <Button as={Link} variant="ghost" to={`/app/clients/${id}/edit`}>Edit</Button>
+          <Button variant="danger" onClick={handleDelete}>Delete</Button>
         </div>
       </div>
 
       <section className="detail-grid">
-        <div className="panel">
+        <Card variant="default">
           <h3>Contact</h3>
           <dl className="details-list">
             <dt>Email</dt>
@@ -69,14 +67,14 @@ export default function ClientDetailPage() {
             <dt>Country</dt>
             <dd>{client.country || '-'}</dd>
           </dl>
-        </div>
-        <div className="panel">
+        </Card>
+        <Card variant="default">
           <h3>Notes</h3>
           <p className="preserve">{client.notes || 'No notes recorded.'}</p>
-        </div>
+        </Card>
       </section>
 
-      <section className="panel">
+      <Card variant="default">
         <div className="panel-header">
           <h3>Invoices</h3>
           <Link to={`/app/invoices/new?client=${id}`}>Create invoice</Link>
@@ -109,7 +107,7 @@ export default function ClientDetailPage() {
             </table>
           </div>
         )}
-      </section>
+      </Card>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { ArrowRight, BarChart3, BriefcaseBusiness, Clock3, FileCheck2, FileText, ShieldCheck, WalletCards } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import PricingCard from '../components/PricingCard.jsx';
+import { Button } from '../components/ui/Button.jsx';
+import { PricingCard } from '../components/ui/Card.jsx';
 import { PLANS } from '../utils/plans.js';
 
 const features = [
@@ -135,8 +136,21 @@ export default function LandingPage() {
           <p>Free covers the first operating layer. Pro unlocks unlimited scale, proposals, analytics, payment tracking, and branding.</p>
         </div>
         <div className="pricing-grid">
-          <PricingCard plan={PLANS.free} actionLabel="Start free" actionTo="/register" />
-          <PricingCard plan={PLANS.pro_monthly} highlight actionLabel="Start Pro" actionTo="/register" />
+          <PricingCard
+            name={PLANS.free.name}
+            price={PLANS.free.price}
+            period={PLANS.free.cadence}
+            features={PLANS.free.features}
+            cta={<Button as={Link} variant="secondary" to="/register" fullWidth>Start free</Button>}
+          />
+          <PricingCard
+            name={PLANS.pro_monthly.name}
+            price={PLANS.pro_monthly.price}
+            period={PLANS.pro_monthly.cadence}
+            features={PLANS.pro_monthly.features}
+            highlight
+            cta={<Button as={Link} variant="primary" to="/register" fullWidth>Start Pro</Button>}
+          />
         </div>
       </section>
 

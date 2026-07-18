@@ -1,6 +1,9 @@
+import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import PasswordField from '../components/PasswordField.jsx';
+import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
+import { Input } from '../components/ui/Input.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { friendlyAuthError } from '../utils/auth.js';
 
@@ -13,6 +16,7 @@ export default function AuthPage({ mode }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   if (loading) return <div className="screen-loader">Checking session...</div>;
   if (user) return <Navigate to="/app" replace />;
@@ -46,52 +50,46 @@ export default function AuthPage({ mode }) {
       <Link className="brand-mark" to="/">
         EmberFlow
       </Link>
-      <form className="auth-card" onSubmit={handleSubmit}>
-        <div>
-          <p className="eyebrow">{isSignup ? 'Create account' : 'Welcome back'}</p>
-          <h1>{isSignup ? 'Start your workspace' : 'Sign in to EmberFlow'}</h1>
-        </div>
-        {isSignup ? (
-          <label>
-            Name
-            <input
-              required
-              value={form.name}
-              onChange={(event) => setForm({ ...form, name: event.target.value })}
-              autoComplete="name"
-            />
-          </label>
-        ) : null}
-        <label>
-          Email
-          <input
+      <Card variant="strong">
+        <form onSubmit={handleSubmit}>
+          <div>
+            <p className="eyebrow">{isSignup ? 'Create account' : 'Welcome back'}</p>
+            <h1>{isSignup ? 'Start your workspace' : 'Sign in to EmberFlow'}</h1>
+          </div>
+          {isSignup ? (
+            <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="name" />
+          ) : null}
+          <Input label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" />
+          <Input
+            label="Password"
+            type={passwordVisible ? 'text' : 'password'}
             required
-            type="email"
-            value={form.email}
-            onChange={(event) => setForm({ ...form, email: event.target.value })}
-            autoComplete="email"
+            minLength={8}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            autoComplete={isSignup ? 'new-password' : 'current-password'}
+            rightAddon={
+              <button type="button" onClick={() => setPasswordVisible((v) => !v)} aria-label={passwordVisible ? 'Hide password' : 'Show password'}>
+                {passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            }
           />
-        </label>
-        <PasswordField
-          value={form.password}
-          onChange={(event) => setForm({ ...form, password: event.target.value })}
-          autoComplete={isSignup ? 'new-password' : 'current-password'}
-        />
-        {error ? <p className="form-error">{error}</p> : null}
-        {success ? <p className="form-success">{success}</p> : null}
-        <button className="button primary full" type="submit" disabled={submitting}>
-          {submitting ? 'Working...' : isSignup ? 'Create account' : 'Login'}
-        </button>
-        <p className="center muted">
-          {isSignup ? 'Already have an account?' : 'New to EmberFlow?'}{' '}
-          <Link to={isSignup ? '/login' : '/register'}>{isSignup ? 'Login' : 'Create one'}</Link>
-        </p>
-        {!isSignup ? (
+          {error ? <p className="form-error">{error}</p> : null}
+          {success ? <p className="form-success">{success}</p> : null}
+          <Button variant="primary" fullWidth disabled={submitting} type="submit">
+            {submitting ? 'Working...' : isSignup ? 'Create account' : 'Login'}
+          </Button>
           <p className="center muted">
-            <Link to="/forgot-password">Forgot password?</Link>
+            {isSignup ? 'Already have an account?' : 'New to EmberFlow?'}{' '}
+            <Link to={isSignup ? '/login' : '/register'}>{isSignup ? 'Login' : 'Create one'}</Link>
           </p>
-        ) : null}
-      </form>
+          {!isSignup ? (
+            <p className="center muted">
+              <Link to="/forgot-password">Forgot password?</Link>
+            </p>
+          ) : null}
+        </form>
+      </Card>
     </div>
   );
 }

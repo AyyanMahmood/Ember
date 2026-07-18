@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useSubscription } from '../hooks/useSubscription.js';
-import LoadingSpinner from './LoadingSpinner.jsx';
+import { LoadingSpinner } from './ui/Loading.jsx';
 import UpgradeModal from './UpgradeModal.jsx';
 
 export default function FeatureGate({ feature, title = 'Pro feature', message, children }) {
   const subscription = useSubscription();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
-  if (subscription.loading) return <LoadingSpinner label="Checking plan..." />;
+  if (subscription.loading) return <LoadingSpinner size="md" label="Checking plan..." />;
   if (subscription.canUseFeature(feature)) return children;
 
   return (

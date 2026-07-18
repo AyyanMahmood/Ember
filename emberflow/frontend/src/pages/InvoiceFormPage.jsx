@@ -1,6 +1,9 @@
 import { Minus, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
+import { Input, Select, Textarea } from '../components/ui/Input.jsx';
 import UpgradeModal from '../components/UpgradeModal.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
@@ -143,139 +146,54 @@ export default function InvoiceFormPage() {
           <h2>{editing ? 'Update invoice details.' : 'Create a professional itemized invoice.'}</h2>
         </div>
       </div>
-      <form className="panel form-grid" onSubmit={handleSubmit}>
-        {error ? <p className="form-error span-2">{error}</p> : null}
-        <label>
-          Invoice number
-          <input required value={form.invoice_number} onChange={(event) => updateField('invoice_number', event.target.value)} />
-        </label>
-        <label>
-          Client
-          <select required value={form.client_id} onChange={(event) => updateField('client_id', event.target.value)}>
-            <option value="">Select client</option>
-            {clients.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.company || client.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Invoice date
-          <input type="date" required value={form.invoice_date} onChange={(event) => updateField('invoice_date', event.target.value)} />
-        </label>
-        <label>
-          Due date
-          <input type="date" required value={form.due_date} onChange={(event) => updateField('due_date', event.target.value)} />
-        </label>
-        <label>
-          Currency
-          <select value={form.currency} onChange={(event) => updateField('currency', event.target.value)}>
-            {CURRENCIES.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Status
-          <select value={form.status} onChange={(event) => updateField('status', event.target.value)}>
-            {INVOICE_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Discount
-          <input
-            min="0"
-            step="0.01"
-            type="number"
-            value={form.discount_total}
-            onChange={(event) => updateField('discount_total', event.target.value)}
-          />
-        </label>
-        <label className="span-2">
-          Notes
-          <textarea rows="4" value={form.notes} onChange={(event) => updateField('notes', event.target.value)} />
-        </label>
+      <Card variant="default">
+        <form className="form-grid" onSubmit={handleSubmit}>
+          {error ? <p className="form-error span-2">{error}</p> : null}
+          <Input label="Invoice number" required value={form.invoice_number} onChange={(e) => updateField('invoice_number', e.target.value)} />
+          <Select label="Client" required value={form.client_id} onChange={(e) => updateField('client_id', e.target.value)} options={[
+            { value: '', label: 'Select client' },
+            ...clients.map((client) => ({ value: client.id, label: client.company || client.name })),
+          ]} />
+          <Input label="Invoice date" type="date" required value={form.invoice_date} onChange={(e) => updateField('invoice_date', e.target.value)} />
+          <Input label="Due date" type="date" required value={form.due_date} onChange={(e) => updateField('due_date', e.target.value)} />
+          <Select label="Currency" value={form.currency} onChange={(e) => updateField('currency', e.target.value)} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
+          <Select label="Status" value={form.status} onChange={(e) => updateField('status', e.target.value)} options={INVOICE_STATUSES.map((s) => ({ value: s, label: s }))} />
+          <Input label="Discount" type="number" min="0" step="0.01" value={form.discount_total} onChange={(e) => updateField('discount_total', e.target.value)} />
+          <Textarea label="Notes" rows={4} className="span-2" value={form.notes} onChange={(e) => updateField('notes', e.target.value)} />
 
-        <div className="span-2 items-editor">
-          <div className="panel-header">
-            <h3>Items</h3>
-            <button type="button" className="button ghost small" onClick={addItem}>
-              <Plus size={15} />
-              Add item
-            </button>
-          </div>
-          {items.map((item, index) => (
-            <div className="item-row" key={`${index}-${item.description}`}>
-              <label>
-                Description
-                <input
-                  required
-                  value={item.description}
-                  onChange={(event) => updateItem(index, 'description', event.target.value)}
-                />
-              </label>
-              <label>
-                Qty
-                <input
-                  required
-                  min="0"
-                  step="0.01"
-                  type="number"
-                  value={item.quantity}
-                  onChange={(event) => updateItem(index, 'quantity', event.target.value)}
-                />
-              </label>
-              <label>
-                Price
-                <input
-                  required
-                  min="0"
-                  step="0.01"
-                  type="number"
-                  value={item.price}
-                  onChange={(event) => updateItem(index, 'price', event.target.value)}
-                />
-              </label>
-              <label>
-                Tax %
-                <input
-                  min="0"
-                  step="0.01"
-                  type="number"
-                  value={item.tax_rate}
-                  onChange={(event) => updateItem(index, 'tax_rate', event.target.value)}
-                />
-              </label>
-              <button type="button" className="icon-button item-remove" onClick={() => removeItem(index)} aria-label="Remove item">
-                <Minus size={16} />
-              </button>
+          <div className="span-2 items-editor">
+            <div className="panel-header">
+              <h3>Items</h3>
+              <Button variant="ghost" size="sm" type="button" onClick={addItem} leftIcon={<Plus size={15} />}>Add item</Button>
             </div>
-          ))}
-        </div>
+            {items.map((item, index) => (
+              <div className="item-row" key={`${index}-${item.description}`}>
+                <Input label="Description" required value={item.description} onChange={(e) => updateItem(index, 'description', e.target.value)} />
+                <Input label="Qty" required type="number" min="0" step="0.01" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', e.target.value)} />
+                <Input label="Price" required type="number" min="0" step="0.01" value={item.price} onChange={(e) => updateItem(index, 'price', e.target.value)} />
+                <Input label="Tax %" type="number" min="0" step="0.01" value={item.tax_rate} onChange={(e) => updateItem(index, 'tax_rate', e.target.value)} />
+                <button type="button" className="icon-button item-remove" onClick={() => removeItem(index)} aria-label="Remove item">
+                  <Minus size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
 
-        <div className="totals-box span-2">
-          <span>Subtotal {formatMoney(totals.subtotal, form.currency)}</span>
-          <span>Tax {formatMoney(totals.tax_total, form.currency)}</span>
-          <span>Discount {formatMoney(totals.discount_total, form.currency)}</span>
-          <strong>Total {formatMoney(totals.total, form.currency)}</strong>
-        </div>
+          <div className="totals-box span-2">
+            <span>Subtotal {formatMoney(totals.subtotal, form.currency)}</span>
+            <span>Tax {formatMoney(totals.tax_total, form.currency)}</span>
+            <span>Discount {formatMoney(totals.discount_total, form.currency)}</span>
+            <strong>Total {formatMoney(totals.total, form.currency)}</strong>
+          </div>
 
-        <div className="form-actions span-2">
-          <Link className="button ghost" to="/app/invoices">
-            Cancel
-          </Link>
-          <button className="button primary" disabled={saving} type="submit">
-            {saving ? 'Saving...' : 'Save invoice'}
-          </button>
-        </div>
-      </form>
+          <div className="form-actions span-2">
+            <Button as={Link} variant="ghost" to="/app/invoices">Cancel</Button>
+            <Button variant="primary" disabled={saving} type="submit">
+              {saving ? 'Saving...' : 'Save invoice'}
+            </Button>
+          </div>
+        </form>
+      </Card>
       <UpgradeModal
         open={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}
