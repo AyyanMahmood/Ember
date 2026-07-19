@@ -69,7 +69,7 @@ export default function ClientFormPage() {
   if (loading) return <div className="panel">Loading client...</div>;
 
   return (
-    <div className="page-stack narrow">
+    <div className="page-stack page-stack--narrow">
       <div className="page-header">
         <div>
           <p className="eyebrow">{editing ? 'Edit client' : 'New client'}</p>
@@ -78,7 +78,7 @@ export default function ClientFormPage() {
       </div>
       <Card variant="default">
         <form className="form-grid" onSubmit={handleSubmit}>
-          {error ? <p className="form-error">{error}</p> : null}
+          {error ? <p className="form-error span-2">{error}</p> : null}
           <Input label="Name" required value={form.name} onChange={(e) => updateField('name', e.target.value)} />
           <Input label="Email" type="email" required value={form.email} onChange={(e) => updateField('email', e.target.value)} />
           <Input label="Company" value={form.company} onChange={(e) => updateField('company', e.target.value)} />

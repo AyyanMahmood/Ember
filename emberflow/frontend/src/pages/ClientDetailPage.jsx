@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { StatusBadge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { deleteClient, getClient, listInvoices } from '../services/api.js';
@@ -99,7 +100,7 @@ export default function ClientDetailPage() {
                       <Link to={`/app/invoices/${invoice.id}`}>{invoice.invoice_number}</Link>
                     </td>
                     <td>{formatDate(invoice.invoice_date)}</td>
-                    <td>{invoice.status}</td>
+                    <td><StatusBadge status={invoice.status} size="sm" /></td>
                     <td className="right">{formatMoney(invoice.total, invoice.currency)}</td>
                   </tr>
                 ))}

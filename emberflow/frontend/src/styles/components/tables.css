@@ -183,6 +183,17 @@
   box-shadow: var(--shadow-focus);
 }
 
+.table__link {
+  color: var(--color-ink);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.table__link:hover {
+  color: var(--color-blue);
+}
+
 .table__expanded-row td {
   padding: 0;
   border-bottom: none;

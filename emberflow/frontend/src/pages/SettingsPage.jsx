@@ -1,7 +1,6 @@
 import { ExternalLink, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Avatar } from '../components/ui/Avatar.jsx';
-import { Badge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input, Select, Textarea } from '../components/ui/Input.jsx';

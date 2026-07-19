@@ -165,6 +165,18 @@
 .stat-card__trend--negative { color: var(--color-danger); }
 .stat-card__trend--neutral { color: var(--color-muted); }
 
+.stat-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  background: var(--color-blue-soft);
+  color: var(--color-blue);
+  margin-bottom: var(--space-2);
+}
+
 .table-wrap {
   overflow-x: auto;
   border-radius: var(--radius-md);

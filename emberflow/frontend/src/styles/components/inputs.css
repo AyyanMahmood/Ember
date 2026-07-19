@@ -411,6 +411,29 @@
   display: none;
 }
 
+.items-editor {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.items-editor .item-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.items-editor .proposal-item-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.items-editor .item-remove {
+  margin-top: 1.55rem;
+}
+
 .password-control {
   position: relative;
   display: grid;

@@ -144,7 +144,7 @@ export default function ProposalFormPage() {
 
   return (
     <FeatureGate feature="proposals" title="Proposals are a Pro feature" message="Upgrade to Pro to create and export client proposals.">
-      <div className="page-stack narrow">
+      <div className="page-stack page-stack--narrow">
       <div className="page-header">
         <div>
           <p className="eyebrow">New proposal</p>
