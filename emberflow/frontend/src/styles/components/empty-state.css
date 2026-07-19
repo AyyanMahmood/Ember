@@ -17,46 +17,37 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 4rem;
-  height: 4rem;
-  border-radius: var(--radius-xl);
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-lg);
   background: var(--color-blue-soft);
   color: var(--color-blue);
   flex-shrink: 0;
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 
 .empty-state__icon svg {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
 }
 
-.empty-state__icon--lg {
-  width: 6rem;
-  height: 6rem;
-}
-
-.empty-state__icon--lg svg {
-  width: 48px;
-  height: 48px;
-}
-
-.empty-state__icon--success {
+.empty-state--success .empty-state__icon {
   background: var(--color-success-soft);
   color: var(--color-success);
 }
 
-.empty-state__icon--warning {
+.empty-state--warning .empty-state__icon {
   background: var(--color-warning-soft);
   color: var(--color-warning);
 }
 
-.empty-state__icon--danger {
+.empty-state--danger .empty-state__icon {
   background: var(--color-danger-soft);
   color: var(--color-danger);
 }
 
 .empty-state__title {
-  font-size: var(--text-heading-sm);
+  font-size: var(--text-heading-md);
   font-weight: var(--weight-bold);
   margin: 0;
   color: var(--color-ink);

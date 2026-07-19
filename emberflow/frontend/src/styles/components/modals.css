@@ -13,14 +13,14 @@
 .modal-card {
   background: var(--color-surface-strong);
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   max-width: var(--modal-max-width);
   width: min(100%, var(--modal-max-width));
-  padding: var(--space-4);
+  padding: var(--space-5);
   display: grid;
   gap: var(--space-4);
-  animation: slide-up var(--duration-base) var(--ease-in-out);
+  animation: slide-up var(--duration-base) var(--ease-out);
 }
 
 .modal-card--sm { max-width: 400px; }
@@ -33,7 +33,6 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-bottom: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -48,30 +47,25 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid var(--color-line);
+  width: 2rem;
+  height: 2rem;
+  border: none;
   border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-ink);
+  background: transparent;
+  color: var(--color-muted);
   cursor: pointer;
   transition:
     background-color var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out);
+    color var(--duration-fast) var(--ease-out);
 }
 
 .modal-close:hover {
   background: var(--color-bg);
-  border-color: var(--color-muted);
+  color: var(--color-ink);
 }
 
 .modal-close:focus-visible {
   box-shadow: var(--shadow-focus);
-}
-
-.modal-close svg {
-  width: 18px;
-  height: 18px;
 }
 
 .modal-body {
@@ -127,7 +121,7 @@
   z-index: var(--z-modal);
   display: flex;
   flex-direction: column;
-  animation: slide-in-right var(--duration-base) var(--ease-in-out);
+  animation: slide-in-right var(--duration-base) var(--ease-out);
 }
 
 .drawer--left {
@@ -135,7 +129,7 @@
   left: 0;
   border-right: 1px solid var(--color-line);
   border-left: none;
-  animation: slide-in-left var(--duration-base) var(--ease-in-out);
+  animation: slide-in-left var(--duration-base) var(--ease-out);
 }
 
 .drawer-header {
@@ -216,9 +210,9 @@
   padding: var(--space-3) var(--space-4);
   background: var(--color-surface-strong);
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  animation: slide-up var(--duration-base) var(--ease-in-out);
+  animation: slide-up var(--duration-base) var(--ease-out);
 }
 
 .toast--success { border-left: 4px solid var(--color-success); }

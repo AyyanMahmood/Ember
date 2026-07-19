@@ -112,6 +112,11 @@
   --sidebar-width: 260px;
   --topbar-height: 75px;
   --modal-max-width: 760px;
+
+  --z-sticky: 100;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-toast: 600;
 }
 
 @media (prefers-color-scheme: dark) {
