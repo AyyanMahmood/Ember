@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Check, Minus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Check, Minus } from 'lucide-react';
 import { Button } from './Button.jsx';
 import { Checkbox } from './Input.jsx';
 
@@ -311,16 +311,16 @@ function TablePagination({
         </div>
 
         <button
-          className="icon-button"
+          className="icon-button icon-button--sm"
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
           aria-label="First page"
           aria-disabled={currentPage === 1}
         >
-          <ChevronLeft size={16} />
+          <ChevronsLeft size={16} />
         </button>
         <button
-          className="icon-button"
+          className="icon-button icon-button--sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           aria-label="Previous page"
@@ -348,7 +348,7 @@ function TablePagination({
         </div>
 
         <button
-          className="icon-button"
+          className="icon-button icon-button--sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           aria-label="Next page"
@@ -357,13 +357,13 @@ function TablePagination({
           <ChevronRight size={16} />
         </button>
         <button
-          className="icon-button"
+          className="icon-button icon-button--sm"
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
           aria-label="Last page"
           aria-disabled={currentPage === totalPages}
         >
-          <ChevronRight size={16} />
+          <ChevronsRight size={16} />
         </button>
       </div>
     </div>
