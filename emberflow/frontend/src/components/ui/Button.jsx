@@ -45,10 +45,7 @@ export const Button = forwardRef(function Button({
       {...props}
     >
       {loading ? (
-        <span className="loading-row" role="status" aria-live="polite">
-          <span className="spinner spinner--sm" />
-          <span>Loading...</span>
-        </span>
+        <span className="spinner spinner--sm" role="status" aria-label="Loading" />
       ) : (
         <>
           {leftIcon && <span aria-hidden="true">{leftIcon}</span>}

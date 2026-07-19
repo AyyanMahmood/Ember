@@ -31,10 +31,22 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   padding: var(--space-4);
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
 }
 
 .panel--strong {
   background: var(--color-surface-strong);
+}
+
+.panel--interactive {
+  cursor: pointer;
+}
+
+.panel--interactive:hover {
+  box-shadow: var(--shadow-elevated);
+  border-color: var(--color-muted);
 }
 
 .panel-header {
@@ -72,10 +84,11 @@
 }
 
 .stat-card__value {
-  font-size: 1.9rem;
+  font-size: 1.75rem;
   font-weight: var(--weight-extrabold);
   color: var(--color-ink);
   line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 
 .stat-card__note {
@@ -102,12 +115,20 @@
   padding: var(--space-5);
   transition:
     box-shadow var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out);
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.pricing-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevated);
 }
 
 .pricing-card--highlight {
   border-color: rgba(59, 130, 246, 0.55);
-  box-shadow: 0 24px 60px rgba(59, 130, 246, 0.16);
+  box-shadow:
+    0 24px 60px rgba(59, 130, 246, 0.16),
+    var(--shadow-elevated);
 }
 
 .pricing-card__price {

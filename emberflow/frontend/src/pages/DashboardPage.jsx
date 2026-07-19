@@ -121,7 +121,7 @@ export default function DashboardPage() {
     ),
     client: invoice.clients?.company || invoice.clients?.name || '—',
     due_date: formatDate(invoice.due_date),
-    status: <StatusBadge invoice={invoice} />,
+    status: <StatusBadge status={effectiveStatus(invoice)} />,
     total: <span className="mono">{formatMoney(invoice.total, invoice.currency)}</span>,
   }));
 

@@ -40,7 +40,7 @@ export const Input = forwardRef(function Input({
         </label>
       )}
       {(leftAddon || rightAddon) ? (
-        <div className="input-with-addon" role="group">
+        <div className={`input-with-addon${hasError ? ' input-with-addon--error' : ''}`} role="group">
           {leftAddon && (
             <span className="input-addon" aria-hidden="true">{leftAddon}</span>
           )}
