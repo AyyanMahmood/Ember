@@ -17,19 +17,38 @@ EmberFlow is a premium freelancer finance operating system for independent profe
 
 # Vision
 
-The goal is not to build another generic dashboard. The goal is to become:
+The goal is not to build another generic dashboard.
 
-**"The Linear / Stripe / Notion of freelancer finance."**
+EmberFlow's visual identity should be almost identical in design philosophy to OpenClaude.
 
-The product should feel:
+NOT "inspired by."
 
-- Premium
-- Minimal
-- Calm
-- Trustworthy
-- Beautifully designed
+The level of polish, spacing, animation, typography, hierarchy, and component quality should feel almost identical.
 
-Every pixel should communicate quality. The experience should make freelancers feel like they run a serious company.
+The goal is for someone to immediately think:
+
+"This feels like OpenClaude."
+
+without copying branding or logos.
+
+The current UI should be treated only as a functional prototype.
+
+Claude has permission to completely redesign the presentation layer — layout, spacing, components, typography, animations, responsiveness — while preserving ALL business logic.
+
+Business logic must NEVER change. Only presentation, UX, responsiveness, accessibility, animations, spacing, typography, and components may change.
+
+The visual quality should compete with:
+
+- OpenClaude
+- Vercel
+- Raycast
+- Arc Browser
+- Linear
+- Clerk
+- Resend
+- Notion
+
+UI quality is now considered equally important as functionality.
 
 ---
 
@@ -95,35 +114,40 @@ emberflow/
 
 # Design Principles
 
-### Inspired By
+### Visual Characteristics
 
-- **Linear** — Clean, fast, opinionated project management
-- **Stripe Dashboard** — Trustworthy, minimal financial UI
-- **Vercel** — Developer-friendly, modern, geometric
-- **Arc Browser** — Thoughtful, cohesive, premium
-- **Notion** — Spacious, typographic, calm
+**Use:**
 
-### Visual Rules
+- Dark-first interface
+- Matte charcoal backgrounds
+- Soft elevated panels
+- Large rounded corners
+- Floating cards
+- Glass-like subtle surfaces
+- Minimal borders
+- Soft shadows
+- Premium typography
+- Plenty of whitespace
+- Calm layouts
+- Strong visual hierarchy
+- High contrast
+- Blue accent color
+- Very subtle gradients
+- Animated hover states
+- Smooth transitions
+- Motion everywhere — but tasteful
 
-- **Clean** — Every element earns its place
-- **Spacious** — Generous whitespace, comfortable rhythm
-- **Premium** — Quality textures, refined colors, deliberate shadows
-- **Elegant** — Refined typography, subtle hierarchy, no visual noise
-- **Responsive** — Mobile-first, works on any screen
-- **Subtle motion** — Micro-interactions, smooth transitions, never gratuitous
-- **Soft shadows** — Warm, layered depth without harshness
-- **Strong typography** — Inter font, bold weights, tight display leading
-- **No clutter** — One thing at a time, progressive disclosure
-- **Dark mode** — World-class dark theme, not an afterthought
+**Avoid:**
 
-### Avoid
-
-- Bootstrap appearance
-- Material Design look
-- Generic Tailwind dashboard feel
-- Excessive gradients
+- Cream theme
+- Beige backgrounds
+- Flat Bootstrap styling
+- Generic Tailwind dashboards
+- Material Design
+- Dense enterprise layouts
+- Loud gradients
 - Heavy borders
-- Unnecessary chrome
+- Outdated admin dashboards
 
 ---
 
@@ -139,7 +163,7 @@ emberflow/
 - API contracts and serverless function signatures
 - Paddle subscription integration
 
-### Claude may freely IMPROVE
+### Claude may freely IMPROVE (or completely redesign)
 
 - UI appearance and polish
 - UX and interaction design
@@ -151,6 +175,7 @@ emberflow/
 - Design system consistency and component API
 - Typography and visual hierarchy
 - Empty states, loading states, and error states
+- Component library — replace custom components with shadcn/ui equivalents
 
 ---
 
@@ -158,7 +183,7 @@ emberflow/
 
 ### Always
 
-- Reuse existing components from `components/ui/`
+- Use shadcn/ui as the primary component system; replace custom components with shadcn/ui equivalents whenever they improve quality.
 - Avoid duplicating CSS across files
 - Use design tokens from `tokens.css` (`var(--space-*)`, `var(--color-*)`, `var(--text-*)`, `var(--radius-*)`, etc.)
 - Use BEM naming for CSS classes (`.block__element--modifier`)
@@ -199,9 +224,9 @@ emberflow/
 | Page-level polish | In progress |
 | Dark mode | Preliminary tokens exist, needs full pass |
 | Micro-interactions and animation | Basic transitions in place |
-| Premium redesign (Linear/Stripe-level polish) | Remaining work |
+| Premium redesign (OpenClaude-level polish) | Remaining work |
 
-The design system is stable. Remaining work focuses on polish, dark-mode refinement, UX improvements, animation, and elevating the overall visual quality to match the Linear/Stripe/Notion benchmark.
+The design system is stable. Remaining work focuses on polish, dark-mode refinement, UX improvements, animation, and elevating the overall visual quality to match the OpenClaude benchmark.
 
 ---
 
@@ -241,51 +266,106 @@ Every feature should feel intentional.
 
 # Design Expectations
 
-The UI should eventually be world-class.
+The UI should feel world-class. When someone opens EmberFlow they should immediately think:
 
-Target quality should be comparable to:
+"This looks like a premium product."
 
-- Linear
-- Stripe Dashboard
-- Arc Browser
-- Notion
-- Raycast
-- Vercel
+Every page should feel handcrafted. Nothing should feel like a generic template.
 
-Design should feel:
+### Component Style
 
-- expensive
-- premium
-- calm
-- warm
-- modern
-- timeless
+Buttons should resemble OpenClaude:
 
-Avoid looking like:
+- Rounded-xl
+- Floating appearance
+- Soft shadow
+- Slight hover lift
+- Spring animation
+- Premium focus states
+- Active press animation
 
-- Bootstrap
-- generic Tailwind templates
-- Material UI
-- generic admin templates
-- low-quality SaaS dashboards
+Cards:
 
-Dark mode should receive the exact same attention as light mode.
+- Floating
+- Large radius
+- Soft borders
+- Deep layered shadows
+- Spacious padding
 
-Never treat dark mode as an afterthought.
+Inputs:
+
+- Large
+- Rounded
+- Matte surfaces
+- Excellent focus glow
+
+Navigation:
+
+- Premium sidebar
+- Clean spacing
+- Beautiful icons
+- Smooth hover animations
+
+Tables:
+
+- Minimal
+- Spacious
+- Modern
+- Stripe-quality
+
+### Motion
+
+Animations should feel like OpenClaude.
+
+Use Motion (Framer Motion) extensively throughout the application. Nothing should feel static.
+
+Examples:
+
+- Fade
+- Slide
+- Scale
+- Spring
+- Stagger children
+- Hover lift
+- Smooth page transitions
+
+### UI Library Rules
+
+- Use **shadcn/ui** aggressively as the primary component system. Replace custom components with shadcn/ui equivalents whenever they improve quality. Do not preserve custom components simply because they already exist.
+- Use **Motion (Framer Motion)** for all animations — page transitions, hover effects, entrance animations, micro-interactions.
+- Use **Aceternity UI** and **Magic UI** selectively for premium landing-page sections and tasteful micro-interactions.
+- Use **lucide-react** for all icons.
+- Use **Recharts** for analytics charts.
+- Do not convert EmberFlow into a generic shadcn template. Preserve the OpenClaude visual identity: dark-first, matte charcoal, large radius, floating cards, soft shadows.
 
 ---
 
-# Performance Goals
+# Responsiveness
 
-Maintain:
+Every page must be responsive across every screen size. No exceptions.
 
-- Fast page loads
-- Smooth 60fps animations
-- No layout shifts
-- Responsive on every screen size
-- Lighthouse score above 90 whenever practical
+- Mobile-first approach
+- Perfect on phones
+- Perfect on tablets
+- Perfect on laptops
+- Perfect on ultrawide monitors
+- No horizontal scrolling
+- No broken layouts at any viewport width
+- Test at 320px, 480px, 768px, 1024px, 1440px, 1920px
 
 ---
+
+# Performance
+
+- Use lazy loading for route-level code splitting
+- Use code splitting for heavy dependencies
+- Avoid unnecessary dependencies — keep the bundle lean
+- Keep Lighthouse scores above 90
+- Prefer CSS animations over JS animations when possible
+- Animations must run at 60fps — no jank
+- Do not sacrifice performance for visual effects
+- No layout shifts during page load
+- Use React.lazy and Suspense for page-level code splitting
 
 # Decision Priority
 
@@ -346,3 +426,130 @@ Every improvement should move EmberFlow closer to becoming a product that feels 
 The goal is not to copy Linear or Stripe.
 
 The goal is to create software that belongs in the same conversation.
+
+---
+
+# Component Strategy
+
+Claude is encouraged to replace existing custom UI components with mature open-source library equivalents whenever it improves quality. Do not preserve custom components simply because they already exist — the goal is world-class UI.
+
+Preferred libraries:
+- **shadcn/ui** — Primary component system. Replace custom Button, Card, Input, Table, Modal, Badge, etc. with shadcn equivalents.
+- **Motion (Framer Motion)** — All animations, page transitions, hover effects, micro-interactions.
+- **Aceternity UI** — Premium landing-page sections and tasteful UI flourishes.
+- **Magic UI** — Micro-interactions and animated components.
+- **Recharts** — Analytics charts and data visualization.
+- **lucide-react** — All icons.
+
+Rules:
+
+- Adopt the OpenClaude visual identity: dark-first, matte charcoal, large radius, floating cards, soft shadows.
+- Do not replace working business logic simply to adopt a library.
+- Do not convert EmberFlow into a generic shadcn template — preserve the premium OpenClaude aesthetic.
+- Install libraries only when they provide clear value. Avoid unnecessary dependencies.
+
+Before introducing a new library:
+1. Check if the functionality already exists in the codebase.
+2. If not, prefer the smallest mature library.
+3. Explain why the library was chosen.
+
+---
+
+# Success Criteria
+
+A redesign is considered successful only if all of the following are true:
+
+- The application feels comparable to OpenClaude in overall quality.
+- Every page looks intentionally designed rather than assembled.
+- UI consistency is perfect across all pages.
+- Every component feels part of one design language.
+- Mobile experience is first-class.
+- Dark mode is the primary experience.
+- Animations are subtle, smooth, and meaningful.
+- Lighthouse Performance >90.
+- Accessibility remains excellent.
+- Business logic is unchanged.
+- Existing functionality continues to work.
+
+If forced to choose between preserving the old UI or replacing it with a substantially better implementation, always choose the better implementation. Claude should think like a senior product designer, not merely a frontend engineer.
+
+Question every screen.
+
+Question every spacing decision.
+
+Question every interaction.
+
+Question every hierarchy.
+
+Question every animation.
+
+If something looks merely "acceptable", redesign it until it feels premium.
+
+---
+
+# 🚨 Critical Architecture Protection
+
+The presentation layer may be redesigned completely.
+
+The application architecture MUST NOT be redesigned.
+
+Claude must preserve all existing integrations.
+
+DO NOT replace, rewrite, or remove:
+
+- Supabase
+- Supabase Auth
+- PostgreSQL schema
+- Row Level Security (RLS)
+- Storage buckets
+- API routes
+- Vercel serverless functions
+- Paddle integration
+- Redis / Upstash
+- Environment variables
+- React Router structure
+- Business logic
+- Database queries
+- Services
+- Hooks
+- Utility functions
+- Authentication flow
+- Invoice generation logic
+- Proposal generation logic
+- Analytics calculations
+- Payment logic
+
+Claude may ONLY change these if explicitly instructed.
+
+Default assumption:
+
+Backend is production-ready.
+
+The frontend presentation layer is the only area requiring redesign.
+
+---
+
+## Architecture Rule
+
+Backend = Stable
+
+Business Logic = Stable
+
+Database = Stable
+
+API = Stable
+
+Authentication = Stable
+
+Payments = Stable
+
+Deployment = Stable
+
+UI = Replace freely.
+
+---
+
+If a redesign requires changing backend logic,
+Claude must STOP and explain why before making changes.
+
+Never rewrite working backend code simply because a different implementation exists.
