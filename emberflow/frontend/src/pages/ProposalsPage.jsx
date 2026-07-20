@@ -2,6 +2,7 @@ import { Download, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
 import { EmptyState } from '../components/ui/EmptyState.jsx';
 import FeatureGate from '../components/FeatureGate.jsx';
 import { deleteProposal, getProfile, listProposals } from '../services/api.js';
@@ -42,7 +43,7 @@ export default function ProposalsPage() {
     }
   }
 
-  if (loading) return <div className="panel">Loading proposals...</div>;
+  if (loading) return <Card variant="default">Loading proposals...</Card>;
 
   return (
     <FeatureGate feature="proposals" title="Proposals are a Pro feature" message="Upgrade to Pro to create proposal templates and export proposal PDFs.">
@@ -50,15 +51,15 @@ export default function ProposalsPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Proposals</p>
-          <h2>Reusable project proposals for new work.</h2>
+          <h2 className="heading-xl">Reusable project proposals for new work.</h2>
         </div>
         <Button as={Link} variant="primary" to="/app/proposals/new" leftIcon={<Plus size={16} />}>
           New proposal
         </Button>
       </div>
 
-      {error ? <div className="panel error-panel">{error}</div> : null}
-      <section className="panel">
+      {error ? <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card> : null}
+      <Card variant="default">
         {proposals.length === 0 ? (
           <EmptyState
             title="No proposals yet"
@@ -68,15 +69,15 @@ export default function ProposalsPage() {
           />
         ) : (
           <div className="table-wrap">
-            <table>
+            <table className="table">
               <thead>
                 <tr>
                   <th>Title</th>
                   <th>Client</th>
                   <th>Template</th>
                   <th>Date</th>
-                  <th className="right">Amount</th>
-                  <th className="right">Actions</th>
+                  <th className="table__cell--right">Amount</th>
+                  <th className="table__cell--right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -86,15 +87,16 @@ export default function ProposalsPage() {
                     <td>{proposal.client_name}</td>
                     <td>{proposal.template}</td>
                     <td>{formatDate(proposal.created_at?.slice(0, 10))}</td>
-                    <td className="right">{formatMoney(proposal.amount, proposal.currency)}</td>
-                    <td className="right actions">
-                      <button className="button small ghost" onClick={() => exportProposalPdf(proposal, profile).catch((err) => setError(err.message))}>
-                        <Download size={15} />
-                        PDF
-                      </button>
-                      <button className="button small danger" onClick={() => handleDelete(proposal)}>
-                        Delete
-                      </button>
+                    <td className="table__cell--right">{formatMoney(proposal.amount, proposal.currency)}</td>
+                    <td className="table__cell--right">
+                      <div className="table__actions">
+                        <Button variant="ghost" size="sm" onClick={() => exportProposalPdf(proposal, profile).catch((err) => setError(err.message))} leftIcon={<Download size={14} />}>
+                          PDF
+                        </Button>
+                        <Button variant="danger" size="sm" onClick={() => handleDelete(proposal)}>
+                          Delete
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -102,7 +104,7 @@ export default function ProposalsPage() {
             </table>
           </div>
         )}
-        </section>
+        </Card>
       </div>
     </FeatureGate>
   );

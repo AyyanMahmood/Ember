@@ -143,7 +143,7 @@ export default function InvoiceFormPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">{editing ? 'Edit invoice' : 'New invoice'}</p>
-          <h2>{editing ? 'Update invoice details.' : 'Create a professional itemized invoice.'}</h2>
+          <h2 className="heading-xl">{editing ? 'Update invoice details.' : 'Create a professional itemized invoice.'}</h2>
         </div>
       </div>
       <Card variant="default">
@@ -162,7 +162,7 @@ export default function InvoiceFormPage() {
           <Textarea label="Notes" rows={4} className="span-2" value={form.notes} onChange={(e) => updateField('notes', e.target.value)} />
 
           <div className="span-2 items-editor">
-            <div className="panel-header">
+            <div className="panel__header">
               <h3>Items</h3>
               <Button variant="ghost" size="sm" type="button" onClick={addItem} leftIcon={<Plus size={15} />}>Add item</Button>
             </div>

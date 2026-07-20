@@ -39,7 +39,7 @@ export default function LandingPage() {
               <span />
             </div>
             <div className="preview-grid">
-              <div className="preview-card wide">
+              <div className="preview-card preview-card--wide">
                 <span>Total revenue</span>
                 <strong>$42,860</strong>
               </div>
@@ -182,14 +182,6 @@ export default function LandingPage() {
           Create your workspace
         </Link>
       </section>
-
-      <footer className="marketing-footer">
-        <Link to="/">EmberFlow</Link>
-        <Link to="/terms">Terms</Link>
-        <Link to="/privacy">Privacy</Link>
-        <Link to="/refund">Refunds</Link>
-        <Link to="/contact">Contact</Link>
-      </footer>
     </>
   );
 }

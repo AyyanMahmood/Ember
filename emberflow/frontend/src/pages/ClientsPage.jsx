@@ -113,7 +113,7 @@ export default function ClientsPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Clients</p>
-          <h2>People and companies you bill.</h2>
+          <h2 className="heading-xl">People and companies you bill.</h2>
         </div>
         <Button as={Link} variant="primary" to="/app/clients/new" leftIcon={<Plus size={16} />}>
           Add client

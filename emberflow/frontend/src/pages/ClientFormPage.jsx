@@ -73,7 +73,7 @@ export default function ClientFormPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">{editing ? 'Edit client' : 'New client'}</p>
-          <h2>{editing ? 'Update client details.' : 'Add a client to your workspace.'}</h2>
+          <h2 className="heading-xl">{editing ? 'Update client details.' : 'Add a client to your workspace.'}</h2>
         </div>
       </div>
       <Card variant="default">

@@ -47,7 +47,7 @@ export default function ClientDetailPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Client</p>
-          <h2>{client.name}</h2>
+          <h2 className="heading-xl">{client.name}</h2>
         </div>
         <div className="actions">
           <Button as={Link} variant="ghost" to={`/app/clients/${id}/edit`}>Edit</Button>
@@ -76,32 +76,32 @@ export default function ClientDetailPage() {
       </section>
 
       <Card variant="default">
-        <div className="panel-header">
-          <h3>Invoices</h3>
-          <Link to={`/app/invoices/new?client=${id}`}>Create invoice</Link>
+        <div className="panel__header">
+          <h3 className="panel__title">Invoices</h3>
+          <Link to={`/app/invoices/new?client=${id}`} className="small muted">Create invoice</Link>
         </div>
         {invoices.length === 0 ? (
           <p className="muted">No invoices for this client yet.</p>
         ) : (
           <div className="table-wrap">
-            <table>
+            <table className="table">
               <thead>
                 <tr>
                   <th>Invoice</th>
                   <th>Date</th>
                   <th>Status</th>
-                  <th className="right">Total</th>
+                  <th className="table__cell--right">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {invoices.map((invoice) => (
                   <tr key={invoice.id}>
                     <td>
-                      <Link to={`/app/invoices/${invoice.id}`}>{invoice.invoice_number}</Link>
+                      <Link to={`/app/invoices/${invoice.id}`} className="table__link">{invoice.invoice_number}</Link>
                     </td>
                     <td>{formatDate(invoice.invoice_date)}</td>
                     <td><StatusBadge status={invoice.status} size="sm" /></td>
-                    <td className="right">{formatMoney(invoice.total, invoice.currency)}</td>
+                    <td className="table__cell--right">{formatMoney(invoice.total, invoice.currency)}</td>
                   </tr>
                 ))}
               </tbody>

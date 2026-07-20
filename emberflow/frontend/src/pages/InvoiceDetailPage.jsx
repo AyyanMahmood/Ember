@@ -141,7 +141,7 @@ export default function InvoiceDetailPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Invoice</p>
-          <h2>{invoice.invoice_number}</h2>
+          <h2 className="heading-xl">{invoice.invoice_number}</h2>
         </div>
         <div className="actions">
           {invoice.status === 'draft' ? (
@@ -184,7 +184,7 @@ export default function InvoiceDetailPage() {
             <p>{invoice.clients?.company}</p>
             <p>{invoice.clients?.email}</p>
           </div>
-          <dl className="details-list compact">
+          <dl className="details-list--compact">
             <dt>Invoice date</dt>
             <dd>{formatDate(invoice.invoice_date)}</dd>
             <dt>Due date</dt>
@@ -194,14 +194,14 @@ export default function InvoiceDetailPage() {
           </dl>
         </div>
         <div className="table-wrap">
-          <table>
+          <table className="table">
             <thead>
               <tr>
                 <th>Item</th>
-                <th className="right">Qty</th>
-                <th className="right">Price</th>
-                <th className="right">Tax</th>
-                <th className="right">Total</th>
+                <th className="table__cell--right">Qty</th>
+                <th className="table__cell--right">Price</th>
+                <th className="table__cell--right">Tax</th>
+                <th className="table__cell--right">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -211,10 +211,10 @@ export default function InvoiceDetailPage() {
                 return (
                   <tr key={item.id}>
                     <td>{item.description}</td>
-                    <td className="right">{item.quantity}</td>
-                    <td className="right">{formatMoney(item.price, invoice.currency)}</td>
-                    <td className="right">{Number(item.tax_rate).toFixed(2)}%</td>
-                    <td className="right">{formatMoney(subtotal + tax, invoice.currency)}</td>
+                    <td className="table__cell--right">{item.quantity}</td>
+                    <td className="table__cell--right">{formatMoney(item.price, invoice.currency)}</td>
+                    <td className="table__cell--right">{Number(item.tax_rate).toFixed(2)}%</td>
+                    <td className="table__cell--right">{formatMoney(subtotal + tax, invoice.currency)}</td>
                   </tr>
                 );
               })}
@@ -232,8 +232,8 @@ export default function InvoiceDetailPage() {
       </Card>
 
       <Card variant="default">
-        <div className="panel-header">
-          <h3>Payments</h3>
+        <div className="panel__header">
+          <h3 className="panel__title">Payments</h3>
           <span className="muted small">Balance due {formatMoney(balanceDue, invoice.currency)}</span>
         </div>
         {subscription.isPro ? (
@@ -266,14 +266,14 @@ export default function InvoiceDetailPage() {
           <p className="muted">No payments recorded yet.</p>
         ) : (
           <div className="table-wrap">
-            <table>
+            <table className="table">
               <thead>
                 <tr>
                   <th>Date</th>
                   <th>Method</th>
                   <th>Reference</th>
-                  <th className="right">Amount</th>
-                  <th className="right">Actions</th>
+                  <th className="table__cell--right">Amount</th>
+                  <th className="table__cell--right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -282,8 +282,8 @@ export default function InvoiceDetailPage() {
                     <td>{formatDate(row.payment_date)}</td>
                     <td>{row.method}</td>
                     <td>{row.reference || '-'}</td>
-                    <td className="right">{formatMoney(row.amount, row.currency)}</td>
-                    <td className="right">
+                    <td className="table__cell--right">{formatMoney(row.amount, row.currency)}</td>
+                    <td className="table__cell--right">
                       <Button variant="danger" size="sm" onClick={() => removePayment(row)}>
                         Delete
                       </Button>

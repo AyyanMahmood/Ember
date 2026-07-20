@@ -130,7 +130,7 @@ export default function DashboardPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Dashboard</p>
-          <h2>Your freelance finances at a glance.</h2>
+          <h2 className="heading-xl">Your freelance finances at a glance.</h2>
         </div>
         <Button as={Link} variant="primary" to="/app/invoices/new">
           New invoice
@@ -151,9 +151,9 @@ export default function DashboardPage() {
       </section>
 
       <Card variant="default">
-        <div className="panel-header">
+        <div className="panel__header">
           <h3 className="panel__title">Recent invoices</h3>
-          <Link to="/app/invoices" className="panel__action">View all</Link>
+          <Link to="/app/invoices" className="small muted">View all</Link>
         </div>
         <Table
           columns={columns}

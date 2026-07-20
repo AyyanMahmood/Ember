@@ -58,28 +58,6 @@ export default function AnalyticsPage() {
     };
   }, [invoices]);
 
-  if (loading) {
-    return (
-      <FeatureGate feature="analytics" title="Analytics are a Pro feature" message="Upgrade to Pro to analyze revenue, overdue work, and top clients.">
-        <div className="page-stack" role="status" aria-live="polite">
-          <LoadingSpinner size="lg" label="Loading analytics..." />
-        </div>
-      </FeatureGate>
-    );
-  }
-
-  if (error) {
-    return (
-      <FeatureGate feature="analytics" title="Analytics are a Pro feature" message="Upgrade to Pro to analyze revenue, overdue work, and top clients.">
-        <div className="page-stack">
-          <Card variant="default">
-            <div className="error-panel" role="alert">{error}</div>
-          </Card>
-        </div>
-      </FeatureGate>
-    );
-  }
-
   const statCards = useMemo(() => [
     {
       label: 'Total revenue',
@@ -115,13 +93,35 @@ export default function AnalyticsPage() {
     },
   ], [analytics]);
 
+  if (loading) {
+    return (
+      <FeatureGate feature="analytics" title="Analytics are a Pro feature" message="Upgrade to Pro to analyze revenue, overdue work, and top clients.">
+        <div className="page-stack" role="status" aria-live="polite">
+          <LoadingSpinner size="lg" label="Loading analytics..." />
+        </div>
+      </FeatureGate>
+    );
+  }
+
+  if (error) {
+    return (
+      <FeatureGate feature="analytics" title="Analytics are a Pro feature" message="Upgrade to Pro to analyze revenue, overdue work, and top clients.">
+        <div className="page-stack">
+          <Card variant="default">
+            <div className="error-panel" role="alert">{error}</div>
+          </Card>
+        </div>
+      </FeatureGate>
+    );
+  }
+
   return (
     <FeatureGate feature="analytics" title="Analytics are a Pro feature" message="Upgrade to Pro to analyze revenue, overdue work, and top clients.">
       <div className="page-stack">
         <div className="page-header">
           <div>
             <p className="eyebrow">Analytics</p>
-            <h2>Revenue and client performance.</h2>
+            <h2 className="heading-xl">Revenue and client performance.</h2>
           </div>
         </div>
 
@@ -141,22 +141,22 @@ export default function AnalyticsPage() {
         </section>
 
         <Card variant="default">
-          <div className="panel-header">
+          <div className="panel__header">
             <h3 className="panel__title">Best clients</h3>
             <span className="muted small">By paid revenue</span>
           </div>
           {analytics.bestClients.length === 0 ? (
             <p className="muted">No paid invoices yet.</p>
           ) : (
-            <div className="ranking-list">
-              {analytics.bestClients.map((client, index) => (
-                <div className="ranking-row" key={client.name}>
-                  <span>{index + 1}</span>
-                  <strong>{client.name}</strong>
-                  <em>{formatMoney(client.revenue, analytics.currency)}</em>
-                </div>
-              ))}
-            </div>
+              <div className="ranking-list">
+                {analytics.bestClients.map((client, index) => (
+                  <div className="ranking-row" key={client.name}>
+                    <span className="ranking-row__rank">{index + 1}</span>
+                    <span className="ranking-row__name">{client.name}</span>
+                    <span className="ranking-row__value">{formatMoney(client.revenue, analytics.currency)}</span>
+                  </div>
+                ))}
+              </div>
           )}
         </Card>
       </div>

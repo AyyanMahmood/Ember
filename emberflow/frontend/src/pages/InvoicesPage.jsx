@@ -147,14 +147,14 @@ export default function InvoicesPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Invoices</p>
-          <h2>Create, send, and track client invoices.</h2>
+          <h2 className="heading-xl">Create, send, and track client invoices.</h2>
         </div>
         <Button as={Link} variant="primary" to="/app/invoices/new" leftIcon={<Plus size={16} />}>
           New invoice
         </Button>
       </div>
 
-      {error && <div className="error-panel" role="alert">{error}</div>}
+      {error && <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>}
 
       <Card variant="default">
         <Table

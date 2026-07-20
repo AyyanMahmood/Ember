@@ -10,7 +10,7 @@ export default function PricingPage() {
         <p className="eyebrow">Pricing</p>
         <h1>Simple plans for independent businesses.</h1>
       </div>
-      <div className="pricing-grid three">
+      <div className="pricing-grid--three">
         <PricingCard
           name={PLANS.free.name}
           price={PLANS.free.price}

@@ -51,10 +51,10 @@ export default function AuthPage({ mode }) {
         EmberFlow
       </Link>
       <Card variant="strong">
-        <form onSubmit={handleSubmit}>
+        <form className="auth-card__form" onSubmit={handleSubmit}>
           <div>
             <p className="eyebrow">{isSignup ? 'Create account' : 'Welcome back'}</p>
-            <h1>{isSignup ? 'Start your workspace' : 'Sign in to EmberFlow'}</h1>
+            <h1 className="heading-xl">{isSignup ? 'Start your workspace' : 'Sign in to EmberFlow'}</h1>
           </div>
           {isSignup ? (
             <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="name" />

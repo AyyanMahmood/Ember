@@ -170,7 +170,7 @@ export default function SettingsPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Settings</p>
-          <h2>Profile, business, invoices, and billing.</h2>
+          <h2 className="heading-xl">Profile, business, invoices, and billing.</h2>
         </div>
       </div>
 
@@ -178,6 +178,7 @@ export default function SettingsPage() {
 
       <Card variant="default">
         <form className="form-grid" onSubmit={handleSubmit}>
+          {error ? <p className="form-error span-2">{error}</p> : null}
           {message ? <p className="form-success span-2">{message}</p> : null}
           <div className="span-2 avatar-settings-row">
             <Avatar
@@ -225,7 +226,7 @@ export default function SettingsPage() {
       </Card>
 
       <Card variant="default">
-        <div className="panel-header">
+        <div className="panel__header">
           <div>
             <p className="eyebrow">Subscription</p>
             <h3>{subscription.plan?.name || PLANS.free.name}</h3>

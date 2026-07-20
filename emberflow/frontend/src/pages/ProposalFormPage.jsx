@@ -148,7 +148,7 @@ export default function ProposalFormPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">New proposal</p>
-          <h2>Start from a template and tailor the scope.</h2>
+          <h2 className="heading-xl">Start from a template and tailor the scope.</h2>
         </div>
       </div>
       <Card variant="default">
@@ -162,7 +162,7 @@ export default function ProposalFormPage() {
           <Input label="Timeline" required value={form.timeline} onChange={(e) => updateField('timeline', e.target.value)} />
           <Select label="Currency" value={form.currency} onChange={(e) => updateField('currency', e.target.value)} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
           <div className="span-2 items-editor">
-            <div className="panel-header">
+            <div className="panel__header">
               <h3>Pricing</h3>
               <Button variant="ghost" size="sm" type="button" onClick={addItem} leftIcon={<Plus size={15} />}>Add item</Button>
             </div>
