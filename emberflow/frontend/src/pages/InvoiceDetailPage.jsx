@@ -1,10 +1,13 @@
 import { Check, Copy, Download, Edit, Send, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Button } from '../components/ui/Button.jsx';
-import { Card } from '../components/ui/Card.jsx';
+import { Button, IconButton } from '../components/ui/Button.jsx';
+import { Card, CardHeader } from '../components/ui/Card.jsx';
 import { Input, Select } from '../components/ui/Input.jsx';
 import { StatusBadge } from '../components/ui/Badge.jsx';
+import { Table } from '../components/ui/Table.jsx';
+import { LoadingSpinner } from '../components/ui/Loading.jsx';
+import { ConfirmDialog } from '../components/ui/Modal.jsx';
 import UpgradeModal from '../components/UpgradeModal.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
@@ -31,6 +34,10 @@ export default function InvoiceDetailPage() {
   const [savingPayment, setSavingPayment] = useState(false);
   const [error, setError] = useState('');
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [paymentDeleteTarget, setPaymentDeleteTarget] = useState(null);
+  const [deletingPayment, setDeletingPayment] = useState(false);
 
   async function load() {
     try {
@@ -110,31 +117,78 @@ export default function InvoiceDetailPage() {
     }
   }
 
-  async function removePayment(paymentRow) {
-    if (!window.confirm('Delete this payment record?')) return;
+  async function confirmRemovePayment() {
+    if (!paymentDeleteTarget) return;
+    setDeletingPayment(true);
     try {
-      await deletePayment(paymentRow.id, id);
+      await deletePayment(paymentDeleteTarget.id, id);
+      setPaymentDeleteTarget(null);
       await load();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setDeletingPayment(false);
     }
   }
 
-  async function handleDelete() {
-    if (!window.confirm(`Delete invoice ${invoice.invoice_number}?`)) return;
+  async function confirmDelete() {
+    setDeleting(true);
     try {
       await deleteInvoice(id);
       navigate('/app/invoices');
     } catch (err) {
       setError(err.message);
+      setDeleting(false);
     }
   }
 
-  if (loading) return <Card variant="default">Loading invoice...</Card>;
+  if (loading) {
+    return (
+      <div className="page-stack" role="status" aria-live="polite">
+        <LoadingSpinner size="lg" label="Loading invoice..." />
+      </div>
+    );
+  }
   if (error) return <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>;
 
   const paidAmount = (invoice.payments || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
   const balanceDue = Math.max(Number(invoice.total || 0) - paidAmount, 0);
+  const canMarkSent = invoice.status === 'draft';
+  const canMarkPaid = invoice.status !== 'paid';
+
+  const itemColumns = [
+    { key: 'description', label: 'Item' },
+    { key: 'quantity', label: 'Qty', align: 'right' },
+    { key: 'price', label: 'Price', align: 'right', render: (row) => formatMoney(row.price, invoice.currency) },
+    { key: 'tax_rate', label: 'Tax', align: 'right', render: (row) => `${Number(row.tax_rate).toFixed(2)}%` },
+    {
+      key: 'line_total', label: 'Total', align: 'right', render: (row) => {
+        const subtotal = Number(row.quantity) * Number(row.price);
+        const tax = subtotal * (Number(row.tax_rate) / 100);
+        return formatMoney(subtotal + tax, invoice.currency);
+      },
+    },
+  ];
+
+  const paymentColumns = [
+    { key: 'payment_date', label: 'Date', render: (row) => formatDate(row.payment_date) },
+    { key: 'method', label: 'Method' },
+    { key: 'reference', label: 'Reference', render: (row) => row.reference || '-' },
+    { key: 'amount', label: 'Amount', align: 'right', render: (row) => formatMoney(row.amount, row.currency) },
+    {
+      key: 'actions', label: 'Actions', align: 'right', render: (row) => (
+        <IconButton
+          size="sm"
+          className="icon-button--danger"
+          onClick={() => setPaymentDeleteTarget(row)}
+          aria-label="Delete payment"
+          title="Delete payment"
+        >
+          <Trash2 size={14} />
+        </IconButton>
+      ),
+    },
+  ];
 
   return (
     <div className="page-stack">
@@ -144,26 +198,26 @@ export default function InvoiceDetailPage() {
           <h2 className="heading-xl">{invoice.invoice_number}</h2>
         </div>
         <div className="actions">
-          {invoice.status === 'draft' ? (
-            <Button variant="ghost" onClick={markSent} leftIcon={<Send size={16} />}>
+          {canMarkSent && (
+            <Button variant="primary" onClick={markSent} leftIcon={<Send size={16} />}>
               Mark sent
             </Button>
-          ) : null}
-          {invoice.status !== 'paid' ? (
-            <Button variant="ghost" onClick={markPaid} leftIcon={<Check size={16} />}>
+          )}
+          {canMarkPaid && (
+            <Button variant={canMarkSent ? 'secondary' : 'primary'} onClick={markPaid} leftIcon={<Check size={16} />}>
               Mark paid
             </Button>
-          ) : null}
-          <Button variant="ghost" onClick={duplicateCurrentInvoice} leftIcon={<Copy size={16} />}>
+          )}
+          <Button variant="secondary" onClick={duplicateCurrentInvoice} leftIcon={<Copy size={16} />}>
             Duplicate
           </Button>
-          <Button variant="ghost" onClick={() => exportInvoicePdf(invoice, profile).catch((err) => setError(err.message))} leftIcon={<Download size={16} />}>
+          <Button variant="secondary" onClick={() => exportInvoicePdf(invoice, profile).catch((err) => setError(err.message))} leftIcon={<Download size={16} />}>
             PDF
           </Button>
-          <Button as={Link} variant="ghost" to={`/app/invoices/${id}/edit`} leftIcon={<Edit size={16} />}>
+          <Button as={Link} variant="secondary" to={`/app/invoices/${id}/edit`} leftIcon={<Edit size={16} />}>
             Edit
           </Button>
-          <Button variant="danger" onClick={handleDelete} leftIcon={<Trash2 size={16} />}>
+          <Button variant="danger" onClick={() => setDeleteOpen(true)} leftIcon={<Trash2 size={16} />}>
             Delete
           </Button>
         </div>
@@ -193,49 +247,44 @@ export default function InvoiceDetailPage() {
             <dd>{invoice.currency}</dd>
           </dl>
         </div>
-        <div className="table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th className="table__cell--right">Qty</th>
-                <th className="table__cell--right">Price</th>
-                <th className="table__cell--right">Tax</th>
-                <th className="table__cell--right">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoice.invoice_items.map((item) => {
-                const subtotal = Number(item.quantity) * Number(item.price);
-                const tax = subtotal * (Number(item.tax_rate) / 100);
-                return (
-                  <tr key={item.id}>
-                    <td>{item.description}</td>
-                    <td className="table__cell--right">{item.quantity}</td>
-                    <td className="table__cell--right">{formatMoney(item.price, invoice.currency)}</td>
-                    <td className="table__cell--right">{Number(item.tax_rate).toFixed(2)}%</td>
-                    <td className="table__cell--right">{formatMoney(subtotal + tax, invoice.currency)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+
+        <Table columns={itemColumns} data={invoice.invoice_items} keyExtractor={(row) => row.id} />
+
         <div className="invoice-totals">
-          <span>Paid {formatMoney(paidAmount, invoice.currency)}</span>
-          <span>Balance {formatMoney(balanceDue, invoice.currency)}</span>
-          <span>Subtotal {formatMoney(invoice.subtotal, invoice.currency)}</span>
-          <span>Tax {formatMoney(invoice.tax_total, invoice.currency)}</span>
-          <span>Discount {formatMoney(invoice.discount_total || 0, invoice.currency)}</span>
-          <strong>Total {formatMoney(invoice.total, invoice.currency)}</strong>
+          <div className="invoice-totals__row">
+            <span>Subtotal</span>
+            <span>{formatMoney(invoice.subtotal, invoice.currency)}</span>
+          </div>
+          <div className="invoice-totals__row">
+            <span>Tax</span>
+            <span>{formatMoney(invoice.tax_total, invoice.currency)}</span>
+          </div>
+          {Number(invoice.discount_total) > 0 && (
+            <div className="invoice-totals__row">
+              <span>Discount</span>
+              <span>-{formatMoney(invoice.discount_total, invoice.currency)}</span>
+            </div>
+          )}
+          <div className="invoice-totals__row invoice-totals__row--total">
+            <span>Total</span>
+            <span>{formatMoney(invoice.total, invoice.currency)}</span>
+          </div>
+          <div className="invoice-totals__row">
+            <span>Paid</span>
+            <span>{formatMoney(paidAmount, invoice.currency)}</span>
+          </div>
+          <div className={`invoice-totals__row invoice-totals__row--balance ${balanceDue > 0 ? 'invoice-totals__row--due' : 'invoice-totals__row--settled'}`}>
+            <span>Balance due</span>
+            <span>{formatMoney(balanceDue, invoice.currency)}</span>
+          </div>
         </div>
       </Card>
 
       <Card variant="default">
-        <div className="panel__header">
-          <h3 className="panel__title">Payments</h3>
-          <span className="muted small">Balance due {formatMoney(balanceDue, invoice.currency)}</span>
-        </div>
+        <CardHeader
+          title="Payments"
+          action={<span className="muted small">Balance due {formatMoney(balanceDue, invoice.currency)}</span>}
+        />
         {subscription.isPro ? (
           <form className="payment-form" onSubmit={handlePaymentSubmit}>
             <Input label="Amount" type="number" required min="0.01" step="0.01" value={payment.amount} onChange={(e) => setPayment({ ...payment, amount: e.target.value })} />
@@ -262,43 +311,39 @@ export default function InvoiceDetailPage() {
           </div>
         )}
 
-        {(invoice.payments || []).length === 0 ? (
-          <p className="muted">No payments recorded yet.</p>
-        ) : (
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Method</th>
-                  <th>Reference</th>
-                  <th className="table__cell--right">Amount</th>
-                  <th className="table__cell--right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoice.payments.map((row) => (
-                  <tr key={row.id}>
-                    <td>{formatDate(row.payment_date)}</td>
-                    <td>{row.method}</td>
-                    <td>{row.reference || '-'}</td>
-                    <td className="table__cell--right">{formatMoney(row.amount, row.currency)}</td>
-                    <td className="table__cell--right">
-                      <Button variant="danger" size="sm" onClick={() => removePayment(row)}>
-                        Delete
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <Table
+          columns={paymentColumns}
+          data={invoice.payments || []}
+          keyExtractor={(row) => row.id}
+          emptyTitle="No payments yet"
+          emptyMessage="Payments recorded against this invoice will show up here."
+        />
       </Card>
+
       <UpgradeModal
         open={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}
         reason="Payment tracking is available on EmberFlow Pro."
+      />
+
+      <ConfirmDialog
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete invoice"
+        message={`Delete invoice ${invoice.invoice_number}? This can't be undone.`}
+        confirmLabel="Delete"
+        loading={deleting}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(paymentDeleteTarget)}
+        onClose={() => setPaymentDeleteTarget(null)}
+        onConfirm={confirmRemovePayment}
+        title="Delete payment"
+        message="Delete this payment record? This can't be undone."
+        confirmLabel="Delete"
+        loading={deletingPayment}
       />
     </div>
   );
