@@ -8,18 +8,30 @@ EmberFlow is a production-ready freelance finance workspace SaaS. It enables fre
 
 ## Current Branch
 
-**ui-redesign-lab** (feature branch off `main`)
+**opclaude-redesign** (feature branch off `main`)
 
-This branch is dedicated exclusively to UI experimentation — a complete design system overhaul inspired by Paddle, Notion, Material 3 Expressive, Linear, Vercel, Raycast, and Arc Browser. No backend logic, API endpoints, database schema, authentication, or Paddle integration is being modified.
+This branch is executing a staged roadmap toward a dark-first, OpenClaude-grade premium redesign, culminating in a white-label-ready product. No backend logic, API endpoints, database schema, or authentication flow is being modified except where explicitly called out and approved per phase.
 
 ---
 
-## Current Goal
+## Redesign Roadmap Progress
 
-**Complete the UI redesign laboratory work** — transform all app screens to the new design system (warm/premium/minimal aesthetic with design tokens, reusable components, improved spacing/typography/animations/hierarchy/responsiveness/empty states/loading states).
+A full-codebase audit and a 10-phase implementation roadmap were produced before any code changed (see conversation history / plan artifact for the full roadmap). Each phase is independently committed, build-verified, and reversible.
 
-**Current screen**: ClientsPage (updated with new Table, Input, Select, Card components)
-**Next screen**: SettingsPage (needs new Input, Select, Card, Avatar, Button components)
+| Phase | Status | Summary |
+|---|---|---|
+| 0 — Trust & correctness fixes | ✅ Done | Fixed blank invoice status badge (`InvoicesPage`), removed fabricated "+X% vs last month" trend copy from Dashboard/Analytics, removed a PII console.log in Paddle checkout, locked API CORS to `APP_URL` instead of `*`. |
+| 1 — Dark-first design system foundation | Not started | |
+| 2 — Component library hardening & motion | Not started | |
+| 3 — App shell & navigation premium pass | Not started | |
+| 4 — Core app pages redesign | Not started | |
+| 5 — Marketing & legal pages redesign | Not started | |
+| 6 — Premium templates & live editors | Not started | |
+| 7 — Performance & bundle optimization | Not started | |
+| 8 — White-label architecture | Not started | |
+| 9 — Documentation & production-readiness sign-off | Not started | |
+
+**Known accepted risk (flagged, not fixed):** the free-plan invoice limit (5/month) is enforced only inside the `create_invoice_with_items` RPC, not by a table-level trigger like the client limit is — a direct insert against `invoices` would bypass it. Left alone deliberately since fixing it requires a schema migration, which this project's architecture-protection rules reserve for explicit approval.
 
 ---
 

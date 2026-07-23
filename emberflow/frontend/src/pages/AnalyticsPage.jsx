@@ -63,16 +63,12 @@ export default function AnalyticsPage() {
       label: 'Total revenue',
       value: formatMoney(analytics.totalRevenue, analytics.currency),
       note: 'All paid invoices',
-      trend: analytics.totalRevenue > 0 ? 'positive' : 'neutral',
-      trendLabel: '+12% vs last month',
       icon: <ArrowUpRight size={18} />,
     },
     {
       label: 'Monthly revenue',
       value: formatMoney(analytics.monthlyRevenue, analytics.currency),
       note: 'Paid this month',
-      trend: analytics.monthlyRevenue > 0 ? 'positive' : 'neutral',
-      trendLabel: '+8% vs last month',
       icon: <ArrowUpRight size={18} />,
     },
     {

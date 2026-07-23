@@ -1,3 +1,7 @@
+function corsOrigin() {
+  return process.env.APP_URL ? process.env.APP_URL.replace(/\/$/, '') : '*';
+}
+
 function sendJson(res, statusCode, payload) {
   res.statusCode = statusCode;
 
@@ -6,7 +10,7 @@ function sendJson(res, statusCode, payload) {
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "no-referrer");
   res.setHeader("Cache-Control", "no-store");
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", corsOrigin());
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
@@ -15,7 +19,7 @@ function sendJson(res, statusCode, payload) {
 
 function optionsHandler(res) {
   res.statusCode = 204;
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", corsOrigin());
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Max-Age", "86400");

@@ -56,8 +56,6 @@ export default function DashboardPage() {
       label: 'Total revenue',
       value: formatMoney(stats.totalRevenue, stats.currency),
       note: 'Paid invoices',
-      trend: stats.totalRevenue > 0 ? 'positive' : 'neutral',
-      trendLabel: '+12% vs last month',
       icon: <ArrowUpRight size={18} />,
     },
     {
@@ -72,16 +70,12 @@ export default function DashboardPage() {
       label: 'Paid invoices',
       value: stats.paidCount,
       note: 'Completed payments',
-      trend: 'positive',
-      trendLabel: '+5% vs last month',
       icon: <ArrowUpRight size={18} />,
     },
     {
       label: 'Clients',
       value: stats.clientCount,
       note: 'Active records',
-      trend: 'neutral',
-      trendLabel: 'No change',
       icon: <Minus size={18} />,
     },
   ], [stats]);
