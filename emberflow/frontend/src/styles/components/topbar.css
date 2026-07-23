@@ -1,6 +1,6 @@
 .topbar {
   height: var(--topbar-height);
-  background: rgba(246, 241, 232, 0.88);
+  background: var(--color-surface-glass);
   border-bottom: 1px solid var(--color-line);
   padding: var(--space-4) var(--space-6);
   position: sticky;

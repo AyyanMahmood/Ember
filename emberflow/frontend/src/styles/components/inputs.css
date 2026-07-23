@@ -68,7 +68,7 @@
 .textarea--error:focus,
 .select--error:focus {
   border-color: var(--color-danger);
-  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.15);
+  box-shadow: var(--shadow-focus-danger);
 }
 
 .input--success,
@@ -117,7 +117,7 @@
 
 .input-with-addon--error:focus-within {
   border-color: var(--color-danger);
-  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.15);
+  box-shadow: var(--shadow-focus-danger);
 }
 
 .input-addon {
