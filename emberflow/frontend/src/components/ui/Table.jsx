@@ -169,7 +169,7 @@ export function Table({
 
   return (
     <div className="table-wrap" role="region" aria-label="Data table" tabIndex={0}>
-      <table className="table" style={{ position: stickyHeader ? 'relative' : 'static' }}>
+      <table className="table table--stack" style={{ position: stickyHeader ? 'relative' : 'static' }}>
         <thead style={{ position: stickyHeader ? 'sticky' : 'static', top: 0, zIndex: 1 }}>
           <tr>
             {selectable && (
@@ -242,7 +242,7 @@ export function Table({
                   </td>
                 )}
                 {columns.map((column) => (
-                  <td key={column.key} className={column.align}>
+                  <td key={column.key} className={column.align} data-label={column.label}>
                     {column.render
                       ? column.render(row, rowIndex)
                       : row[column.key] ?? '—'}
