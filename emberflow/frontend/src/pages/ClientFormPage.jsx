@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input, Textarea } from '../components/ui/Input.jsx';
+import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { createClient, getClient, updateClient } from '../services/api.js';
 
@@ -66,7 +67,13 @@ export default function ClientFormPage() {
     }
   }
 
-  if (loading) return <div className="panel">Loading client...</div>;
+  if (loading) {
+    return (
+      <div className="page-stack" role="status" aria-live="polite">
+        <LoadingSpinner size="lg" label="Loading client..." />
+      </div>
+    );
+  }
 
   return (
     <div className="page-stack page-stack--narrow">
@@ -79,7 +86,7 @@ export default function ClientFormPage() {
       <Card variant="default">
         <form className="form-grid" onSubmit={handleSubmit}>
           {error ? <p className="form-error span-2">{error}</p> : null}
-          <Input label="Name" required value={form.name} onChange={(e) => updateField('name', e.target.value)} />
+          <Input label="Name" required autoFocus value={form.name} onChange={(e) => updateField('name', e.target.value)} />
           <Input label="Email" type="email" required value={form.email} onChange={(e) => updateField('email', e.target.value)} />
           <Input label="Company" value={form.company} onChange={(e) => updateField('company', e.target.value)} />
           <Input label="Phone" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />

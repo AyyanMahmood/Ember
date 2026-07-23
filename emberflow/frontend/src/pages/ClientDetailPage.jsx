@@ -1,10 +1,15 @@
-import { useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { StatusBadge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
-import { Card } from '../components/ui/Card.jsx';
+import { Card, CardHeader, StatCard } from '../components/ui/Card.jsx';
+import { Table } from '../components/ui/Table.jsx';
+import { LoadingSpinner } from '../components/ui/Loading.jsx';
+import { ConfirmDialog } from '../components/ui/Modal.jsx';
 import { deleteClient, getClient, listInvoices } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
+import { effectiveStatus } from '../utils/invoice.js';
 
 export default function ClientDetailPage() {
   const { id } = useParams();
@@ -13,6 +18,8 @@ export default function ClientDetailPage() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -30,17 +37,45 @@ export default function ClientDetailPage() {
   }, [id]);
 
   async function handleDelete() {
-    if (!window.confirm(`Delete ${client.name}? Invoices linked to this client must be removed first.`)) return;
+    setDeleting(true);
     try {
       await deleteClient(id);
       navigate('/app/clients');
     } catch (err) {
       setError(err.message);
+      setDeleting(false);
     }
   }
 
-  if (loading) return <Card variant="default">Loading client...</Card>;
+  const summary = useMemo(() => {
+    const paid = invoices.filter((invoice) => invoice.status === 'paid');
+    const outstanding = invoices.filter((invoice) => ['sent', 'overdue'].includes(effectiveStatus(invoice)));
+    const currency = invoices[0]?.currency || 'USD';
+    return {
+      totalBilled: invoices.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0),
+      totalPaid: paid.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0),
+      totalOutstanding: outstanding.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0),
+      currency,
+    };
+  }, [invoices]);
+
+  if (loading) {
+    return (
+      <div className="page-stack" role="status" aria-live="polite">
+        <LoadingSpinner size="lg" label="Loading client..." />
+      </div>
+    );
+  }
   if (error) return <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>;
+
+  const columns = [
+    { key: 'invoice_number', label: 'Invoice', render: (row) => (
+      <Link to={`/app/invoices/${row.id}`} className="table__link">{row.invoice_number}</Link>
+    ) },
+    { key: 'invoice_date', label: 'Date', render: (row) => formatDate(row.invoice_date) },
+    { key: 'status', label: 'Status', render: (row) => <StatusBadge status={effectiveStatus(row)} size="sm" /> },
+    { key: 'total', label: 'Total', align: 'right', render: (row) => formatMoney(row.total, row.currency) },
+  ];
 
   return (
     <div className="page-stack">
@@ -51,13 +86,21 @@ export default function ClientDetailPage() {
         </div>
         <div className="actions">
           <Button as={Link} variant="ghost" to={`/app/clients/${id}/edit`}>Edit</Button>
-          <Button variant="danger" onClick={handleDelete}>Delete</Button>
+          <Button variant="danger" onClick={() => setDeleteOpen(true)}>Delete</Button>
         </div>
       </div>
 
+      {invoices.length > 0 && (
+        <section className="stats-grid" aria-label="Client billing summary">
+          <StatCard label="Total billed" value={formatMoney(summary.totalBilled, summary.currency)} note="All invoices" />
+          <StatCard label="Paid" value={formatMoney(summary.totalPaid, summary.currency)} note="Collected" />
+          <StatCard label="Outstanding" value={formatMoney(summary.totalOutstanding, summary.currency)} note="Sent or overdue" />
+        </section>
+      )}
+
       <section className="detail-grid">
         <Card variant="default">
-          <h3>Contact</h3>
+          <CardHeader title="Contact" />
           <dl className="details-list">
             <dt>Email</dt>
             <dd>{client.email}</dd>
@@ -70,45 +113,40 @@ export default function ClientDetailPage() {
           </dl>
         </Card>
         <Card variant="default">
-          <h3>Notes</h3>
+          <CardHeader title="Notes" />
           <p className="preserve">{client.notes || 'No notes recorded.'}</p>
         </Card>
       </section>
 
       <Card variant="default">
-        <div className="panel__header">
-          <h3 className="panel__title">Invoices</h3>
-          <Link to={`/app/invoices/new?client=${id}`} className="small muted">Create invoice</Link>
-        </div>
-        {invoices.length === 0 ? (
-          <p className="muted">No invoices for this client yet.</p>
-        ) : (
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Invoice</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th className="table__cell--right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoices.map((invoice) => (
-                  <tr key={invoice.id}>
-                    <td>
-                      <Link to={`/app/invoices/${invoice.id}`} className="table__link">{invoice.invoice_number}</Link>
-                    </td>
-                    <td>{formatDate(invoice.invoice_date)}</td>
-                    <td><StatusBadge status={invoice.status} size="sm" /></td>
-                    <td className="table__cell--right">{formatMoney(invoice.total, invoice.currency)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <CardHeader
+          title="Invoices"
+          action={
+            <Button as={Link} variant="secondary" size="sm" to={`/app/invoices/new?client=${id}`} leftIcon={<Plus size={14} />}>
+              Create invoice
+            </Button>
+          }
+        />
+        <Table
+          columns={columns}
+          data={invoices}
+          keyExtractor={(row) => row.id}
+          onRowClick={(row) => navigate(`/app/invoices/${row.id}`)}
+          emptyTitle="No invoices yet"
+          emptyMessage="Create the first invoice for this client."
+          emptyAction={{ label: 'Create invoice', to: `/app/invoices/new?client=${id}` }}
+        />
       </Card>
+
+      <ConfirmDialog
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete client"
+        message={`Delete ${client.name}? Invoices linked to this client must be removed first.`}
+        confirmLabel="Delete"
+        loading={deleting}
+      />
     </div>
   );
 }

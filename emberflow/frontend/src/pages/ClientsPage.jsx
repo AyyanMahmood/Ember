@@ -1,12 +1,13 @@
-import { Plus, Search, Filter, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, FilePlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { Button } from "../components/ui/Button.jsx";
+import { Link, useNavigate } from "react-router-dom";
+import { Button, IconButton } from "../components/ui/Button.jsx";
 import { Input, Select } from "../components/ui/Input.jsx";
 import { Card } from "../components/ui/Card.jsx";
 import { Table } from "../components/ui/Table.jsx";
 import { EmptyState } from "../components/ui/EmptyState.jsx";
 import { LoadingSpinner } from "../components/ui/Loading.jsx";
+import { ConfirmDialog } from "../components/ui/Modal.jsx";
 import { deleteClient, listClients } from "../services/api.js";
 import { formatDate } from "../utils/format.js";
 
@@ -33,11 +34,14 @@ function EmptyStateIllustration({ variant }) {
 }
 
 export default function ClientsPage() {
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -55,18 +59,17 @@ export default function ClientsPage() {
     load();
   }, []);
 
-  async function handleDelete(client) {
-    if (
-      !window.confirm(
-        `Delete ${client.name}? Invoices linked to this client must be removed first.`,
-      )
-    )
-      return;
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await deleteClient(client.id);
+      await deleteClient(deleteTarget.id);
+      setDeleteTarget(null);
       await load();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -91,51 +94,43 @@ export default function ClientsPage() {
   }, [clients, query, country]);
 
   const columns = [
-    { key: "name", label: "Name" },
-    { key: "company", label: "Company" },
-    { key: "email", label: "Email" },
-    { key: "country", label: "Country" },
-    { key: "created_at", label: "Created" },
-    { key: "actions", label: "Actions", align: "right" },
+    {
+      key: "name", label: "Name", sortable: true, render: (row) => (
+        <Link to={`/app/clients/${row.id}`} className="table__link">{row.name}</Link>
+      ),
+    },
+    { key: "company", label: "Company", sortable: true, render: (row) => row.company || "—" },
+    { key: "email", label: "Email", sortable: true },
+    { key: "country", label: "Country", sortable: true, render: (row) => row.country || "—" },
+    { key: "created_at", label: "Created", sortable: true, render: (row) => formatDate(row.created_at?.slice(0, 10)) },
+    {
+      key: "actions", label: "Actions", align: "right", render: (row) => (
+        <div className="table__actions">
+          <IconButton
+            as={Link}
+            size="sm"
+            to={`/app/invoices/new?client=${row.id}`}
+            aria-label="Create invoice for this client"
+            title="Create invoice"
+          >
+            <FilePlus size={14} />
+          </IconButton>
+          <IconButton as={Link} size="sm" to={`/app/clients/${row.id}/edit`} aria-label="Edit" title="Edit">
+            <Edit size={14} />
+          </IconButton>
+          <IconButton
+            size="sm"
+            className="icon-button--danger"
+            onClick={() => setDeleteTarget(row)}
+            aria-label="Delete"
+            title="Delete"
+          >
+            <Trash2 size={14} />
+          </IconButton>
+        </div>
+      ),
+    },
   ];
-
-  const tableData = useMemo(
-    () =>
-      filteredClients.map((client) => ({
-        ...client,
-        name: (
-          <Link to={`/app/clients/${client.id}`} className="table__link">
-            {client.name}
-          </Link>
-        ),
-        company: client.company || "—",
-        email: client.email,
-        country: client.country || "—",
-        created_at: formatDate(client.created_at?.slice(0, 10)),
-        actions: (
-          <div className="table__actions">
-            <Button
-              as={Link}
-              variant="ghost"
-              size="sm"
-              to={`/app/clients/${client.id}/edit`}
-              leftIcon={<Edit size={14} />}
-            >
-              Edit
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={() => handleDelete(client)}
-              leftIcon={<Trash2 size={14} />}
-            >
-              Delete
-            </Button>
-          </div>
-        ),
-      })),
-    [filteredClients],
-  );
 
   if (loading) {
     return (
@@ -191,8 +186,12 @@ export default function ClientsPage() {
 
         <Table
           columns={columns}
-          data={tableData}
+          data={filteredClients}
           keyExtractor={(row) => row.id}
+          sortable
+          pagination
+          pageSize={10}
+          onRowClick={(row) => navigate(`/app/clients/${row.id}`)}
           emptyTitle="No clients yet"
           emptyMessage="Add a client before creating invoices and proposals."
           emptyAction={{
@@ -202,6 +201,16 @@ export default function ClientsPage() {
           emptyIcon={<EmptyStateIllustration variant="users" />}
         />
       </Card>
+
+      <ConfirmDialog
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete client"
+        message={deleteTarget ? `Delete ${deleteTarget.name}? Invoices linked to this client must be removed first.` : ''}
+        confirmLabel="Delete"
+        loading={deleting}
+      />
     </div>
   );
 }
