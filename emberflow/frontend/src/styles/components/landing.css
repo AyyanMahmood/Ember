@@ -1,0 +1,494 @@
+/* ── Landing page — dedicated stylesheet ─────────────────────────────────
+   Kept separate from layout.css's shared marketing classes (.hero-section,
+   .feature-grid, .pricing-section, etc.) which FeaturesPage/PricingPage still
+   use, so rebuilding this page can't regress those. Prefixed .lp- throughout. */
+
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity var(--duration-slower) var(--ease-out), transform var(--duration-slower) var(--ease-out);
+}
+
+.lp-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lp-section {
+  margin: 0 auto;
+  max-width: var(--max-content);
+  padding: var(--space-20) var(--space-5);
+}
+
+.lp-section--tight {
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-16);
+}
+
+.lp-section__head {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin: 0 0 var(--space-10);
+}
+
+.lp-section__head--center {
+  margin-inline: auto;
+  text-align: center;
+  justify-items: center;
+}
+
+.lp-section__eyebrow {
+  margin: 0;
+}
+
+.lp-section__title {
+  margin: 0;
+  color: var(--color-ink);
+}
+
+.lp-section__lead {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body-lg);
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────── */
+
+.lp-hero {
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+  max-width: var(--max-content);
+  padding: var(--space-16) var(--space-5) var(--space-20);
+}
+
+.lp-hero__grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+  gap: var(--space-12);
+  align-items: center;
+}
+
+.lp-hero__eyebrow {
+  margin: 0 0 var(--space-4);
+}
+
+.lp-hero__title {
+  margin: 0 0 var(--space-5);
+  color: var(--color-ink);
+}
+
+.lp-hero__subtitle {
+  margin: 0 0 var(--space-8);
+  max-width: 34rem;
+  color: var(--color-muted);
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body-lg);
+}
+
+.lp-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.lp-hero__note {
+  margin: var(--space-5) 0 0;
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+}
+
+/* Ambient glow behind the hero — restrained, matches the accent, never a loud gradient block */
+.lp-hero::before {
+  content: '';
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 34rem;
+  background: radial-gradient(closest-side, var(--color-accent-soft), transparent 70%);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Hero product glimpse — an illustrative composition built from the
+   product's real design tokens, not a fabricated metrics dashboard ────── */
+
+.lp-glimpse {
+  position: relative;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.lp-glimpse-card {
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-5);
+  animation: lp-float 7s var(--ease-in-out) infinite;
+}
+
+.lp-glimpse-card--offset {
+  margin-left: var(--space-10);
+  animation-delay: 1.4s;
+}
+
+.lp-glimpse-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.lp-glimpse-card__title {
+  font-weight: var(--weight-bold);
+  color: var(--color-ink);
+}
+
+.lp-glimpse-card__meta {
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+}
+
+.lp-glimpse-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.lp-glimpse-row:first-of-type {
+  border-top: none;
+}
+
+.lp-glimpse-row__client {
+  display: grid;
+  gap: 2px;
+}
+
+.lp-glimpse-row__client strong {
+  font-size: var(--text-body-sm);
+  color: var(--color-ink);
+  font-weight: var(--weight-semibold);
+}
+
+.lp-glimpse-row__client span {
+  font-size: var(--text-caption);
+  color: var(--color-muted);
+}
+
+.lp-glimpse-row__amount {
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm);
+  color: var(--color-ink);
+  font-weight: var(--weight-medium);
+}
+
+@keyframes lp-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-glimpse-card {
+    animation: none;
+  }
+}
+
+/* ── Why section ─────────────────────────────────────────────────────── */
+
+.lp-why__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-10);
+  align-items: start;
+}
+
+.lp-why__grid p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body-lg);
+}
+
+/* ── Features ────────────────────────────────────────────────────────── */
+
+.lp-features__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+
+.lp-feature-card {
+  background: var(--color-surface-glass);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-3);
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.lp-feature-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-elevated), 0 0 0 1px var(--color-highlight-border);
+}
+
+.lp-feature-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.lp-feature-card h3 {
+  margin: 0;
+  font-size: var(--text-heading-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-ink);
+}
+
+.lp-feature-card p {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: var(--leading-body);
+}
+
+/* ── Workflow ────────────────────────────────────────────────────────── */
+
+.lp-workflow__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+}
+
+.lp-workflow-step {
+  position: relative;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-2) 0;
+}
+
+.lp-workflow-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 1.35rem;
+  left: calc(50% + 1.4rem);
+  width: calc(100% - 1.4rem);
+  height: 1px;
+  background: var(--color-line);
+}
+
+.lp-workflow-step__index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0 auto;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-line);
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+}
+
+.lp-workflow-step h3 {
+  margin: 0;
+  text-align: center;
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  color: var(--color-ink);
+}
+
+.lp-workflow-step p {
+  margin: 0;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: var(--text-body-sm);
+}
+
+/* ── Trust / engineering section (replaces generic fabricated testimonials) */
+
+.lp-trust__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+
+.lp-trust-item {
+  padding: var(--space-6);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+}
+
+.lp-trust-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
+  color: var(--color-accent);
+}
+
+.lp-trust-item h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  color: var(--color-ink);
+}
+
+.lp-trust-item p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body);
+}
+
+/* ── Pricing teaser ──────────────────────────────────────────────────── */
+
+.lp-pricing__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 22rem));
+  justify-content: center;
+  gap: var(--space-6);
+}
+
+/* ── FAQ ──────────────────────────────────────────────────────────────── */
+
+.lp-faq__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-5);
+}
+
+.lp-faq-item {
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.lp-faq-item h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  color: var(--color-ink);
+}
+
+.lp-faq-item p {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: var(--leading-body);
+}
+
+/* ── Final CTA ───────────────────────────────────────────────────────── */
+
+.lp-cta {
+  margin: 0 auto var(--space-20);
+  max-width: var(--max-content);
+  padding: 0 var(--space-5);
+}
+
+.lp-cta__panel {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-5);
+  text-align: center;
+  padding: var(--space-16) var(--space-6);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface-strong);
+}
+
+.lp-cta__panel::before {
+  content: '';
+  position: absolute;
+  inset: -40% -10% auto -10%;
+  height: 20rem;
+  background: radial-gradient(closest-side, var(--color-accent-soft), transparent 72%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.lp-cta__panel > * {
+  position: relative;
+}
+
+.lp-cta__panel h2 {
+  margin: 0;
+  max-width: 32rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .lp-features__grid,
+  .lp-trust__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .lp-workflow__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .lp-workflow-step:nth-child(2)::after {
+    display: none;
+  }
+}
+
+@media (max-width: 920px) {
+  .lp-hero__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-glimpse-card--offset {
+    margin-left: var(--space-6);
+  }
+
+  .lp-why__grid,
+  .lp-faq__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .lp-features__grid,
+  .lp-trust__grid,
+  .lp-workflow__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-workflow-step::after {
+    display: none;
+  }
+
+  .lp-pricing__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-hero__title {
+    font-size: var(--text-display-md);
+  }
+}
