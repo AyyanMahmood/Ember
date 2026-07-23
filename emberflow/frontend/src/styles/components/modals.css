@@ -16,7 +16,7 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   max-width: var(--modal-max-width);
-  width: min(100%, var(--modal-max-width));
+  width: 100%;
   padding: var(--space-5);
   display: grid;
   gap: var(--space-4);

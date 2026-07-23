@@ -265,7 +265,7 @@
 
 .ranking-row {
   display: grid;
-  grid-template-columns: 2rem 1fr auto;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
   gap: var(--space-4);
   align-items: center;
   background: var(--color-surface-strong);
@@ -295,6 +295,9 @@ a.ranking-row:focus-visible {
 
 .ranking-row__name {
   font-weight: var(--weight-extrabold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ranking-row__value {
