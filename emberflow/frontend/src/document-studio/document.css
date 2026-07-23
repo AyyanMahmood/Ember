@@ -1,0 +1,498 @@
+/* Document Studio — rendered invoice/proposal documents.
+   Intentionally independent of the app's own --color-* tokens: a document
+   must look identical regardless of whether the user has the app itself in
+   dark or light mode. Uses its own fixed neutral scale + the --doc-* custom
+   properties DocumentTemplate sets inline from the derived brand palette. */
+
+.doc-page {
+  --doc-bg: #FFFFFF;
+  --doc-ink: #18120C;
+  --doc-muted: #6B645C;
+  --doc-line: #E7E1D8;
+  --doc-font: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --doc-serif: Georgia, 'Times New Roman', serif;
+
+  position: relative;
+  margin: 0 auto;
+  background: var(--doc-bg);
+  color: var(--doc-ink);
+  font-family: var(--doc-font);
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.doc-page--serif {
+  --doc-font: Georgia, 'Times New Roman', serif;
+}
+
+.doc-page--dark {
+  --doc-bg: #14110D;
+  --doc-ink: #F5F1EA;
+  --doc-muted: #9B9689;
+  --doc-line: #2C2721;
+}
+
+.doc-page:not(.doc-page--sidebar) {
+  padding: 44px 48px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+
+.doc-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 3px solid var(--doc-primary);
+}
+
+.doc-header__logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.doc-header__logo--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--doc-soft);
+  color: var(--doc-primary);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.doc-header__identity {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.doc-header__identity strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.doc-header__identity span {
+  color: var(--doc-muted);
+  font-size: 12px;
+}
+
+.doc-header__title-block {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  text-align: right;
+}
+
+.doc-header__title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--doc-primary);
+  letter-spacing: -0.01em;
+}
+
+.doc-header__subtitle {
+  color: var(--doc-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Minimal: drop the color bar and boxed logo entirely */
+.doc-page--minimal .doc-header {
+  border-bottom: 1px solid var(--doc-line);
+}
+
+.doc-page--minimal .doc-header__logo--placeholder {
+  background: transparent;
+  border: 1px solid var(--doc-line);
+}
+
+.doc-page--minimal .doc-header__title {
+  color: var(--doc-ink);
+  font-weight: 600;
+}
+
+/* Formal (Executive): two firm columns with a vertical rule, serif title */
+.doc-page--formal .doc-header {
+  grid-template-columns: 1fr auto;
+  border-bottom: 1px solid var(--doc-ink);
+  padding-bottom: 16px;
+}
+
+.doc-page--formal .doc-header__logo { display: none; }
+
+.doc-page--formal .doc-header__title {
+  font-family: var(--doc-serif);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--doc-ink);
+}
+
+/* Boxed (Corporate): letterhead box */
+.doc-page--boxed .doc-header {
+  border: 1px solid var(--doc-line);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  padding: 16px 20px;
+  background: var(--doc-soft);
+}
+
+/* Angled (Creative): oversized title, diagonal accent shape */
+.doc-page--angled .doc-header {
+  position: relative;
+  border-bottom: none;
+  padding: 24px 28px;
+  border-radius: 10px;
+  overflow: hidden;
+  color: var(--doc-on-primary);
+  background: var(--doc-primary);
+}
+
+.doc-page--angled .doc-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 55%, var(--doc-accent) 55%, var(--doc-accent) 100%);
+  opacity: 0.5;
+}
+
+.doc-page--angled .doc-header > * { position: relative; }
+
+.doc-page--angled .doc-header__identity span,
+.doc-page--angled .doc-header__title,
+.doc-page--angled .doc-header__subtitle {
+  color: var(--doc-on-primary);
+}
+
+.doc-page--angled .doc-header__title { font-size: 28px; }
+
+.doc-page--angled .doc-header__logo--placeholder {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--doc-on-primary);
+}
+
+/* Centered (Elegant): everything centered, serif, hairline rules */
+.doc-page--centered .doc-header {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  border-bottom: none;
+  border-top: 1px solid var(--doc-primary);
+  border-bottom: 1px solid var(--doc-primary);
+  padding: 20px 0;
+}
+
+.doc-page--centered .doc-header__identity { justify-items: center; text-align: center; }
+.doc-page--centered .doc-header__title-block { justify-items: center; text-align: center; }
+
+.doc-page--centered .doc-header__title {
+  font-family: var(--doc-serif);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 18px;
+}
+
+/* ── Parties ─────────────────────────────────────────────────────────── */
+
+.doc-parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.doc-party {
+  display: grid;
+  gap: 4px;
+}
+
+.doc-party__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--doc-muted);
+}
+
+.doc-party strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.doc-party span {
+  font-size: 12px;
+  color: var(--doc-muted);
+}
+
+.doc-page--boxed .doc-parties {
+  border: 1px solid var(--doc-line);
+  border-top: none;
+  padding: 18px 20px;
+}
+
+.doc-page--centered .doc-parties {
+  justify-content: center;
+  text-align: center;
+}
+
+.doc-page--centered .doc-party { justify-items: center; }
+
+/* ── Meta row (dates / status / timeline) ───────────────────────────── */
+
+.doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 14px 0;
+  border-top: 1px solid var(--doc-line);
+  border-bottom: 1px solid var(--doc-line);
+}
+
+.doc-meta__item {
+  display: grid;
+  gap: 2px;
+}
+
+.doc-meta__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--doc-muted);
+}
+
+.doc-meta__value {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.doc-page--centered .doc-meta { justify-content: center; }
+
+/* ── Body / items table (shared by invoice + proposal pricing) ─────── */
+
+.doc-body { display: grid; gap: 16px; }
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.doc-table th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--doc-muted);
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--doc-line);
+}
+
+.doc-table td {
+  padding: 10px;
+  font-size: 12.5px;
+  border-bottom: 1px solid var(--doc-line);
+  vertical-align: top;
+}
+
+.doc-table .doc-table__num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.doc-page--minimal .doc-table th { border-bottom: 1px solid var(--doc-ink); }
+
+.doc-page--boxed .doc-table th {
+  background: var(--doc-soft);
+  border-bottom: 1px solid var(--doc-line);
+}
+
+.doc-page--centered .doc-table th,
+.doc-page--centered .doc-table td { text-align: center; }
+
+/* ── Totals ──────────────────────────────────────────────────────────── */
+
+.doc-totals {
+  display: grid;
+  gap: 6px;
+  width: 260px;
+  margin-left: auto;
+  padding: 16px 18px;
+  border-radius: 8px;
+  background: var(--doc-soft);
+}
+
+.doc-page--minimal .doc-totals { background: transparent; border-top: 1px solid var(--doc-ink); border-radius: 0; padding: 12px 0 0; }
+.doc-page--formal .doc-totals { background: transparent; border: 1px solid var(--doc-ink); border-radius: 0; }
+.doc-page--centered .doc-totals { margin: 0 auto; background: transparent; border-top: 1px solid var(--doc-primary); border-bottom: 1px solid var(--doc-primary); border-radius: 0; text-align: center; }
+
+.doc-totals__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--doc-muted);
+}
+
+.doc-totals__row--total {
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--doc-line);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--doc-ink);
+}
+
+/* ── Notes / footer ──────────────────────────────────────────────────── */
+
+.doc-notes {
+  display: grid;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--doc-muted);
+}
+
+.doc-notes h4 {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--doc-ink);
+}
+
+.doc-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--doc-line);
+  color: var(--doc-muted);
+  font-size: 10.5px;
+  text-align: center;
+}
+
+/* ── Status badge slot ───────────────────────────────────────────────── */
+
+.doc-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--doc-soft-strong);
+  color: var(--doc-primary);
+}
+
+/* ── Sidebar layout (Ember Signature) ──────────────────────────────── */
+
+.doc-page--sidebar {
+  padding: 0;
+}
+
+.doc-sidebar-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100%;
+}
+
+.doc-sidebar {
+  background: var(--doc-ink);
+  color: var(--doc-bg);
+  padding: 36px 26px;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+
+.doc-sidebar__logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.doc-sidebar__logo--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--doc-primary);
+  color: var(--doc-on-primary);
+  font-weight: 700;
+}
+
+.doc-sidebar__business {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.doc-sidebar__email {
+  margin-top: -14px;
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.doc-sidebar__title-block {
+  display: grid;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.doc-sidebar__title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--doc-primary-light);
+}
+
+.doc-sidebar__subtitle {
+  font-size: 11px;
+  opacity: 0.65;
+}
+
+.doc-sidebar__meta {
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.doc-sidebar__meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+}
+
+.doc-sidebar__meta-item span {
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 9.5px;
+}
+
+.doc-sidebar__footer {
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.doc-sidebar-main {
+  padding: 40px 44px;
+  display: grid;
+  gap: 22px;
+  align-content: start;
+  background: var(--doc-bg);
+  color: var(--doc-ink);
+}
+
+.doc-page--sidebar .doc-parties { gap: 24px; }

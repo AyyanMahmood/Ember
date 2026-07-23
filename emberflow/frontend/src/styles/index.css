@@ -15,3 +15,4 @@
 @import './components/empty-state.css';
 @import './components/loading.css';
 @import './components/landing.css';
+@import '../document-studio/document.css';
