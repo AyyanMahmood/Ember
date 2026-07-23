@@ -58,8 +58,8 @@ export const Avatar = forwardRef(function Avatar({
           {fallbackContent}
         </span>
       )}
-      {!src && (
-        <span className="avatar__fallback" style={{ display: 'flex' }}>
+      {src && (
+        <span className="avatar__fallback" style={{ display: 'none' }}>
           {fallbackContent}
         </span>
       )}
