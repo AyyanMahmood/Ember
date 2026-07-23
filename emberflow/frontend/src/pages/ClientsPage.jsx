@@ -1,19 +1,26 @@
-import { Plus, Search, Filter, Edit, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '../components/ui/Button.jsx';
-import { Input, Select } from '../components/ui/Input.jsx';
-import { Card } from '../components/ui/Card.jsx';
-import { Table } from '../components/ui/Table.jsx';
-import { EmptyState } from '../components/ui/EmptyState.jsx';
-import { LoadingSpinner } from '../components/ui/Loading.jsx';
-import { deleteClient, listClients } from '../services/api.js';
-import { formatDate } from '../utils/format.js';
+import { Plus, Search, Filter, Edit, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "../components/ui/Button.jsx";
+import { Input, Select } from "../components/ui/Input.jsx";
+import { Card } from "../components/ui/Card.jsx";
+import { Table } from "../components/ui/Table.jsx";
+import { EmptyState } from "../components/ui/EmptyState.jsx";
+import { LoadingSpinner } from "../components/ui/Loading.jsx";
+import { deleteClient, listClients } from "../services/api.js";
+import { formatDate } from "../utils/format.js";
 
 function EmptyStateIllustration({ variant }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" className="empty-state__icon">
-      {variant === 'users' && (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden="true"
+      className="empty-state__icon"
+    >
+      {variant === "users" && (
         <>
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
           <circle cx="9" cy="7" r="4" />
@@ -27,16 +34,16 @@ function EmptyStateIllustration({ variant }) {
 
 export default function ClientsPage() {
   const [clients, setClients] = useState([]);
-  const [query, setQuery] = useState('');
-  const [country, setCountry] = useState('');
+  const [query, setQuery] = useState("");
+  const [country, setCountry] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   async function load() {
     setLoading(true);
     try {
       setClients(await listClients());
-      setError('');
+      setError("");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -49,7 +56,12 @@ export default function ClientsPage() {
   }, []);
 
   async function handleDelete(client) {
-    if (!window.confirm(`Delete ${client.name}? Invoices linked to this client must be removed first.`)) return;
+    if (
+      !window.confirm(
+        `Delete ${client.name}? Invoices linked to this client must be removed first.`,
+      )
+    )
+      return;
     try {
       await deleteClient(client.id);
       await load();
@@ -58,7 +70,13 @@ export default function ClientsPage() {
     }
   }
 
-  const countries = useMemo(() => [...new Set(clients.map((client) => client.country).filter(Boolean))].sort(), [clients]);
+  const countries = useMemo(
+    () =>
+      [
+        ...new Set(clients.map((client) => client.country).filter(Boolean)),
+      ].sort(),
+    [clients],
+  );
   const filteredClients = useMemo(() => {
     const term = query.trim().toLowerCase();
     return clients.filter((client) => {
@@ -73,32 +91,51 @@ export default function ClientsPage() {
   }, [clients, query, country]);
 
   const columns = [
-    { key: 'name', label: 'Name' },
-    { key: 'company', label: 'Company' },
-    { key: 'email', label: 'Email' },
-    { key: 'country', label: 'Country' },
-    { key: 'created_at', label: 'Created' },
-    { key: 'actions', label: 'Actions', align: 'right' },
+    { key: "name", label: "Name" },
+    { key: "company", label: "Company" },
+    { key: "email", label: "Email" },
+    { key: "country", label: "Country" },
+    { key: "created_at", label: "Created" },
+    { key: "actions", label: "Actions", align: "right" },
   ];
 
-  const tableData = useMemo(() => filteredClients.map((client) => ({
-    ...client,
-    name: <Link to={`/app/clients/${client.id}`} className="table__link">{client.name}</Link>,
-    company: client.company || '—',
-    email: client.email,
-    country: client.country || '—',
-    created_at: formatDate(client.created_at?.slice(0, 10)),
-    actions: (
-      <div className="table__actions">
-        <Button as={Link} variant="ghost" size="sm" to={`/app/clients/${client.id}/edit`} leftIcon={<Edit size={14} />}>
-          Edit
-        </Button>
-        <Button variant="danger" size="sm" onClick={() => handleDelete(client)} leftIcon={<Trash2 size={14} />}>
-          Delete
-        </Button>
-      </div>
-    ),
-  })), [filteredClients]);
+  const tableData = useMemo(
+    () =>
+      filteredClients.map((client) => ({
+        ...client,
+        name: (
+          <Link to={`/app/clients/${client.id}`} className="table__link">
+            {client.name}
+          </Link>
+        ),
+        company: client.company || "—",
+        email: client.email,
+        country: client.country || "—",
+        created_at: formatDate(client.created_at?.slice(0, 10)),
+        actions: (
+          <div className="table__actions">
+            <Button
+              as={Link}
+              variant="ghost"
+              size="sm"
+              to={`/app/clients/${client.id}/edit`}
+              leftIcon={<Edit size={14} />}
+            >
+              Edit
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => handleDelete(client)}
+              leftIcon={<Trash2 size={14} />}
+            >
+              Delete
+            </Button>
+          </div>
+        ),
+      })),
+    [filteredClients],
+  );
 
   if (loading) {
     return (
@@ -115,12 +152,23 @@ export default function ClientsPage() {
           <p className="eyebrow">Clients</p>
           <h2 className="heading-xl">People and companies you bill.</h2>
         </div>
-        <Button as={Link} variant="primary" to="/app/clients/new" leftIcon={<Plus size={16} />}>
+        <Button
+          as={Link}
+          variant="primary"
+          to="/app/clients/new"
+          leftIcon={<Plus size={16} />}
+        >
           Add client
         </Button>
       </div>
 
-      {error && <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>}
+      {error && (
+        <Card variant="default">
+          <div className="error-panel" role="alert">
+            {error}
+          </div>
+        </Card>
+      )}
 
       <Card variant="default">
         <div className="filters-row">
@@ -148,8 +196,8 @@ export default function ClientsPage() {
           emptyTitle="No clients yet"
           emptyMessage="Add a client before creating invoices and proposals."
           emptyAction={{
-            label: 'Add client',
-            to: '/app/clients/new',
+            label: "Add client",
+            to: "/app/clients/new",
           }}
           emptyIcon={<EmptyStateIllustration variant="users" />}
         />

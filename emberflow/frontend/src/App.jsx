@@ -49,7 +49,7 @@ export default function App() {
             <AppLayout />
           </ProtectedRoute>
         }
-      >
+        >
         <Route index element={<DashboardPage />} />
         <Route path="clients" element={<ClientsPage />} />
         <Route path="clients/new" element={<ClientFormPage />} />
