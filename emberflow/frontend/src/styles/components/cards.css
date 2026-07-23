@@ -49,6 +49,15 @@
   border-color: var(--color-muted);
 }
 
+.panel--interactive:active {
+  box-shadow: var(--shadow-md);
+}
+
+.panel--interactive:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
 .panel-header {
   display: flex;
   align-items: center;

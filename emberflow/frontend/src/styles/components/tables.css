@@ -16,6 +16,7 @@
   padding: 0.75rem 0.85rem;
   text-align: left;
   vertical-align: middle;
+  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
 .table th {
@@ -34,10 +35,6 @@
 
 .table tr:last-child td {
   border-bottom: none;
-}
-
-.table tbody tr {
-  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
 .table tbody tr:hover td {
@@ -271,12 +268,17 @@
   cursor: pointer;
   transition:
     background-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
 .table__page:hover {
   background: var(--color-bg);
   color: var(--color-ink);
+}
+
+.table__page:active {
+  transform: scale(0.92);
 }
 
 .table__page--active {
