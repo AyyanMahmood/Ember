@@ -10,7 +10,10 @@ import { ConfirmDialog } from '../components/ui/Modal.jsx';
 import FeatureGate from '../components/FeatureGate.jsx';
 import { deleteProposal, getProfile, listProposals } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
-import { exportProposalPdf } from '../utils/pdf.js';
+import { getTheme } from '../document-studio/themes.js';
+import { ProposalDocument } from '../document-studio/ProposalDocument.jsx';
+import { exportNodeToPdf } from '../document-studio/export.js';
+import { renderDocumentOffscreen } from '../document-studio/offscreenRender.jsx';
 
 export default function ProposalsPage() {
   const navigate = useNavigate();
@@ -20,6 +23,23 @@ export default function ProposalsPage() {
   const [error, setError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [pdfLoadingId, setPdfLoadingId] = useState(null);
+
+  async function downloadPdf(proposal) {
+    setPdfLoadingId(proposal.id);
+    try {
+      const { node, cleanup } = await renderDocumentOffscreen(<ProposalDocument proposal={proposal} profile={profile} />);
+      try {
+        await exportNodeToPdf(node, proposal.title);
+      } finally {
+        cleanup();
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setPdfLoadingId(null);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -70,7 +90,7 @@ export default function ProposalsPage() {
   const columns = [
     { key: 'title', label: 'Title' },
     { key: 'client_name', label: 'Client' },
-    { key: 'template', label: 'Template' },
+    { key: 'template', label: 'Template', render: (row) => getTheme(row.template).name },
     { key: 'created_at', label: 'Date', render: (row) => formatDate(row.created_at?.slice(0, 10)) },
     { key: 'amount', label: 'Amount', align: 'right', render: (row) => formatMoney(row.amount, row.currency) },
     {
@@ -81,11 +101,12 @@ export default function ProposalsPage() {
           </IconButton>
           <IconButton
             size="sm"
-            onClick={() => exportProposalPdf(row, profile).catch((err) => setError(err.message))}
+            onClick={() => downloadPdf(row)}
             aria-label="Download PDF"
             title="Download PDF"
+            disabled={pdfLoadingId === row.id}
           >
-            <Download size={14} />
+            {pdfLoadingId === row.id ? <span className="spinner spinner--xs" /> : <Download size={14} />}
           </IconButton>
           <IconButton
             size="sm"
