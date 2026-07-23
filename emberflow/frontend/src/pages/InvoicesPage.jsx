@@ -19,7 +19,9 @@ import {
 } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
 import { effectiveStatus, nextInvoiceNumber } from '../utils/invoice.js';
-import { exportInvoicePdf } from '../utils/pdf.js';
+import { InvoiceDocument } from '../document-studio/InvoiceDocument.jsx';
+import { exportNodeToPdf } from '../document-studio/export.js';
+import { renderDocumentOffscreen } from '../document-studio/offscreenRender.jsx';
 
 function EmptyStateIllustration({ variant }) {
   return (
@@ -119,7 +121,12 @@ export default function InvoicesPage() {
     setPdfLoadingId(invoice.id);
     try {
       const full = await getInvoice(invoice.id);
-      await exportInvoicePdf(full, profile);
+      const { node, cleanup } = await renderDocumentOffscreen(<InvoiceDocument invoice={full} profile={profile} />);
+      try {
+        await exportNodeToPdf(node, full.invoice_number);
+      } finally {
+        cleanup();
+      }
     } catch (err) {
       setError(err.message);
     } finally {

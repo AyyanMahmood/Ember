@@ -1,20 +1,24 @@
-import { Check, Copy, Download, Edit, Send, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Check, Copy, Edit, LayoutTemplate, Send, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button, IconButton } from '../components/ui/Button.jsx';
 import { Card, CardHeader } from '../components/ui/Card.jsx';
 import { Input, Select } from '../components/ui/Input.jsx';
-import { StatusBadge } from '../components/ui/Badge.jsx';
 import { Table } from '../components/ui/Table.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import { ConfirmDialog } from '../components/ui/Modal.jsx';
 import UpgradeModal from '../components/UpgradeModal.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
-import { createPayment, deleteInvoice, deletePayment, duplicateInvoice, getInvoice, getProfile, updateInvoiceStatus } from '../services/api.js';
+import { createPayment, deleteInvoice, deletePayment, duplicateInvoice, getInvoice, getProfile, updateInvoice, updateInvoiceStatus } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
-import { effectiveStatus, nextInvoiceNumber } from '../utils/invoice.js';
-import { exportInvoicePdf } from '../utils/pdf.js';
+import { nextInvoiceNumber } from '../utils/invoice.js';
+import { InvoiceDocument } from '../document-studio/InvoiceDocument.jsx';
+import { ScaledPreview } from '../document-studio/ScaledPreview.jsx';
+import { TemplateSelector } from '../document-studio/TemplateSelector.jsx';
+import { ExportMenu } from '../document-studio/ExportMenu.jsx';
+import { exportItemsToCsv, exportNodeToHtml, exportNodeToPdf, exportToDocx, exportToJson, exportToMarkdown, exportToTxt, printNode } from '../document-studio/export.js';
+import { getTheme } from '../document-studio/themes.js';
 
 export default function InvoiceDetailPage() {
   const { id } = useParams();
@@ -38,6 +42,10 @@ export default function InvoiceDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [paymentDeleteTarget, setPaymentDeleteTarget] = useState(null);
   const [deletingPayment, setDeletingPayment] = useState(false);
+  const [templateOpen, setTemplateOpen] = useState(false);
+  const [changingTemplate, setChangingTemplate] = useState(false);
+  const [exportBusy, setExportBusy] = useState('');
+  const documentRef = useRef(null);
 
   async function load() {
     try {
@@ -131,6 +139,60 @@ export default function InvoiceDetailPage() {
     }
   }
 
+  async function changeTemplate(templateId) {
+    setChangingTemplate(true);
+    try {
+      const items = invoice.invoice_items.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        price: item.price,
+        tax_rate: item.tax_rate,
+      }));
+      const updated = await updateInvoice(id, {
+        client_id: invoice.client_id,
+        invoice_number: invoice.invoice_number,
+        invoice_date: invoice.invoice_date,
+        due_date: invoice.due_date,
+        currency: invoice.currency,
+        status: invoice.status,
+        discount_total: invoice.discount_total,
+        notes: invoice.notes,
+        subtotal: invoice.subtotal,
+        tax_total: invoice.tax_total,
+        total: invoice.total,
+        template: templateId,
+      }, items);
+      setInvoice(updated);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setChangingTemplate(false);
+    }
+  }
+
+  async function handleExport(format) {
+    setExportBusy(format);
+    setError('');
+    try {
+      const node = documentRef.current;
+      switch (format) {
+        case 'pdf': await exportNodeToPdf(node, invoice.invoice_number); break;
+        case 'print': printNode(node, invoice.invoice_number); break;
+        case 'html': exportNodeToHtml(node, invoice.invoice_number); break;
+        case 'markdown': exportToMarkdown('invoice', invoice, profile); break;
+        case 'json': exportToJson('invoice', invoice); break;
+        case 'csv': exportItemsToCsv('invoice', invoice); break;
+        case 'txt': exportToTxt('invoice', invoice, profile); break;
+        case 'docx': await exportToDocx('invoice', invoice, profile); break;
+        default: break;
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setExportBusy('');
+    }
+  }
+
   async function confirmDelete() {
     setDeleting(true);
     try {
@@ -156,19 +218,7 @@ export default function InvoiceDetailPage() {
   const canMarkSent = invoice.status === 'draft';
   const canMarkPaid = invoice.status !== 'paid';
 
-  const itemColumns = [
-    { key: 'description', label: 'Item' },
-    { key: 'quantity', label: 'Qty', align: 'right' },
-    { key: 'price', label: 'Price', align: 'right', render: (row) => formatMoney(row.price, invoice.currency) },
-    { key: 'tax_rate', label: 'Tax', align: 'right', render: (row) => `${Number(row.tax_rate).toFixed(2)}%` },
-    {
-      key: 'line_total', label: 'Total', align: 'right', render: (row) => {
-        const subtotal = Number(row.quantity) * Number(row.price);
-        const tax = subtotal * (Number(row.tax_rate) / 100);
-        return formatMoney(subtotal + tax, invoice.currency);
-      },
-    },
-  ];
+  const theme = getTheme(invoice.template);
 
   const paymentColumns = [
     { key: 'payment_date', label: 'Date', render: (row) => formatDate(row.payment_date) },
@@ -211,9 +261,6 @@ export default function InvoiceDetailPage() {
           <Button variant="secondary" onClick={duplicateCurrentInvoice} leftIcon={<Copy size={16} />}>
             Duplicate
           </Button>
-          <Button variant="secondary" onClick={() => exportInvoicePdf(invoice, profile).catch((err) => setError(err.message))} leftIcon={<Download size={16} />}>
-            PDF
-          </Button>
           <Button as={Link} variant="secondary" to={`/app/invoices/${id}/edit`} leftIcon={<Edit size={16} />}>
             Edit
           </Button>
@@ -223,60 +270,31 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
-      <Card variant="default" className="invoice-preview">
-        <div className="invoice-head">
-          <div>
-            <h3>{profile?.business_name || profile?.full_name || 'Freelancer'}</h3>
-            <p>{profile?.email}</p>
-          </div>
-          <StatusBadge status={effectiveStatus(invoice)} />
+      <div className="studio-toolbar">
+        <Button
+          variant="secondary"
+          type="button"
+          leftIcon={<LayoutTemplate size={16} />}
+          onClick={() => setTemplateOpen(true)}
+          disabled={changingTemplate}
+        >
+          Template: {theme.name}{theme.isPremium && !subscription.isPro ? ' (Pro)' : ''}
+        </Button>
+        <div className="studio-toolbar__actions">
+          <ExportMenu
+            isPro={subscription.isPro}
+            busyFormat={exportBusy}
+            onExport={handleExport}
+            onRequestUpgrade={() => setUpgradeOpen(true)}
+          />
         </div>
-        <div className="detail-grid">
-          <div>
-            <p className="eyebrow">Bill to</p>
-            <h3>{invoice.clients?.name}</h3>
-            <p>{invoice.clients?.company}</p>
-            <p>{invoice.clients?.email}</p>
-          </div>
-          <dl className="details-list--compact">
-            <dt>Invoice date</dt>
-            <dd>{formatDate(invoice.invoice_date)}</dd>
-            <dt>Due date</dt>
-            <dd>{formatDate(invoice.due_date)}</dd>
-            <dt>Currency</dt>
-            <dd>{invoice.currency}</dd>
-          </dl>
-        </div>
+      </div>
 
-        <Table columns={itemColumns} data={invoice.invoice_items} keyExtractor={(row) => row.id} />
-
-        <div className="invoice-totals">
-          <div className="invoice-totals__row">
-            <span>Subtotal</span>
-            <span>{formatMoney(invoice.subtotal, invoice.currency)}</span>
-          </div>
-          <div className="invoice-totals__row">
-            <span>Tax</span>
-            <span>{formatMoney(invoice.tax_total, invoice.currency)}</span>
-          </div>
-          {Number(invoice.discount_total) > 0 && (
-            <div className="invoice-totals__row">
-              <span>Discount</span>
-              <span>-{formatMoney(invoice.discount_total, invoice.currency)}</span>
-            </div>
-          )}
-          <div className="invoice-totals__row invoice-totals__row--total">
-            <span>Total</span>
-            <span>{formatMoney(invoice.total, invoice.currency)}</span>
-          </div>
-          <div className="invoice-totals__row">
-            <span>Paid</span>
-            <span>{formatMoney(paidAmount, invoice.currency)}</span>
-          </div>
-          <div className={`invoice-totals__row invoice-totals__row--balance ${balanceDue > 0 ? 'invoice-totals__row--due' : 'invoice-totals__row--settled'}`}>
-            <span>Balance due</span>
-            <span>{formatMoney(balanceDue, invoice.currency)}</span>
-          </div>
+      <Card variant="default">
+        <div className="studio-preview__surface">
+          <ScaledPreview>
+            <InvoiceDocument ref={documentRef} invoice={invoice} profile={profile} themeId={invoice.template} />
+          </ScaledPreview>
         </div>
       </Card>
 
@@ -320,10 +338,22 @@ export default function InvoiceDetailPage() {
         />
       </Card>
 
+      <TemplateSelector
+        isOpen={templateOpen}
+        onClose={() => setTemplateOpen(false)}
+        kind="invoice"
+        data={invoice}
+        profile={profile}
+        value={invoice.template}
+        onChange={changeTemplate}
+        isPro={subscription.isPro}
+        onRequestUpgrade={() => { setTemplateOpen(false); setUpgradeOpen(true); }}
+      />
+
       <UpgradeModal
         open={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}
-        reason="Payment tracking is available on EmberFlow Pro."
+        reason="Payment tracking, premium templates, and advanced export formats are available on EmberFlow Pro."
       />
 
       <ConfirmDialog

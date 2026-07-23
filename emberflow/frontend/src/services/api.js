@@ -230,6 +230,7 @@ export async function duplicateInvoice(id, userId, invoiceNumber) {
     total: invoice.total,
     status: "draft",
     notes: invoice.notes,
+    template: invoice.template,
   };
   const items = invoice.invoice_items.map((item) => ({
     description: item.description,
