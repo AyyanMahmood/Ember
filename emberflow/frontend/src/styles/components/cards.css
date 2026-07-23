@@ -6,7 +6,8 @@
   padding: var(--space-4);
   transition:
     box-shadow var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out);
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
 .panel--strong {
@@ -18,12 +19,14 @@
 }
 
 .panel--interactive:hover {
-  box-shadow: var(--shadow-elevated);
-  border-color: var(--color-muted);
+  box-shadow: var(--shadow-elevated), 0 0 0 1px var(--color-highlight-border);
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
 }
 
 .panel--interactive:active {
   box-shadow: var(--shadow-md);
+  transform: translateY(0);
 }
 
 .panel--interactive:focus-visible {
@@ -103,7 +106,8 @@
 
 .pricing-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-elevated);
+  box-shadow: var(--shadow-elevated), 0 0 0 1px var(--color-highlight-border);
+  border-color: var(--color-accent);
 }
 
 .pricing-card--highlight {
