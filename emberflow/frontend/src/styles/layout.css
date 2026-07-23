@@ -2,6 +2,11 @@
   display: grid;
   grid-template-columns: var(--sidebar-width) 1fr;
   min-height: 100vh;
+  transition: grid-template-columns var(--duration-base) var(--ease-out);
+}
+
+.app-shell--collapsed {
+  grid-template-columns: var(--sidebar-width-collapsed) 1fr;
 }
 
 .main-area {
@@ -1274,6 +1279,10 @@
   display: none;
 }
 
+.desktop-only {
+  display: inline-flex;
+}
+
 @media (max-width: 920px) {
   .hero-section,
   .pricing-section,
@@ -1318,6 +1327,10 @@
 
   .mobile-only {
     display: inline-flex;
+  }
+
+  .desktop-only {
+    display: none;
   }
 }
 

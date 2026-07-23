@@ -155,6 +155,7 @@
   --bp-2xl: 1440px;
 
   --sidebar-width: 260px;
+  --sidebar-width-collapsed: 76px;
   --sidebar-width-mobile: 280px;
   --sidebar-max-width-mobile: 85vw;
   --topbar-height: 75px;

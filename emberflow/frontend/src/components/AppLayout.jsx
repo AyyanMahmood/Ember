@@ -1,4 +1,4 @@
-import { BarChart3, FileText, Home, LineChart, LogOut, Menu, Settings, Users, X } from 'lucide-react';
+import { BarChart3, FileText, Home, LineChart, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings, Users, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
@@ -16,8 +16,11 @@ const navItems = [
   { to: '/app/settings', label: 'Settings', icon: Settings },
 ];
 
+const SIDEBAR_COLLAPSED_KEY = 'emberflow-sidebar-collapsed';
+
 export default function AppLayout() {
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true');
   const { signOut, user } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
@@ -53,13 +56,22 @@ export default function AppLayout() {
     navigate('/');
   }
 
+  function toggleCollapsed() {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next));
+      return next;
+    });
+  }
+
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${collapsed ? 'app-shell--collapsed' : ''}`}>
       {open && <div className="sidebar-overlay" onClick={() => setOpen(false)} />}
-      <aside className={`sidebar ${open ? 'sidebar--open' : ''}`}>
+      <aside className={`sidebar ${open ? 'sidebar--open' : ''} ${collapsed ? 'sidebar--collapsed' : ''}`}>
         <div className="brand-row">
-          <NavLink to="/app" className="brand-mark" onClick={() => setOpen(false)}>
-            EmberFlow
+          <NavLink to="/app" className="brand-mark" onClick={() => setOpen(false)} aria-label="EmberFlow home">
+            <span className="brand-mark__full" aria-hidden={collapsed}>EmberFlow</span>
+            <span className="brand-mark__short" aria-hidden={!collapsed}>E</span>
           </NavLink>
           <button
             ref={closeButtonRef}
@@ -79,6 +91,7 @@ export default function AppLayout() {
                 to={item.to}
                 end={item.end}
                 onClick={() => setOpen(false)}
+                title={collapsed ? item.label : undefined}
                 className={({ isActive }) => `side-link ${isActive ? 'active' : ''}`}
               >
                 <Icon size={18} />
@@ -88,7 +101,22 @@ export default function AppLayout() {
           })}
         </nav>
         <div className="sidebar-footer">
-          <NavLink to="/app/settings" className="account-summary" onClick={() => setOpen(false)}>
+          <button
+            type="button"
+            className="sidebar-collapse-toggle desktop-only"
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            {!collapsed && <span>Collapse</span>}
+          </button>
+          <NavLink
+            to="/app/settings"
+            className="account-summary"
+            onClick={() => setOpen(false)}
+            title={collapsed ? profile?.full_name || 'Account' : undefined}
+          >
             <Avatar
               src={profile?.avatar_url}
               name={profile?.full_name}
@@ -100,9 +128,15 @@ export default function AppLayout() {
               <span className="muted small truncate">{user?.email}</span>
             </div>
           </NavLink>
-          <Button variant="ghost" fullWidth onClick={handleLogout} className="sidebar__logout">
+          <Button
+            variant="ghost"
+            fullWidth
+            onClick={handleLogout}
+            className="sidebar__logout"
+            title={collapsed ? 'Logout' : undefined}
+          >
             <LogOut size={16} />
-            Logout
+            <span className="sidebar__logout-label">Logout</span>
           </Button>
         </div>
       </aside>
