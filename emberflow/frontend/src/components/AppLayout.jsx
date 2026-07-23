@@ -1,6 +1,6 @@
 import { BarChart3, FileText, Home, LineChart, LogOut, Menu, Settings, Users, X } from 'lucide-react';
-import { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { useProfile } from '../hooks/useProfile.js';
 import { Avatar } from './ui/Avatar.jsx';
@@ -21,7 +21,32 @@ export default function AppLayout() {
   const { signOut, user } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
-  const initials = (profile?.full_name || user?.email || 'U').slice(0, 2).toUpperCase();
+  const location = useLocation();
+  const menuButtonRef = useRef(null);
+  const closeButtonRef = useRef(null);
+
+  const activeNavItem = navItems.find((item) =>
+    item.end ? location.pathname === item.to : location.pathname.startsWith(item.to)
+  );
+  const pageTitle = activeNavItem?.label || 'Dashboard';
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+      menuButtonRef.current?.focus();
+    };
+  }, [open]);
 
   async function handleLogout() {
     await signOut();
@@ -30,12 +55,18 @@ export default function AppLayout() {
 
   return (
     <div className="app-shell">
+      {open && <div className="sidebar-overlay" onClick={() => setOpen(false)} />}
       <aside className={`sidebar ${open ? 'sidebar--open' : ''}`}>
         <div className="brand-row">
           <NavLink to="/app" className="brand-mark" onClick={() => setOpen(false)}>
             EmberFlow
           </NavLink>
-          <button className="icon-button mobile-only" onClick={() => setOpen(false)} aria-label="Close navigation">
+          <button
+            ref={closeButtonRef}
+            className="icon-button mobile-only"
+            onClick={() => setOpen(false)}
+            aria-label="Close navigation"
+          >
             <X size={18} />
           </button>
         </div>
@@ -57,7 +88,7 @@ export default function AppLayout() {
           })}
         </nav>
         <div className="sidebar-footer">
-          <div className="account-summary">
+          <NavLink to="/app/settings" className="account-summary" onClick={() => setOpen(false)}>
             <Avatar
               src={profile?.avatar_url}
               name={profile?.full_name}
@@ -68,7 +99,7 @@ export default function AppLayout() {
               <strong className="truncate">{profile?.full_name || 'Account'}</strong>
               <span className="muted small truncate">{user?.email}</span>
             </div>
-          </div>
+          </NavLink>
           <Button variant="ghost" fullWidth onClick={handleLogout} className="sidebar__logout">
             <LogOut size={16} />
             Logout
@@ -78,21 +109,27 @@ export default function AppLayout() {
 
       <div className="main-area">
         <header className="topbar">
-          <button className="icon-button mobile-only" onClick={() => setOpen(true)} aria-label="Open navigation">
+          <button
+            ref={menuButtonRef}
+            className="icon-button mobile-only"
+            onClick={() => setOpen(true)}
+            aria-label="Open navigation"
+          >
             <Menu size={20} />
           </button>
           <div className="topbar__left">
-            <p className="topbar__eyebrow">Freelancer finance workspace</p>
-            <h1 className="topbar__title">EmberFlow</h1>
+            <h1 className="topbar__title">{pageTitle}</h1>
           </div>
           <div className="topbar__right">
             <ThemeToggle />
-            <Avatar
-              src={profile?.avatar_url}
-              name={profile?.full_name}
-              size="md"
-              alt="Profile avatar"
-            />
+            <NavLink to="/app/settings" className="topbar__avatar-link" aria-label="Go to settings">
+              <Avatar
+                src={profile?.avatar_url}
+                name={profile?.full_name}
+                size="md"
+                alt="Profile avatar"
+              />
+            </NavLink>
           </div>
         </header>
         <main className="content">

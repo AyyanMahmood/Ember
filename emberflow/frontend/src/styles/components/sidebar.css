@@ -53,10 +53,14 @@
     color var(--duration-fast) var(--ease-out);
 }
 
-.side-link:hover,
-.side-link.active {
+.side-link:hover {
   background: var(--color-surface-hover-strong);
   color: var(--color-ink);
+}
+
+.side-link.active {
+  background: var(--color-blue-soft);
+  color: var(--color-blue-strong);
 }
 
 .side-link:focus-visible {
@@ -75,12 +79,26 @@
   margin-top: auto;
 }
 
-.account-summary {
+.account-summary,
+.account-summary:hover {
   display: grid;
   grid-template-columns: 2.4rem minmax(0, 1fr);
   gap: var(--space-3);
   align-items: center;
   padding: var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.account-summary:hover {
+  background: var(--color-surface-hover-strong);
+}
+
+.account-summary:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
 }
 
 .account-copy {
@@ -148,7 +166,8 @@
   position: fixed;
   inset: 0;
   background: var(--color-overlay);
-  z-index: 4;
+  z-index: var(--z-modal-backdrop);
+  animation: fade-in var(--duration-fast) var(--ease-out);
 }
 
 @media (max-width: 920px) {
@@ -161,7 +180,7 @@
     max-width: var(--sidebar-max-width-mobile);
     transform: translateX(-105%);
     box-shadow: var(--shadow-xl);
-    z-index: 10;
+    z-index: var(--z-modal);
   }
 
   .sidebar--open {
