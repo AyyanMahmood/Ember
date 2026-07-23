@@ -189,6 +189,7 @@
 
 .table__link:hover {
   color: var(--color-accent);
+  text-decoration: none;
 }
 
 .table__expanded-row td {

@@ -4,9 +4,9 @@
   justify-content: center;
   gap: var(--space-2);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  font-weight: var(--weight-extrabold);
+  font-weight: var(--weight-semibold);
   font-size: var(--text-body);
   line-height: 1.5;
   white-space: nowrap;
@@ -19,14 +19,18 @@
     box-shadow var(--duration-fast) var(--ease-out);
 }
 
+.button:hover {
+  text-decoration: none;
+}
+
 .button:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-elevated);
+  box-shadow: var(--shadow-sm);
 }
 
 .button:active:not(:disabled) {
-  transform: translateY(-1px) scale(0.98);
-  box-shadow: var(--shadow-elevated);
+  transform: translateY(0) scale(0.98);
+  box-shadow: none;
 }
 
 .button:focus-visible {
@@ -43,22 +47,22 @@
 }
 
 .button--sm {
-  height: 2rem;
-  padding: 0 0.625rem;
+  height: 2.25rem;
+  padding: 0 0.875rem;
   font-size: var(--text-body-sm);
   gap: var(--space-1);
 }
 
 .button--md {
-  height: 2.5rem;
-  padding: 0 1rem;
+  height: 2.75rem;
+  padding: 0 1.25rem;
   font-size: var(--text-body);
   gap: var(--space-2);
 }
 
 .button--lg {
-  height: 3rem;
-  padding: 0 1.25rem;
+  height: 3.25rem;
+  padding: 0 1.5rem;
   font-size: var(--text-body-lg);
   gap: var(--space-2);
 }
@@ -69,10 +73,12 @@
   background: var(--color-accent);
   color: #FFFFFF;
   border-color: transparent;
+  box-shadow: var(--shadow-xs);
 }
 
 .button--primary:hover:not(:disabled) {
   background: var(--color-accent-dark);
+  color: #FFFFFF;
 }
 
 .button--secondary {
@@ -82,8 +88,9 @@
 }
 
 .button--secondary:hover:not(:disabled) {
-  background: var(--color-bg);
+  background: var(--color-surface-hover-strong);
   border-color: var(--color-muted);
+  color: var(--color-ink);
 }
 
 .button--ghost {
@@ -93,7 +100,8 @@
 }
 
 .button--ghost:hover:not(:disabled) {
-  background: var(--color-bg);
+  background: var(--color-surface-hover);
+  color: var(--color-ink);
 }
 
 .button--danger {
@@ -133,13 +141,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-ink);
   cursor: pointer;
+  text-decoration: none;
   transition:
     background-color var(--duration-fast) var(--ease-out),
     border-color var(--duration-fast) var(--ease-out),
@@ -147,9 +156,14 @@
     transform var(--duration-fast) var(--ease-out);
 }
 
+.icon-button:hover {
+  text-decoration: none;
+}
+
 .icon-button:hover:not(:disabled) {
-  background: var(--color-bg);
+  background: var(--color-surface-hover-strong);
   border-color: var(--color-muted);
+  color: var(--color-ink);
 }
 
 .icon-button:active:not(:disabled) {
@@ -174,16 +188,17 @@
 .icon-button--danger:hover:not(:disabled) {
   background: var(--color-danger-soft);
   border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 
 .icon-button--sm {
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
 }
 
 .icon-button--lg {
-  width: 3rem;
-  height: 3rem;
+  width: 3.25rem;
+  height: 3.25rem;
 }
 
 .icon-button svg {

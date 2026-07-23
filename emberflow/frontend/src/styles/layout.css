@@ -141,6 +141,10 @@
   border-radius: var(--radius-md);
 }
 
+.stat-card-link:hover {
+  text-decoration: none;
+}
+
 .stat-card-link .stat-card {
   height: 100%;
   transition:
@@ -150,8 +154,8 @@
 }
 
 .stat-card-link:hover .stat-card {
-  box-shadow: var(--shadow-elevated);
-  border-color: var(--color-muted);
+  box-shadow: var(--shadow-elevated), 0 0 0 1px var(--color-highlight-border);
+  border-color: var(--color-accent);
   transform: translateY(-2px);
 }
 
@@ -662,6 +666,12 @@
 .marketing-nav nav a:not(.button) {
   color: var(--color-muted);
   font-weight: var(--weight-extrabold);
+  text-decoration: none;
+}
+
+.marketing-nav nav a:not(.button):hover {
+  color: var(--color-ink);
+  text-decoration: none;
 }
 
 .hero-section {

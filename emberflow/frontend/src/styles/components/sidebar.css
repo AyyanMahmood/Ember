@@ -54,8 +54,9 @@
 }
 
 .side-link:hover {
-  background: var(--color-surface-hover-strong);
-  color: var(--color-ink);
+  background: var(--color-sidebar-hover);
+  color: var(--color-sidebar-text);
+  text-decoration: none;
 }
 
 .side-link.active {

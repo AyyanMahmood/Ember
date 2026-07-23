@@ -40,11 +40,13 @@
 .topbar__avatar-link {
   display: inline-flex;
   border-radius: var(--radius-full);
+  text-decoration: none;
   transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .topbar__avatar-link:hover {
   transform: scale(1.05);
+  text-decoration: none;
 }
 
 .topbar__avatar-link:focus-visible {
