@@ -9,6 +9,7 @@ export const Input = forwardRef(function Input({
   type = 'text',
   leftAddon,
   rightAddon,
+  leftIcon,
   id: providedId,
   disabled,
   required,
@@ -28,6 +29,7 @@ export const Input = forwardRef(function Input({
   const inputClasses = [
     'input',
     hasError ? 'input--error' : '',
+    leftIcon ? 'input--with-icon' : '',
     className,
   ].filter(Boolean).join(' ');
 
@@ -58,6 +60,21 @@ export const Input = forwardRef(function Input({
           {rightAddon && (
             <span className="input-addon" aria-hidden="true">{rightAddon}</span>
           )}
+        </div>
+      ) : leftIcon ? (
+        <div className="input-icon-wrap">
+          <span className="input-icon" aria-hidden="true">{leftIcon}</span>
+          <input
+            ref={ref}
+            id={id}
+            type={type}
+            className={inputClasses}
+            disabled={disabled}
+            required={required}
+            aria-invalid={hasError}
+            aria-describedby={describedBy}
+            {...props}
+          />
         </div>
       ) : (
         <input
@@ -153,6 +170,7 @@ export const Select = forwardRef(function Select({
   required,
   options = [],
   placeholder,
+  leftIcon,
   ...props
 }, ref) {
   const generatedId = useId();
@@ -169,8 +187,29 @@ export const Select = forwardRef(function Select({
   const selectClasses = [
     'select',
     hasError ? 'input--error' : '',
+    leftIcon ? 'input--with-icon' : '',
     className,
   ].filter(Boolean).join(' ');
+
+  const selectEl = (
+    <select
+      ref={ref}
+      id={id}
+      className={selectClasses}
+      disabled={disabled}
+      required={required}
+      aria-invalid={hasError}
+      aria-describedby={describedBy}
+      {...props}
+    >
+      {placeholder && <option value="" disabled>{placeholder}</option>}
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
 
   return (
     <div className="input-wrapper">
@@ -180,23 +219,14 @@ export const Select = forwardRef(function Select({
           {required && <span aria-hidden="true" style={{ color: 'var(--color-danger)', marginLeft: 'var(--space-1)' }}>*</span>}
         </label>
       )}
-      <select
-        ref={ref}
-        id={id}
-        className={selectClasses}
-        disabled={disabled}
-        required={required}
-        aria-invalid={hasError}
-        aria-describedby={describedBy}
-        {...props}
-      >
-        {placeholder && <option value="" disabled>{placeholder}</option>}
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      {leftIcon ? (
+        <div className="input-icon-wrap">
+          <span className="input-icon" aria-hidden="true">{leftIcon}</span>
+          {selectEl}
+        </div>
+      ) : (
+        selectEl
+      )}
       {error && (
         <p id={errorId} className="input-error" role="alert">{error}</p>
       )}

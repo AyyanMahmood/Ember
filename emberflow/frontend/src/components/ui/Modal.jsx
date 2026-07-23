@@ -109,6 +109,32 @@ export function Modal({
   );
 }
 
+export function ConfirmDialog({
+  isOpen,
+  onClose,
+  onConfirm,
+  title = 'Are you sure?',
+  message,
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  variant = 'danger',
+  loading = false,
+}) {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
+      {message && <p className="confirm-dialog__message">{message}</p>}
+      <ModalFooter>
+        <Button variant="secondary" onClick={onClose} disabled={loading}>
+          {cancelLabel}
+        </Button>
+        <Button variant={variant} onClick={onConfirm} loading={loading}>
+          {confirmLabel}
+        </Button>
+      </ModalFooter>
+    </Modal>
+  );
+}
+
 export function ModalFooter({ children, className = '', align = 'end' }) {
   const alignClasses = {
     start: 'justify-start',

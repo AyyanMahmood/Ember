@@ -73,6 +73,12 @@
   gap: var(--space-4);
 }
 
+.confirm-dialog__message {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: var(--leading-body);
+}
+
 .modal-footer {
   display: flex;
   align-items: center;
