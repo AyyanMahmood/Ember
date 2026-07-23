@@ -37,7 +37,26 @@ export const PLANS = {
   },
 };
 
-export const PRO_FEATURES = new Set(['analytics', 'proposals', 'payments', 'branding', 'unlimited']);
+// The Document Studio's live editor is available on every plan — only these
+// are gated. Keep every feature check routed through canUseFeature() below
+// rather than checking subscription.isPro directly around the app, so the
+// feature matrix stays centralized in this one file.
+export const PRO_FEATURES = new Set([
+  'analytics',
+  'proposals',
+  'payments',
+  'branding',
+  'unlimited',
+  'premium-templates',
+  'advanced-export',
+]);
+
+// Export formats always available on Free; everything else needs Pro.
+export const FREE_EXPORT_FORMATS = new Set(['pdf', 'print']);
+
+export function canUseExportFormat(format, isPro) {
+  return isPro || FREE_EXPORT_FORMATS.has(format);
+}
 
 export function normalizePlan(plan) {
   return PLANS[plan] ? plan : PLAN_IDS.free;
