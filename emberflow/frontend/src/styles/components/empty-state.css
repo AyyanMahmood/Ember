@@ -6,6 +6,7 @@
   text-align: left;
   gap: var(--space-4);
   padding: var(--space-8) var(--space-4);
+  animation: slide-up var(--duration-slow) var(--ease-out);
 }
 
 .empty-state--center {
@@ -23,7 +24,6 @@
   background: var(--color-blue-soft);
   color: var(--color-blue);
   flex-shrink: 0;
-  transition: transform var(--duration-fast) var(--ease-out);
 }
 
 .empty-state__icon svg {

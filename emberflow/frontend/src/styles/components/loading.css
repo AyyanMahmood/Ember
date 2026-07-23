@@ -56,7 +56,7 @@
     var(--color-bg) 75%
   );
   background-size: 200% 100%;
-  animation: skeleton-pulse 1.2s ease-in-out infinite;
+  animation: skeleton-pulse 1.2s var(--ease-in-out) infinite;
   border-radius: var(--radius-sm);
 }
 
@@ -148,11 +148,11 @@
 }
 
 .skeleton--pulse {
-  animation: skeleton-pulse 1.2s ease-in-out infinite;
+  animation: skeleton-pulse 1.2s var(--ease-in-out) infinite;
 }
 
 .skeleton--wave {
-  animation: skeleton-wave 1.5s ease-in-out infinite;
+  animation: skeleton-wave 1.5s var(--ease-in-out) infinite;
 }
 
 @keyframes skeleton-wave {
