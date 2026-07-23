@@ -54,7 +54,7 @@ export default function InvoiceFormPage() {
   const [focusItemIndex, setFocusItemIndex] = useState(null);
   const descriptionRefs = useRef([]);
   const documentRef = useRef(null);
-  const { open: previewOpen, openSheet: openPreview, closeSheet: closePreview } = useMobilePreviewSheet();
+  const { open: previewOpen, openSheet: openPreview, closeSheet: closePreview, fabRef, closeButtonRef: previewCloseRef } = useMobilePreviewSheet();
 
   useEffect(() => {
     if (focusItemIndex !== null && descriptionRefs.current[focusItemIndex]) {
@@ -328,7 +328,7 @@ export default function InvoiceFormPage() {
           </div>
 
           <div className={`studio-preview ${previewOpen ? 'studio-preview--open' : ''}`}>
-            <MobilePreviewHeader title="Invoice preview" onClose={closePreview} />
+            <MobilePreviewHeader title="Invoice preview" onClose={closePreview} closeButtonRef={previewCloseRef} />
             <div className="studio-preview__surface">
               <ScaledPreview>
                 <InvoiceDocument ref={documentRef} invoice={previewInvoice} profile={profile} themeId={form.template} />
@@ -339,7 +339,7 @@ export default function InvoiceFormPage() {
       </form>
 
       {previewOpen && <MobilePreviewBackdrop onClick={closePreview} />}
-      {!previewOpen && <MobilePreviewFab onClick={openPreview} />}
+      {!previewOpen && <MobilePreviewFab onClick={openPreview} fabRef={fabRef} />}
 
       <TemplateSelector
         isOpen={templateOpen}
