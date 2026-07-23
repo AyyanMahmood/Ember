@@ -1,4 +1,5 @@
 import { Link, Outlet } from 'react-router-dom';
+import { ThemeToggle } from './ui/ThemeToggle.jsx';
 
 export default function PublicLayout() {
   return (
@@ -10,6 +11,7 @@ export default function PublicLayout() {
         <nav>
           <Link to="/features">Features</Link>
           <Link to="/pricing">Pricing</Link>
+          <ThemeToggle />
           <Link to="/login">Login</Link>
           <Link className="button primary" to="/register">
             Register

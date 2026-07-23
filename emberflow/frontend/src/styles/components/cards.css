@@ -212,7 +212,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: var(--space-4);
-  background: #F2EADC;
+  background: var(--color-surface-sunken);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
   padding: var(--space-4);
@@ -262,7 +262,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #F2EADC;
+  background: var(--color-surface-sunken);
   color: var(--color-muted);
   font-weight: var(--weight-black);
 }
@@ -287,7 +287,7 @@
   grid-template-columns: 2rem 1fr auto;
   gap: var(--space-4);
   align-items: center;
-  background: #FFFDF8;
+  background: var(--color-surface-strong);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
   padding: var(--space-3);

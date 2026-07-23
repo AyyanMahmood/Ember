@@ -21,7 +21,7 @@ A full-codebase audit and a 10-phase implementation roadmap were produced before
 | Phase | Status | Summary |
 |---|---|---|
 | 0 — Trust & correctness fixes | ✅ Done | Fixed blank invoice status badge (`InvoicesPage`), removed fabricated "+X% vs last month" trend copy from Dashboard/Analytics, removed a PII console.log in Paddle checkout, locked API CORS to `APP_URL` instead of `*`. |
-| 1 — Dark-first design system foundation | Not started | |
+| 1 — Dark-first design system foundation | ✅ Done | `tokens.css` rebuilt dark-first (dark values live on `:root`, light theme is the explicit `[data-theme='light']` override); added `useTheme`/`ThemeProvider` + `ThemeToggle` wired into `AppLayout` and `PublicLayout`; inline blocking script in `index.html` reads `localStorage`/`prefers-color-scheme` and sets `data-theme` pre-hydration to avoid a flash of the wrong theme; `color-scheme` set on `html` so native form controls follow the theme; self-hosted Inter + JetBrains Mono via `@fontsource` (Latin-subset imports only, cut bundled font files from 102 → 14 and CSS payload ~35KB); converted all remaining hardcoded light-theme hex/rgba colors in component CSS (avatars, sidebar, topbar, modals, cards, layout) to theme-aware tokens — decorative landing-page mockup colors (`.preview-*`) intentionally left as static, and white button text on saturated accent backgrounds intentionally left literal since both are theme-independent by design. |
 | 2 — Component library hardening & motion | Not started | |
 | 3 — App shell & navigation premium pass | Not started | |
 | 4 — Core app pages redesign | Not started | |

@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth.js';
 import { useProfile } from '../hooks/useProfile.js';
 import { Avatar } from './ui/Avatar.jsx';
 import { Button } from './ui/Button.jsx';
+import { ThemeToggle } from './ui/ThemeToggle.jsx';
 
 const navItems = [
   { to: '/app', label: 'Dashboard', icon: Home, end: true },
@@ -85,6 +86,7 @@ export default function AppLayout() {
             <h1 className="topbar__title">EmberFlow</h1>
           </div>
           <div className="topbar__right">
+            <ThemeToggle />
             <Avatar
               src={profile?.avatar_url}
               name={profile?.full_name}
