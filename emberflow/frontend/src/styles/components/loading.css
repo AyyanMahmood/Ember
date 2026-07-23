@@ -39,11 +39,6 @@
   border-width: 3px;
 }
 
-.spinner--inline {
-  display: inline-block;
-  vertical-align: middle;
-}
-
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -120,13 +115,6 @@
   padding: var(--space-8);
 }
 
-.loading-overlay--full {
-  position: fixed;
-  inset: 0;
-  background: var(--color-overlay-surface);
-  z-index: var(--z-modal-backdrop);
-}
-
 .page-loader {
   display: flex;
   flex-direction: column;
@@ -134,17 +122,6 @@
   justify-content: center;
   gap: var(--space-4);
   min-height: 200px;
-}
-
-.page-loader__spinner {
-  width: 3rem;
-  height: 3rem;
-  border-width: 3px;
-}
-
-.page-loader__text {
-  color: var(--color-muted);
-  font-size: var(--text-body);
 }
 
 .skeleton--pulse {
