@@ -18,6 +18,9 @@
   margin: 0 auto;
   max-width: var(--max-content);
   padding: var(--space-20) var(--space-5);
+  /* Keeps anchor-scrolled sections (nav "Features"/"Pricing") clear of the
+     sticky marketing nav instead of landing flush under it. */
+  scroll-margin-top: calc(5rem + var(--space-4));
 }
 
 .lp-section--tight {

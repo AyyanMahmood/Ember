@@ -81,6 +81,14 @@
   border: 1px solid var(--color-line);
   max-height: calc(100vh - var(--topbar-height) - var(--space-10));
   overflow-y: auto;
+  /* Reserve the scrollbar's width whether or not it's currently shown.
+     Without this, ScaledPreview's ResizeObserver-driven scale sits in a
+     feedback loop: a wider column (e.g. after collapsing the sidebar) can
+     push scale to ~1, making the scaled document taller than max-height,
+     which shows a scrollbar, which narrows this box, which shrinks scale,
+     which drops the height back under max-height, which hides the
+     scrollbar again — repeating every frame ("vibrating" preview). */
+  scrollbar-gutter: stable;
 }
 
 /* Tablet: keep the split but let it narrow before stacking */

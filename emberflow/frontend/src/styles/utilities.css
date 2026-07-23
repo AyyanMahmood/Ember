@@ -1,0 +1,21 @@
+/* Utility overrides. Imported last in index.css on purpose: these must always
+   win against component `display` rules of equal selector specificity
+   (e.g. .icon-button, .sidebar-collapse-toggle) regardless of import order. */
+
+.mobile-only {
+  display: none;
+}
+
+.desktop-only {
+  display: inline-flex;
+}
+
+@media (max-width: 920px) {
+  .mobile-only {
+    display: inline-flex;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+}

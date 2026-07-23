@@ -283,7 +283,7 @@ export default function ProposalFormPage() {
                   {items.map((item, index) => {
                     const isLast = index === items.length - 1;
                     return (
-                      <div className="proposal-item-row" key={`${index}-${item.title}`}>
+                      <div className="proposal-item-row" key={index}>
                         <Input
                           ref={(el) => { titleRefs.current[index] = el; }}
                           aria-label="Title"

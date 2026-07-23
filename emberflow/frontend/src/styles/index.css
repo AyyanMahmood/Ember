@@ -17,3 +17,5 @@
 @import './components/landing.css';
 @import '../document-studio/document.css';
 @import '../document-studio/studio.css';
+
+@import './utilities.css';

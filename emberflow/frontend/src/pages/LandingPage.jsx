@@ -10,11 +10,12 @@ import {
   WalletCards,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '../components/ui/Button.jsx';
 import { StatusBadge } from '../components/ui/Badge.jsx';
 import { PricingCard } from '../components/ui/Card.jsx';
 import { PLANS } from '../utils/plans.js';
+import { scrollToId } from '../utils/scroll.js';
 
 function Reveal({ children, className = '', delay = 0, as: Tag = 'div' }) {
   const ref = useRef(null);
@@ -80,6 +81,17 @@ const faqs = [
 ];
 
 export default function LandingPage() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!location.hash) return;
+    const id = location.hash.slice(1);
+    // Wait a frame so the freshly-mounted layout has settled before measuring
+    // scroll position (otherwise this can land short on first paint).
+    const frame = requestAnimationFrame(() => scrollToId(id));
+    return () => cancelAnimationFrame(frame);
+  }, [location.hash]);
+
   return (
     <>
       <section className="lp-hero">

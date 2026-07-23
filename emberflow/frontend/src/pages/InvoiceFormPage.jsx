@@ -267,7 +267,7 @@ export default function InvoiceFormPage() {
                   const isLast = index === items.length - 1;
                   const lineTotal = Number(item.quantity || 0) * Number(item.price || 0) * (1 + Number(item.tax_rate || 0) / 100);
                   return (
-                    <div className="item-row" key={`${index}-${item.description}`}>
+                    <div className="item-row" key={index}>
                       <Input
                         ref={(el) => { descriptionRefs.current[index] = el; }}
                         aria-label="Description"

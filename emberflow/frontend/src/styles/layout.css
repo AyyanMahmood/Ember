@@ -670,6 +670,10 @@
   text-decoration: none;
 }
 
+.marketing-nav nav a.active:not(.button) {
+  color: var(--color-ink);
+}
+
 .hero-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1275,14 +1279,6 @@
   text-overflow: ellipsis;
 }
 
-.mobile-only {
-  display: none;
-}
-
-.desktop-only {
-  display: inline-flex;
-}
-
 @media (max-width: 920px) {
   .hero-section,
   .pricing-section,
@@ -1323,14 +1319,6 @@
 
   .sidebar--open {
     transform: translateX(0);
-  }
-
-  .mobile-only {
-    display: inline-flex;
-  }
-
-  .desktop-only {
-    display: none;
   }
 }
 
