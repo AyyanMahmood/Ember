@@ -17,6 +17,7 @@ import { TemplateSelector } from '../document-studio/TemplateSelector.jsx';
 import { ExportMenu } from '../document-studio/ExportMenu.jsx';
 import { useDocumentExport } from '../document-studio/useDocumentExport.js';
 import { DEFAULT_THEME_ID, getTheme } from '../document-studio/themes.js';
+import { MobilePreviewBackdrop, MobilePreviewFab, MobilePreviewHeader, useMobilePreviewSheet } from '../document-studio/MobilePreviewSheet.jsx';
 
 const emptyItem = { description: '', quantity: 1, price: 0, tax_rate: 0 };
 
@@ -53,6 +54,7 @@ export default function InvoiceFormPage() {
   const [focusItemIndex, setFocusItemIndex] = useState(null);
   const descriptionRefs = useRef([]);
   const documentRef = useRef(null);
+  const { open: previewOpen, openSheet: openPreview, closeSheet: closePreview } = useMobilePreviewSheet();
 
   useEffect(() => {
     if (focusItemIndex !== null && descriptionRefs.current[focusItemIndex]) {
@@ -325,7 +327,8 @@ export default function InvoiceFormPage() {
             </div>
           </div>
 
-          <div className="studio-preview">
+          <div className={`studio-preview ${previewOpen ? 'studio-preview--open' : ''}`}>
+            <MobilePreviewHeader title="Invoice preview" onClose={closePreview} />
             <div className="studio-preview__surface">
               <ScaledPreview>
                 <InvoiceDocument ref={documentRef} invoice={previewInvoice} profile={profile} themeId={form.template} />
@@ -334,6 +337,9 @@ export default function InvoiceFormPage() {
           </div>
         </div>
       </form>
+
+      {previewOpen && <MobilePreviewBackdrop onClick={closePreview} />}
+      {!previewOpen && <MobilePreviewFab onClick={openPreview} />}
 
       <TemplateSelector
         isOpen={templateOpen}

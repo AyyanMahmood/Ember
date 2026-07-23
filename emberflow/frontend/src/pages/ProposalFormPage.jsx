@@ -18,6 +18,7 @@ import { TemplateSelector } from '../document-studio/TemplateSelector.jsx';
 import { ExportMenu } from '../document-studio/ExportMenu.jsx';
 import { useDocumentExport } from '../document-studio/useDocumentExport.js';
 import { DEFAULT_THEME_ID, getTheme } from '../document-studio/themes.js';
+import { MobilePreviewBackdrop, MobilePreviewFab, MobilePreviewHeader, useMobilePreviewSheet } from '../document-studio/MobilePreviewSheet.jsx';
 import UpgradeModal from '../components/UpgradeModal.jsx';
 
 // Content starters — prefill the form with a starting point. Unrelated to
@@ -114,6 +115,7 @@ export default function ProposalFormPage() {
   const [focusItemIndex, setFocusItemIndex] = useState(null);
   const titleRefs = useRef([]);
   const documentRef = useRef(null);
+  const { open: previewOpen, openSheet: openPreview, closeSheet: closePreview } = useMobilePreviewSheet();
 
   useEffect(() => {
     getProfile().then(setProfile).catch((err) => setError(err.message)).finally(() => setProfileLoading(false));
@@ -336,7 +338,8 @@ export default function ProposalFormPage() {
               </div>
             </div>
 
-            <div className="studio-preview">
+            <div className={`studio-preview ${previewOpen ? 'studio-preview--open' : ''}`}>
+              <MobilePreviewHeader title="Proposal preview" onClose={closePreview} />
               <div className="studio-preview__surface">
                 {profileLoading ? (
                   <LoadingSpinner size="lg" label="Loading preview..." />
@@ -350,6 +353,9 @@ export default function ProposalFormPage() {
           </div>
         </form>
       </div>
+
+      {previewOpen && <MobilePreviewBackdrop onClick={closePreview} />}
+      {!previewOpen && <MobilePreviewFab onClick={openPreview} />}
 
       <TemplateSelector
         isOpen={templateOpen}
