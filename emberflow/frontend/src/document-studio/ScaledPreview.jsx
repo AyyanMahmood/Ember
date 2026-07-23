@@ -18,7 +18,18 @@ import { DOCUMENT_PAGE_WIDTH, DOCUMENT_PAGE_HEIGHT } from './DocumentTemplate.js
  */
 export function ScaledPreview({ children, maxScale = 1, className = '' }) {
   const containerRef = useRef(null);
+  const contentRef = useRef(null);
   const [scale, setScale] = useState(1);
+  // DOCUMENT_PAGE_HEIGHT is a floor for the *document's* own min-height, not
+  // a cap — a document with enough line items legitimately renders taller
+  // than one page. Measuring the real content height (rather than assuming
+  // it) is what keeps this wrapper from clipping that overflow: with a fixed
+  // assumed height, longer documents would have their bottom half (often the
+  // totals block and footer) silently cut off on screen while the actual
+  // export — which reads the real unscaled node directly — showed it in
+  // full, which is exactly the preview/export mismatch this whole rendering
+  // approach exists to prevent.
+  const [contentHeight, setContentHeight] = useState(DOCUMENT_PAGE_HEIGHT);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -31,9 +42,22 @@ export function ScaledPreview({ children, maxScale = 1, className = '' }) {
     return () => observer.disconnect();
   }, [maxScale]);
 
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    // ResizeObserver reports the element's own (pre-transform) box size, so
+    // this stays accurate regardless of the CSS scale applied below it.
+    const observer = new ResizeObserver((entries) => {
+      const height = entries[0]?.contentRect.height;
+      if (height) setContentHeight(height);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div ref={containerRef} className={`scaled-preview ${className}`.trim()} style={{ height: DOCUMENT_PAGE_HEIGHT * scale }}>
-      <div className="scaled-preview__inner" style={{ transform: `scale(${scale})` }}>
+    <div ref={containerRef} className={`scaled-preview ${className}`.trim()} style={{ height: contentHeight * scale }}>
+      <div ref={contentRef} className="scaled-preview__inner" style={{ transform: `scale(${scale})` }}>
         {children}
       </div>
     </div>
