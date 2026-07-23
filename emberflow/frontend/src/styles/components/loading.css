@@ -111,7 +111,7 @@
 .loading-overlay--full {
   position: fixed;
   inset: 0;
-  background: rgba(247, 241, 227, 0.9);
+  background: var(--color-overlay-surface);
   z-index: var(--z-modal-backdrop);
 }
 
