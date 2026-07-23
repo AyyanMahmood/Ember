@@ -60,6 +60,7 @@ export const Button = forwardRef(function Button({
 Button.displayName = 'Button';
 
 export const IconButton = forwardRef(function IconButton({
+  as: Component = 'button',
   size = 'md',
   className = '',
   children,
@@ -75,14 +76,14 @@ export const IconButton = forwardRef(function IconButton({
   const classes = ['icon-button', sizeMap[size], className].filter(Boolean).join(' ');
 
   return (
-    <button
+    <Component
       ref={ref}
       className={classes}
       aria-label={ariaLabel}
       {...props}
     >
       {children}
-    </button>
+    </Component>
   );
 });
 

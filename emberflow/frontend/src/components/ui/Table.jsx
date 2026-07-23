@@ -225,7 +225,10 @@ export function Table({
               <tr
                 key={rowKey}
                 className={rowClasses}
-                onClick={onRowClick ? () => onRowClick(row, rowKey) : undefined}
+                onClick={onRowClick ? (event) => {
+                  if (event.target.closest('a, button, input, [role="button"]')) return;
+                  onRowClick(row, rowKey);
+                } : undefined}
                 style={onRowClick ? { cursor: 'pointer' } : undefined}
               >
                 {selectable && (

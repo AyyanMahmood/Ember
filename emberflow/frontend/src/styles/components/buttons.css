@@ -166,6 +166,16 @@
   cursor: not-allowed;
 }
 
+.icon-button--danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger-soft);
+}
+
+.icon-button--danger:hover:not(:disabled) {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+}
+
 .icon-button--sm {
   width: 2rem;
   height: 2rem;

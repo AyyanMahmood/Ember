@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import { Card, StatCard } from '../components/ui/Card.jsx';
 import { StatusBadge } from '../components/ui/Badge.jsx';
@@ -12,6 +12,7 @@ import { formatDate, formatMoney } from '../utils/format.js';
 import { effectiveStatus } from '../utils/invoice.js';
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [recent, setRecent] = useState([]);
@@ -57,6 +58,7 @@ export default function DashboardPage() {
       value: formatMoney(stats.totalRevenue, stats.currency),
       note: 'Paid invoices',
       icon: <ArrowUpRight size={18} />,
+      to: '/app/invoices?status=paid',
     },
     {
       label: 'Pending invoices',
@@ -65,18 +67,21 @@ export default function DashboardPage() {
       trend: stats.pendingCount > 0 ? 'negative' : 'neutral',
       trendLabel: stats.pendingCount > 0 ? 'Needs follow-up' : 'All caught up',
       icon: <ArrowDownRight size={18} />,
+      to: '/app/invoices?status=pending',
     },
     {
       label: 'Paid invoices',
       value: stats.paidCount,
       note: 'Completed payments',
       icon: <ArrowUpRight size={18} />,
+      to: '/app/invoices?status=paid',
     },
     {
       label: 'Clients',
       value: stats.clientCount,
       note: 'Active records',
       icon: <Minus size={18} />,
+      to: '/app/clients',
     },
   ], [stats]);
 
@@ -133,26 +138,32 @@ export default function DashboardPage() {
 
       <section className="stats-grid" aria-label="Key metrics">
         {statCards.map((stat, index) => (
-          <StatCard
-            key={index}
-            label={stat.label}
-            value={stat.value}
-            note={stat.note}
-            trend={stat.trend}
-            trendLabel={stat.trendLabel}
-          />
+          <Link key={index} to={stat.to} className="stat-card-link">
+            <StatCard
+              label={stat.label}
+              value={stat.value}
+              note={stat.note}
+              trend={stat.trend}
+              trendLabel={stat.trendLabel}
+            >
+              {stat.icon && <span className="stat-card__icon" aria-hidden="true">{stat.icon}</span>}
+            </StatCard>
+          </Link>
         ))}
       </section>
 
       <Card variant="default">
         <div className="panel__header">
           <h3 className="panel__title">Recent invoices</h3>
-          <Link to="/app/invoices" className="small muted">View all</Link>
+          <Button as={Link} to="/app/invoices" variant="ghost" size="sm" rightIcon={<ArrowUpRight size={14} />}>
+            View all
+          </Button>
         </div>
         <Table
           columns={columns}
           data={tableData}
           keyExtractor={(row) => row.id}
+          onRowClick={(row) => navigate(`/app/invoices/${row.id}`)}
           emptyTitle="No invoices yet"
           emptyMessage="Create your first invoice to start tracking revenue."
           emptyAction={{
