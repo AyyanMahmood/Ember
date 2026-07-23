@@ -15,7 +15,7 @@ import { InvoiceDocument } from '../document-studio/InvoiceDocument.jsx';
 import { ScaledPreview } from '../document-studio/ScaledPreview.jsx';
 import { TemplateSelector } from '../document-studio/TemplateSelector.jsx';
 import { ExportMenu } from '../document-studio/ExportMenu.jsx';
-import { exportItemsToCsv, exportNodeToHtml, exportNodeToPdf, exportToDocx, exportToJson, exportToMarkdown, exportToTxt, printNode } from '../document-studio/export.js';
+import { useDocumentExport } from '../document-studio/useDocumentExport.js';
 import { DEFAULT_THEME_ID, getTheme } from '../document-studio/themes.js';
 
 const emptyItem = { description: '', quantity: 1, price: 0, tax_rate: 0 };
@@ -50,7 +50,6 @@ export default function InvoiceFormPage() {
   const [error, setError] = useState('');
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
-  const [exportBusy, setExportBusy] = useState('');
   const [focusItemIndex, setFocusItemIndex] = useState(null);
   const descriptionRefs = useRef([]);
   const documentRef = useRef(null);
@@ -124,6 +123,15 @@ export default function InvoiceFormPage() {
     clients: selectedClient ? { name: selectedClient.name, company: selectedClient.company, email: selectedClient.email } : null,
   }), [form, totals, items, selectedClient]);
 
+  const { exportBusy, handleExport } = useDocumentExport({
+    kind: 'invoice',
+    documentRef,
+    filename: form.invoice_number,
+    data: previewInvoice,
+    profile,
+    onError: setError,
+  });
+
   function updateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
   }
@@ -179,29 +187,6 @@ export default function InvoiceFormPage() {
       setError(err.message);
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function handleExport(format) {
-    setExportBusy(format);
-    setError('');
-    try {
-      const node = documentRef.current;
-      switch (format) {
-        case 'pdf': await exportNodeToPdf(node, form.invoice_number); break;
-        case 'print': printNode(node, form.invoice_number); break;
-        case 'html': exportNodeToHtml(node, form.invoice_number); break;
-        case 'markdown': exportToMarkdown('invoice', previewInvoice, profile); break;
-        case 'json': exportToJson('invoice', previewInvoice); break;
-        case 'csv': exportItemsToCsv('invoice', previewInvoice); break;
-        case 'txt': exportToTxt('invoice', previewInvoice, profile); break;
-        case 'docx': await exportToDocx('invoice', previewInvoice, profile); break;
-        default: break;
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setExportBusy('');
     }
   }
 

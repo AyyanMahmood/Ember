@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { canUseExportFormat } from '../utils/plans.js';
 
 const FORMATS = [
-  { id: 'pdf', label: 'PDF' },
-  { id: 'print', label: 'Print' },
+  { id: 'pdf', label: 'PDF (quick download)' },
+  { id: 'print', label: 'Print / Save as PDF (best quality)' },
   { id: 'html', label: 'HTML' },
   { id: 'markdown', label: 'Markdown' },
   { id: 'json', label: 'JSON' },

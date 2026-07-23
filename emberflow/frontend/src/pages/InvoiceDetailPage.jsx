@@ -17,7 +17,7 @@ import { InvoiceDocument } from '../document-studio/InvoiceDocument.jsx';
 import { ScaledPreview } from '../document-studio/ScaledPreview.jsx';
 import { TemplateSelector } from '../document-studio/TemplateSelector.jsx';
 import { ExportMenu } from '../document-studio/ExportMenu.jsx';
-import { exportItemsToCsv, exportNodeToHtml, exportNodeToPdf, exportToDocx, exportToJson, exportToMarkdown, exportToTxt, printNode } from '../document-studio/export.js';
+import { useDocumentExport } from '../document-studio/useDocumentExport.js';
 import { getTheme } from '../document-studio/themes.js';
 
 export default function InvoiceDetailPage() {
@@ -44,7 +44,6 @@ export default function InvoiceDetailPage() {
   const [deletingPayment, setDeletingPayment] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [changingTemplate, setChangingTemplate] = useState(false);
-  const [exportBusy, setExportBusy] = useState('');
   const documentRef = useRef(null);
 
   async function load() {
@@ -170,28 +169,14 @@ export default function InvoiceDetailPage() {
     }
   }
 
-  async function handleExport(format) {
-    setExportBusy(format);
-    setError('');
-    try {
-      const node = documentRef.current;
-      switch (format) {
-        case 'pdf': await exportNodeToPdf(node, invoice.invoice_number); break;
-        case 'print': printNode(node, invoice.invoice_number); break;
-        case 'html': exportNodeToHtml(node, invoice.invoice_number); break;
-        case 'markdown': exportToMarkdown('invoice', invoice, profile); break;
-        case 'json': exportToJson('invoice', invoice); break;
-        case 'csv': exportItemsToCsv('invoice', invoice); break;
-        case 'txt': exportToTxt('invoice', invoice, profile); break;
-        case 'docx': await exportToDocx('invoice', invoice, profile); break;
-        default: break;
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setExportBusy('');
-    }
-  }
+  const { exportBusy, handleExport } = useDocumentExport({
+    kind: 'invoice',
+    documentRef,
+    filename: invoice?.invoice_number,
+    data: invoice,
+    profile,
+    onError: setError,
+  });
 
   async function confirmDelete() {
     setDeleting(true);

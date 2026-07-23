@@ -130,26 +130,44 @@ export async function exportNodeToPdf(node, filename) {
   pdf.save(`${safeFileStem(filename)}.pdf`);
 }
 
-// ── Print (same DOM node, via a dedicated print window) ──
-
+// ── Print / "Save as PDF" via the browser's own print engine ──
+//
+// This is the highest-fidelity export path available without a server: it
+// hands the exact same DOM node to the browser's native print pipeline
+// (real Chromium/WebKit/Gecko layout + text rendering), which produces a
+// genuine vector PDF with selectable/searchable text when the user picks
+// "Save as PDF" as the destination — unlike exportNodeToPdf below, which
+// rasterizes the page into a PNG via html2canvas and embeds that image in
+// the PDF (real text becomes a picture of text: not selectable, not
+// searchable, larger file, and capped at whatever pixel scale it was
+// rendered at). Recommend this path for documents actually going to a
+// client. The tradeoff is the browser's print dialog itself — the web
+// platform has no way to write a file to disk silently, so a fully
+// automatic one-click download (exportNodeToPdf) and a
+// perfect-fidelity-but-needs-a-dialog export (this) are genuinely
+// different tools, not one made obsolete by the other.
+//
+// Opens a same-session print window and clones the app's already-loaded
+// <link>/<style> tags by reference rather than re-serializing CSS rule
+// text — simpler and avoids ever touching sheet.cssRules (which throws for
+// cross-origin sheets), and there's no portability requirement to justify
+// the extra complexity: this window only ever exists for the current
+// session's immediate print action, using CSS that's already loaded.
 export function printNode(node, title) {
   if (!node) throw new Error('Nothing to print yet.');
-  const documentCss = Array.from(document.styleSheets)
-    .map((sheet) => {
-      try {
-        return Array.from(sheet.cssRules).map((rule) => rule.cssText).join('\n');
-      } catch {
-        return '';
-      }
-    })
-    .join('\n');
 
   const printWindow = window.open('', '_blank', 'width=900,height=1100');
   if (!printWindow) throw new Error('Pop-up blocked — allow pop-ups to print.');
-  printWindow.document.write(`<!doctype html><html><head><title>${title || 'Document'}</title><style>${documentCss}
-    @page { margin: 0; }
-    body { margin: 0; display: flex; justify-content: center; background: #fff; }
-  </style></head><body>${node.outerHTML}</body></html>`);
+
+  const styleTags = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+    .map((el) => el.outerHTML)
+    .join('\n');
+
+  printWindow.document.write(`<!doctype html><html><head><title>${title || 'Document'}</title>${styleTags}
+    <style>
+      @page { margin: 0; }
+      body { margin: 0; display: flex; justify-content: center; background: #fff; }
+    </style></head><body>${node.outerHTML}</body></html>`);
   printWindow.document.close();
   printWindow.onload = () => {
     printWindow.focus();

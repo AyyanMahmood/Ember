@@ -16,7 +16,7 @@ import { ProposalDocument } from '../document-studio/ProposalDocument.jsx';
 import { ScaledPreview } from '../document-studio/ScaledPreview.jsx';
 import { TemplateSelector } from '../document-studio/TemplateSelector.jsx';
 import { ExportMenu } from '../document-studio/ExportMenu.jsx';
-import { exportItemsToCsv, exportNodeToHtml, exportNodeToPdf, exportToDocx, exportToJson, exportToMarkdown, exportToTxt, printNode } from '../document-studio/export.js';
+import { useDocumentExport } from '../document-studio/useDocumentExport.js';
 import { DEFAULT_THEME_ID, getTheme } from '../document-studio/themes.js';
 import UpgradeModal from '../components/UpgradeModal.jsx';
 
@@ -110,7 +110,6 @@ export default function ProposalFormPage() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
-  const [exportBusy, setExportBusy] = useState('');
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [focusItemIndex, setFocusItemIndex] = useState(null);
   const titleRefs = useRef([]);
@@ -129,6 +128,15 @@ export default function ProposalFormPage() {
 
   const amount = useMemo(() => items.reduce((sum, item) => sum + Number(item.amount || 0), 0), [items]);
   const previewProposal = useMemo(() => ({ ...form, template: themeId, amount, proposal_items: items }), [form, themeId, amount, items]);
+
+  const { exportBusy, handleExport } = useDocumentExport({
+    kind: 'proposal',
+    documentRef,
+    filename: previewProposal.title,
+    data: previewProposal,
+    profile,
+    onError: setError,
+  });
 
   function applyStarter(key) {
     setStarterKey(key);
@@ -180,29 +188,6 @@ export default function ProposalFormPage() {
   function removeItem(index) {
     setDirty(true);
     setItems((current) => (current.length === 1 ? current : current.filter((_item, itemIndex) => itemIndex !== index)));
-  }
-
-  async function handleExport(format) {
-    setExportBusy(format);
-    setError('');
-    try {
-      const node = documentRef.current;
-      switch (format) {
-        case 'pdf': await exportNodeToPdf(node, previewProposal.title); break;
-        case 'print': printNode(node, previewProposal.title); break;
-        case 'html': exportNodeToHtml(node, previewProposal.title); break;
-        case 'markdown': exportToMarkdown('proposal', previewProposal, profile); break;
-        case 'json': exportToJson('proposal', previewProposal); break;
-        case 'csv': exportItemsToCsv('proposal', previewProposal); break;
-        case 'txt': exportToTxt('proposal', previewProposal, profile); break;
-        case 'docx': await exportToDocx('proposal', previewProposal, profile); break;
-        default: break;
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setExportBusy('');
-    }
   }
 
   async function handleSubmit(event) {
