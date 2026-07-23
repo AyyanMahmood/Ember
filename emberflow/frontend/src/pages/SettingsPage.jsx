@@ -13,6 +13,8 @@ import { openBillingPortal, startCheckout } from '../services/subscriptions.js';
 import { supabase } from '../services/supabase.js';
 import { CURRENCIES } from '../utils/invoice.js';
 import { formatLimit, PLANS } from '../utils/plans.js';
+import { ColorPicker } from '../document-studio/ColorPicker.jsx';
+import { derivePalette } from '../document-studio/color.js';
 
 function UsageMeter({ label, used, limit }) {
   const unlimited = !Number.isFinite(limit);
@@ -240,7 +242,7 @@ export default function SettingsPage() {
 
         <FeatureGate feature="branding" title="Invoice branding" message="Upgrade to Pro to add logo and custom invoice branding.">
           <Card variant="default">
-            <CardHeader title="Branding" subtitle="Logo and accent color shown on invoice PDFs." />
+            <CardHeader title="Branding" subtitle="Logo and brand color used across every invoice and proposal template." />
             <div className="branding-box">
               {form.logo_url ? <img src={form.logo_url} alt="Business logo" /> : <div className="logo-placeholder">Logo</div>}
               <label className="file-upload">
@@ -248,8 +250,20 @@ export default function SettingsPage() {
                 {uploading ? 'Uploading...' : 'Upload logo'}
                 <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleLogoUpload} />
               </label>
-              <Input label="Invoice accent color" type="color" value={form.invoice_brand_color} onChange={(e) => updateField('invoice_brand_color', e.target.value)} />
+              <ColorPicker label="Brand color" value={form.invoice_brand_color} onChange={(hex) => updateField('invoice_brand_color', hex)} />
               <Textarea label="Invoice footer" rows={4} className="span-2" value={form.invoice_footer} onChange={(e) => updateField('invoice_footer', e.target.value)} />
+            </div>
+
+            <div className="palette-preview">
+              <span className="palette-preview__label">Derived palette — this one color generates every shade your document templates use</span>
+              <div className="palette-preview__swatches">
+                {Object.entries(derivePalette(form.invoice_brand_color)).map(([role, hex]) => (
+                  <div className="palette-preview__swatch" key={role}>
+                    <span className="palette-preview__chip" style={{ background: hex }} />
+                    <span className="palette-preview__role">{role}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </Card>
         </FeatureGate>
