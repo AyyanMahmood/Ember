@@ -20,15 +20,6 @@
   min-width: 0;
 }
 
-.topbar__eyebrow {
-  font-size: var(--text-overline);
-  font-weight: var(--weight-black);
-  color: var(--color-blue);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0;
-}
-
 .topbar__title {
   font-size: var(--text-heading-lg);
   font-weight: var(--weight-extrabold);
@@ -46,83 +37,17 @@
   flex-wrap: wrap;
 }
 
-.topbar__menu-btn {
-  display: none;
-}
-
-@media (max-width: 920px) {
-  .topbar__menu-btn {
-    display: inline-flex;
-  }
-}
-
-.topbar__search {
-  display: none;
-}
-
-@media (min-width: 920px) {
-  .topbar__search {
-    display: block;
-    flex: 1;
-    max-width: 24rem;
-    margin-left: var(--space-8);
-  }
-}
-
-.topbar__user-menu {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.topbar__user-avatar {
+.topbar__avatar-link {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 50%;
-  background: var(--color-avatar-fallback-bg);
-  color: var(--color-ink);
-  font-size: 0.8rem;
-  font-weight: var(--weight-black);
-  border: 1px solid var(--color-line);
-}
-
-.topbar__user-name {
-  display: none;
-  font-size: var(--text-body-sm);
-  font-weight: var(--weight-bold);
-  color: var(--color-ink);
-}
-
-@media (min-width: 1200px) {
-  .topbar__user-name {
-    display: inline;
-  }
-}
-
-.topbar__notifications {
-  position: relative;
-}
-
-.topbar__notification-btn {
-  position: relative;
-}
-
-.topbar__notification-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 1rem;
-  height: 1rem;
-  padding: 0 0.25rem;
   border-radius: var(--radius-full);
-  background: var(--color-danger);
-  color: white;
-  font-size: 0.65rem;
-  font-weight: var(--weight-black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.topbar__avatar-link:hover {
+  transform: scale(1.05);
+}
+
+.topbar__avatar-link:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
 }
