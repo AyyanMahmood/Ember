@@ -1,13 +1,15 @@
 import { Download, Minus, Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/Button.jsx';
+import { useMemo, useRef, useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Button, IconButton } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input, Select, Textarea } from '../components/ui/Input.jsx';
+import { ConfirmDialog } from '../components/ui/Modal.jsx';
 import FeatureGate from '../components/FeatureGate.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { createProposal, getProfile } from '../services/api.js';
 import { CURRENCIES } from '../utils/invoice.js';
+import { formatMoney } from '../utils/format.js';
 import { exportProposalPdf } from '../utils/pdf.js';
 
 const templates = {
@@ -54,21 +56,52 @@ const templates = {
   },
 };
 
+const DEFAULT_TEMPLATE = 'Website development';
+
 export default function ProposalFormPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [template, setTemplate] = useState('Website development');
-  const [form, setForm] = useState({
-    client_name: '',
-    title: templates['Website development'].title,
-    project_summary: templates['Website development'].project_summary,
-    scope: templates['Website development'].scope,
-    timeline: templates['Website development'].timeline,
-    currency: 'USD',
-  });
-  const [items, setItems] = useState(templates['Website development'].items);
+  const location = useLocation();
+  const duplicateFrom = location.state?.duplicateFrom;
+
+  const [template, setTemplate] = useState(duplicateFrom?.template || DEFAULT_TEMPLATE);
+  const [form, setForm] = useState(() => (
+    duplicateFrom
+      ? {
+          client_name: duplicateFrom.client_name || '',
+          title: `Copy of ${duplicateFrom.title}`,
+          project_summary: duplicateFrom.project_summary || '',
+          scope: duplicateFrom.scope || '',
+          timeline: duplicateFrom.timeline || '',
+          currency: duplicateFrom.currency || 'USD',
+        }
+      : {
+          client_name: '',
+          title: templates[DEFAULT_TEMPLATE].title,
+          project_summary: templates[DEFAULT_TEMPLATE].project_summary,
+          scope: templates[DEFAULT_TEMPLATE].scope,
+          timeline: templates[DEFAULT_TEMPLATE].timeline,
+          currency: 'USD',
+        }
+  ));
+  const [items, setItems] = useState(() => (
+    duplicateFrom
+      ? duplicateFrom.proposal_items.map((item) => ({ title: item.title, description: item.description || '', amount: item.amount }))
+      : templates[DEFAULT_TEMPLATE].items
+  ));
+  const [dirty, setDirty] = useState(Boolean(duplicateFrom));
+  const [pendingTemplate, setPendingTemplate] = useState(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [focusItemIndex, setFocusItemIndex] = useState(null);
+  const titleRefs = useRef([]);
+
+  useEffect(() => {
+    if (focusItemIndex !== null && titleRefs.current[focusItemIndex]) {
+      titleRefs.current[focusItemIndex].focus();
+      setFocusItemIndex(null);
+    }
+  }, [focusItemIndex, items.length]);
 
   const amount = useMemo(() => items.reduce((sum, item) => sum + Number(item.amount || 0), 0), [items]);
   const proposal = useMemo(() => ({ ...form, template, amount, proposal_items: items }), [form, template, amount, items]);
@@ -83,23 +116,45 @@ export default function ProposalFormPage() {
       timeline: templates[value].timeline,
     }));
     setItems(templates[value].items);
+    setDirty(false);
+  }
+
+  function handleTemplateChange(value) {
+    if (dirty) {
+      setPendingTemplate(value);
+    } else {
+      applyTemplate(value);
+    }
+  }
+
+  function confirmTemplateSwitch() {
+    applyTemplate(pendingTemplate);
+    setPendingTemplate(null);
   }
 
   function updateField(field, value) {
+    setDirty(true);
     setForm((current) => ({ ...current, [field]: value }));
   }
 
   function updateItem(index, field, value) {
+    setDirty(true);
     setItems((current) =>
       current.map((item, itemIndex) => (itemIndex === index ? { ...item, [field]: value } : item))
     );
   }
 
   function addItem() {
-    setItems((current) => [...current, { title: '', description: '', amount: 0 }]);
+    setDirty(true);
+    setItems((current) => {
+      const next = [...current, { title: '', description: '', amount: 0 }];
+      setFocusItemIndex(next.length - 1);
+      return next;
+    });
   }
 
   function removeItem(index) {
+    setDirty(true);
     setItems((current) => (current.length === 1 ? current : current.filter((_item, itemIndex) => itemIndex !== index)));
   }
 
@@ -147,15 +202,15 @@ export default function ProposalFormPage() {
       <div className="page-stack page-stack--narrow">
       <div className="page-header">
         <div>
-          <p className="eyebrow">New proposal</p>
-          <h2 className="heading-xl">Start from a template and tailor the scope.</h2>
+          <p className="eyebrow">{duplicateFrom ? 'Duplicate proposal' : 'New proposal'}</p>
+          <h2 className="heading-xl">{duplicateFrom ? 'Review and adjust the copied proposal.' : 'Start from a template and tailor the scope.'}</h2>
         </div>
       </div>
       <Card variant="default">
         <form className="form-grid" onSubmit={handleSubmit}>
           {error ? <p className="form-error span-2">{error}</p> : null}
-          <Select label="Template" value={template} onChange={(e) => applyTemplate(e.target.value)} options={Object.keys(templates).map((name) => ({ value: name, label: name }))} />
-          <Input label="Client name" required value={form.client_name} onChange={(e) => updateField('client_name', e.target.value)} />
+          <Select label="Template" value={template} onChange={(e) => handleTemplateChange(e.target.value)} options={Object.keys(templates).map((name) => ({ value: name, label: name }))} />
+          <Input label="Client name" required autoFocus value={form.client_name} onChange={(e) => updateField('client_name', e.target.value)} />
           <Input label="Proposal title" required className="span-2" value={form.title} onChange={(e) => updateField('title', e.target.value)} />
           <Textarea label="Project details" required rows={4} className="span-2" value={form.project_summary} onChange={(e) => updateField('project_summary', e.target.value)} />
           <Textarea label="Scope" required rows={5} className="span-2" value={form.scope} onChange={(e) => updateField('scope', e.target.value)} />
@@ -166,19 +221,57 @@ export default function ProposalFormPage() {
               <h3>Pricing</h3>
               <Button variant="ghost" size="sm" type="button" onClick={addItem} leftIcon={<Plus size={15} />}>Add item</Button>
             </div>
-            {items.map((item, index) => (
-              <div className="proposal-item-row" key={`${index}-${item.title}`}>
-                <Input label="Title" required value={item.title} onChange={(e) => updateItem(index, 'title', e.target.value)} />
-                <Input label="Description" value={item.description} onChange={(e) => updateItem(index, 'description', e.target.value)} />
-                <Input label="Amount" required type="number" min="0" step="0.01" value={item.amount} onChange={(e) => updateItem(index, 'amount', e.target.value)} />
-                <button type="button" className="icon-button item-remove" onClick={() => removeItem(index)} aria-label="Remove proposal item">
-                  <Minus size={16} />
-                </button>
-              </div>
-            ))}
+            <div className="proposal-item-row item-row--header" aria-hidden="true">
+              <span>Title</span>
+              <span>Description</span>
+              <span>Amount</span>
+              <span />
+            </div>
+            {items.map((item, index) => {
+              const isLast = index === items.length - 1;
+              return (
+                <div className="proposal-item-row" key={`${index}-${item.title}`}>
+                  <Input
+                    ref={(el) => { titleRefs.current[index] = el; }}
+                    aria-label="Title"
+                    placeholder="Title"
+                    required
+                    value={item.title}
+                    onChange={(e) => updateItem(index, 'title', e.target.value)}
+                  />
+                  <Input aria-label="Description" placeholder="Description" value={item.description} onChange={(e) => updateItem(index, 'description', e.target.value)} />
+                  <Input
+                    aria-label="Amount"
+                    placeholder="Amount"
+                    required
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={item.amount}
+                    onChange={(e) => updateItem(index, 'amount', e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && isLast) {
+                        e.preventDefault();
+                        addItem();
+                      }
+                    }}
+                  />
+                  <IconButton
+                    size="sm"
+                    className="icon-button--danger"
+                    onClick={() => removeItem(index)}
+                    aria-label="Remove proposal item"
+                    title="Remove item"
+                    disabled={items.length === 1}
+                  >
+                    <Minus size={16} />
+                  </IconButton>
+                </div>
+              );
+            })}
           </div>
-          <div className="totals-box span-2">
-            <strong>Total {new Intl.NumberFormat('en-US', { style: 'currency', currency: form.currency }).format(amount)}</strong>
+          <div className="totals-box totals-box--sticky span-2">
+            <strong>Total {formatMoney(amount, form.currency)}</strong>
           </div>
           <div className="form-actions span-2">
             <Button as={Link} variant="ghost" to="/app/proposals">Cancel</Button>
@@ -192,6 +285,16 @@ export default function ProposalFormPage() {
         </form>
       </Card>
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(pendingTemplate)}
+        onClose={() => setPendingTemplate(null)}
+        onConfirm={confirmTemplateSwitch}
+        title="Switch template?"
+        message="Switching templates replaces the title, summary, scope, timeline, and pricing you've entered. This can't be undone."
+        confirmLabel="Switch template"
+        variant="danger"
+      />
     </FeatureGate>
   );
 }
