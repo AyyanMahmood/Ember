@@ -302,10 +302,10 @@ Question every screen, spacing decision, interaction, hierarchy, and animation. 
 | Area | Status |
 |------|--------|
 | UI migration (legacy → canonical components) | Complete |
-| Design system (tokens, BEM, component library) | Established, still cream/light by default — dark-first token rebuild is Phase 1 of the active roadmap |
+| Design system (tokens, BEM, component library) | Dark-first token rebuild complete (roadmap Phase 1) |
 | Responsive foundation | Complete |
 | Page-level polish | In progress |
-| Dark mode | Preliminary tokens exist, needs full pass |
+| Dark mode | Complete — default theme, with explicit light-theme opt-in via `ThemeToggle` (roadmap Phase 1) |
 | Micro-interactions and animation | Basic transitions in place |
 | Premium redesign (OpenClaude-level polish) | Remaining work |
 | Trust/correctness fixes (fake metrics, blank status badge, checkout PII log, CORS) | Complete (roadmap Phase 0) |

@@ -82,7 +82,7 @@
   width: 2.4rem;
   height: 2.4rem;
   border-radius: 50%;
-  background: #E7DDCB;
+  background: var(--color-avatar-fallback-bg);
   color: var(--color-ink);
   font-size: 0.8rem;
   font-weight: var(--weight-black);

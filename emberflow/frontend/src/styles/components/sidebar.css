@@ -55,7 +55,7 @@
 
 .side-link:hover,
 .side-link.active {
-  background: #EDE4D4;
+  background: var(--color-surface-hover-strong);
   color: var(--color-ink);
 }
 
@@ -117,7 +117,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #E7DDCB;
+  background: var(--color-avatar-fallback-bg);
   color: var(--color-ink);
   font-weight: var(--weight-black);
 }
@@ -147,7 +147,7 @@
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(10, 10, 10, 0.38);
+  background: var(--color-overlay);
   z-index: 4;
 }
 

@@ -7,3 +7,4 @@ export { StatusBadge, Badge, Chip } from './Badge.jsx';
 export { Avatar, AvatarGroup, LogoPlaceholder } from './Avatar.jsx';
 export { EmptyState, EmptyStateIllustration } from './EmptyState.jsx';
 export { LoadingSpinner, LoadingOverlay, PageLoader, Skeleton, SkeletonCard, SkeletonTable } from './Loading.jsx';
+export { ThemeToggle } from './ThemeToggle.jsx';
