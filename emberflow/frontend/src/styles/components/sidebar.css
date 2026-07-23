@@ -1,6 +1,9 @@
+/* Sidebar colors are defined in frontend/src/styles/tokens.css under the "SIDEBAR" comment
+   block (--color-sidebar-*). This file only consumes them — retune the palette there. */
+
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--color-surface-glass);
+  background: var(--color-sidebar-bg);
   border-right: 1px solid var(--color-line);
   display: flex;
   flex-direction: column;
@@ -21,9 +24,10 @@
 }
 
 .brand-mark {
-  font-size: 1.18rem;
-  font-weight: var(--weight-black);
-  color: var(--color-ink);
+  font-size: 1.1rem;
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+  color: var(--color-sidebar-text);
   text-decoration: none;
 }
 
@@ -42,11 +46,12 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: 0.75rem 0.8rem;
+  padding: 0.7rem 0.8rem;
   border-radius: var(--radius-md);
-  font-weight: var(--weight-extrabold);
-  font-size: 0.9375rem;
-  color: var(--color-muted);
+  font-weight: var(--weight-medium);
+  font-size: 0.9rem;
+  letter-spacing: 0.005em;
+  color: var(--color-sidebar-text-muted);
   text-decoration: none;
   transition:
     background-color var(--duration-fast) var(--ease-out),
@@ -60,8 +65,9 @@
 }
 
 .side-link.active {
-  background: var(--color-accent-soft);
-  color: var(--color-accent-strong);
+  background: var(--color-sidebar-active);
+  color: var(--color-sidebar-active-text);
+  font-weight: var(--weight-semibold);
 }
 
 .side-link:focus-visible {
@@ -88,13 +94,13 @@
   align-items: center;
   padding: var(--space-2);
   border-radius: var(--radius-md);
-  color: var(--color-ink);
+  color: var(--color-sidebar-text);
   text-decoration: none;
   transition: background-color var(--duration-fast) var(--ease-out);
 }
 
 .account-summary:hover {
-  background: var(--color-surface-hover-strong);
+  background: var(--color-sidebar-hover);
 }
 
 .account-summary:focus-visible {
@@ -110,8 +116,8 @@
 
 .account-copy strong {
   font-size: var(--text-body-sm);
-  font-weight: var(--weight-bold);
-  color: var(--color-ink);
+  font-weight: var(--weight-semibold);
+  color: var(--color-sidebar-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -119,7 +125,7 @@
 
 .account-copy span {
   font-size: var(--text-caption);
-  color: var(--color-muted);
+  color: var(--color-sidebar-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
