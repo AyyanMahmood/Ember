@@ -1,4 +1,4 @@
-import { forwardRef, useId, useRef } from 'react';
+import { forwardRef, useEffect, useId, useRef } from 'react';
 import React from 'react';
 
 export const Input = forwardRef(function Input({
@@ -215,15 +215,29 @@ export const Checkbox = forwardRef(function Checkbox({
   id: providedId,
   disabled,
   required,
+  indeterminate = false,
   ...props
-}, ref) {
+}, forwardedRef) {
   const generatedId = useId();
   const id = providedId || generatedId;
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.indeterminate = indeterminate;
+    }
+  }, [indeterminate]);
+
+  const setRefs = (node) => {
+    inputRef.current = node;
+    if (typeof forwardedRef === 'function') forwardedRef(node);
+    else if (forwardedRef) forwardedRef.current = node;
+  };
 
   return (
     <label className={`checkbox-wrapper ${className}`.trim()}>
       <input
-        ref={ref}
+        ref={setRefs}
         type="checkbox"
         id={id}
         className="checkbox-input"

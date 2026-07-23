@@ -80,7 +80,11 @@ export const Chip = forwardRef(function Chip({
     muted: 'chip chip--muted',
   };
 
-  const classes = [variantClasses[variant] || variantClasses.default, className].filter(Boolean).join(' ');
+  const classes = [
+    variantClasses[variant] || variantClasses.default,
+    removable ? 'chip--removable' : '',
+    className,
+  ].filter(Boolean).join(' ');
 
   return (
     <span ref={ref} className={classes} {...props}>

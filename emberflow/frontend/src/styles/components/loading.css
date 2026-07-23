@@ -15,6 +15,12 @@
   animation: spin var(--duration-base) linear infinite;
 }
 
+.spinner--xs {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-width: 1.5px;
+}
+
 .spinner--sm {
   width: 0.75rem;
   height: 0.75rem;
@@ -24,6 +30,12 @@
 .spinner--lg {
   width: 1.5rem;
   height: 1.5rem;
+  border-width: 3px;
+}
+
+.spinner--xl {
+  width: 2.25rem;
+  height: 2.25rem;
   border-width: 3px;
 }
 
