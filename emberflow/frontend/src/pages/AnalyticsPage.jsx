@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import FeatureGate from '../components/FeatureGate.jsx';
 import { Card, StatCard } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
+import { EmptyState } from '../components/ui/EmptyState.jsx';
 import { listInvoices } from '../services/api.js';
 import { formatMoney } from '../utils/format.js';
 import { effectiveStatus } from '../utils/invoice.js';
@@ -38,12 +40,15 @@ export default function AnalyticsPage() {
     const bestClientsMap = new Map();
 
     paid.forEach((invoice) => {
+      const clientId = invoice.clients?.id || invoice.client_id;
       const clientName = invoice.clients?.company || invoice.clients?.name || 'Unknown client';
-      bestClientsMap.set(clientName, (bestClientsMap.get(clientName) || 0) + Number(invoice.total || 0));
+      const key = clientId || clientName;
+      const existing = bestClientsMap.get(key) || { id: clientId, name: clientName, revenue: 0 };
+      existing.revenue += Number(invoice.total || 0);
+      bestClientsMap.set(key, existing);
     });
 
-    const bestClients = [...bestClientsMap.entries()]
-      .map(([name, revenue]) => ({ name, revenue }))
+    const bestClients = [...bestClientsMap.values()]
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5);
 
@@ -64,12 +69,14 @@ export default function AnalyticsPage() {
       value: formatMoney(analytics.totalRevenue, analytics.currency),
       note: 'All paid invoices',
       icon: <ArrowUpRight size={18} />,
+      to: '/app/invoices?status=paid',
     },
     {
       label: 'Monthly revenue',
       value: formatMoney(analytics.monthlyRevenue, analytics.currency),
       note: 'Paid this month',
       icon: <ArrowUpRight size={18} />,
+      to: '/app/invoices?status=paid',
     },
     {
       label: 'Pending invoices',
@@ -78,6 +85,7 @@ export default function AnalyticsPage() {
       trend: analytics.pendingCount > 0 ? 'negative' : 'neutral',
       trendLabel: analytics.pendingCount > 0 ? 'Needs follow-up' : 'All caught up',
       icon: <ArrowDownRight size={18} />,
+      to: '/app/invoices?status=pending',
     },
     {
       label: 'Overdue invoices',
@@ -86,6 +94,7 @@ export default function AnalyticsPage() {
       trend: analytics.overdueCount > 0 ? 'negative' : 'positive',
       trendLabel: analytics.overdueCount > 0 ? 'Action required' : 'All current',
       icon: analytics.overdueCount > 0 ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />,
+      to: '/app/invoices?status=overdue',
     },
   ], [analytics]);
 
@@ -123,16 +132,17 @@ export default function AnalyticsPage() {
 
         <section className="stats-grid" aria-label="Key metrics">
           {statCards.map((stat, index) => (
-            <StatCard
-              key={index}
-              label={stat.label}
-              value={stat.value}
-              note={stat.note}
-              trend={stat.trend}
-              trendLabel={stat.trendLabel}
-            >
-              {stat.icon && <span className="stat-card__icon" aria-hidden="true">{stat.icon}</span>}
-            </StatCard>
+            <Link key={index} to={stat.to} className="stat-card-link">
+              <StatCard
+                label={stat.label}
+                value={stat.value}
+                note={stat.note}
+                trend={stat.trend}
+                trendLabel={stat.trendLabel}
+              >
+                {stat.icon && <span className="stat-card__icon" aria-hidden="true">{stat.icon}</span>}
+              </StatCard>
+            </Link>
           ))}
         </section>
 
@@ -142,16 +152,28 @@ export default function AnalyticsPage() {
             <span className="muted small">By paid revenue</span>
           </div>
           {analytics.bestClients.length === 0 ? (
-            <p className="muted">No paid invoices yet.</p>
+            <EmptyState
+              title="No paid invoices yet"
+              message="Once invoices are marked paid, your top clients by revenue will show up here."
+            />
           ) : (
               <div className="ranking-list">
-                {analytics.bestClients.map((client, index) => (
-                  <div className="ranking-row" key={client.name}>
-                    <span className="ranking-row__rank">{index + 1}</span>
-                    <span className="ranking-row__name">{client.name}</span>
-                    <span className="ranking-row__value">{formatMoney(client.revenue, analytics.currency)}</span>
-                  </div>
-                ))}
+                {analytics.bestClients.map((client, index) => {
+                  const content = (
+                    <>
+                      <span className="ranking-row__rank">{index + 1}</span>
+                      <span className="ranking-row__name">{client.name}</span>
+                      <span className="ranking-row__value">{formatMoney(client.revenue, analytics.currency)}</span>
+                    </>
+                  );
+                  return client.id ? (
+                    <Link to={`/app/clients/${client.id}`} className="ranking-row" key={client.id}>
+                      {content}
+                    </Link>
+                  ) : (
+                    <div className="ranking-row" key={client.name}>{content}</div>
+                  );
+                })}
               </div>
           )}
         </Card>
