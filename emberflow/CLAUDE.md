@@ -303,7 +303,7 @@ Question every screen, spacing decision, interaction, hierarchy, and animation. 
 |------|--------|
 | UI migration (legacy → canonical components) | Complete |
 | Design system (tokens, BEM, component library) | Dark-first token rebuild complete (roadmap Phase 1) |
-| Responsive foundation | Complete |
+| Responsive foundation | Complete, incl. system-wide audit (roadmap Phase 6.5) |
 | Page-level polish | In progress |
 | Dark mode | Complete — default theme, with explicit light-theme opt-in via `ThemeToggle` (roadmap Phase 1) |
 | Micro-interactions and animation | Basic transitions in place |
