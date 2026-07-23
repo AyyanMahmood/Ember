@@ -77,7 +77,6 @@ export function Modal({
           onClose();
         }
       }}
-      aria-hidden="true"
     >
       <section
         ref={modalRef}
@@ -132,6 +131,7 @@ export function Drawer({
   children,
   side = 'right',
   size = 'md',
+  closeOnEscape = true,
   className = '',
 }) {
   const drawerRef = useRef(null);
@@ -144,7 +144,7 @@ export function Drawer({
       drawerRef.current?.focus();
 
       const handleKeyDown = (event) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && closeOnEscape) {
           onClose();
         }
         if (event.key === 'Tab') {
@@ -159,7 +159,7 @@ export function Drawer({
         previousActiveElement.current?.focus();
       };
     }
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, closeOnEscape]);
 
   const trapFocus = (event) => {
     const focusableElements = drawerRef.current?.querySelectorAll(
