@@ -199,6 +199,12 @@
   padding: var(--space-4);
 }
 
+.totals-box--sticky {
+  position: sticky;
+  bottom: var(--space-4);
+  box-shadow: var(--shadow-lg);
+}
+
 .totals-box__label {
   font-weight: var(--weight-extrabold);
   color: var(--color-muted);

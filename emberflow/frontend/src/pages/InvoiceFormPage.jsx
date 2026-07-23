@@ -1,9 +1,10 @@
 import { Minus, Plus } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Button } from '../components/ui/Button.jsx';
+import { Button, IconButton } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input, Select, Textarea } from '../components/ui/Input.jsx';
+import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import UpgradeModal from '../components/UpgradeModal.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
@@ -40,6 +41,15 @@ export default function InvoiceFormPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [focusItemIndex, setFocusItemIndex] = useState(null);
+  const descriptionRefs = useRef([]);
+
+  useEffect(() => {
+    if (focusItemIndex !== null && descriptionRefs.current[focusItemIndex]) {
+      descriptionRefs.current[focusItemIndex].focus();
+      setFocusItemIndex(null);
+    }
+  }, [focusItemIndex, items.length]);
 
   useEffect(() => {
     async function load() {
@@ -93,7 +103,11 @@ export default function InvoiceFormPage() {
   }
 
   function addItem() {
-    setItems((current) => [...current, { ...emptyItem }]);
+    setItems((current) => {
+      const next = [...current, { ...emptyItem }];
+      setFocusItemIndex(next.length - 1);
+      return next;
+    });
   }
 
   function removeItem(index) {
@@ -136,7 +150,13 @@ export default function InvoiceFormPage() {
     }
   }
 
-  if (loading) return <div className="panel">Loading invoice...</div>;
+  if (loading) {
+    return (
+      <div className="page-stack" role="status" aria-live="polite">
+        <LoadingSpinner size="lg" label="Loading invoice..." />
+      </div>
+    );
+  }
 
   return (
     <div className="page-stack">
@@ -166,20 +186,61 @@ export default function InvoiceFormPage() {
               <h3>Items</h3>
               <Button variant="ghost" size="sm" type="button" onClick={addItem} leftIcon={<Plus size={15} />}>Add item</Button>
             </div>
-            {items.map((item, index) => (
-              <div className="item-row" key={`${index}-${item.description}`}>
-                <Input label="Description" required value={item.description} onChange={(e) => updateItem(index, 'description', e.target.value)} />
-                <Input label="Qty" required type="number" min="0" step="0.01" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', e.target.value)} />
-                <Input label="Price" required type="number" min="0" step="0.01" value={item.price} onChange={(e) => updateItem(index, 'price', e.target.value)} />
-                <Input label="Tax %" type="number" min="0" step="0.01" value={item.tax_rate} onChange={(e) => updateItem(index, 'tax_rate', e.target.value)} />
-                <button type="button" className="icon-button item-remove" onClick={() => removeItem(index)} aria-label="Remove item">
-                  <Minus size={16} />
-                </button>
-              </div>
-            ))}
+            <div className="item-row item-row--header" aria-hidden="true">
+              <span>Description</span>
+              <span>Qty</span>
+              <span>Price</span>
+              <span>Tax %</span>
+              <span>Line total</span>
+              <span />
+            </div>
+            {items.map((item, index) => {
+              const isLast = index === items.length - 1;
+              const lineTotal = Number(item.quantity || 0) * Number(item.price || 0) * (1 + Number(item.tax_rate || 0) / 100);
+              return (
+                <div className="item-row" key={`${index}-${item.description}`}>
+                  <Input
+                    ref={(el) => { descriptionRefs.current[index] = el; }}
+                    aria-label="Description"
+                    placeholder="Description"
+                    required
+                    value={item.description}
+                    onChange={(e) => updateItem(index, 'description', e.target.value)}
+                  />
+                  <Input aria-label="Quantity" placeholder="Qty" required type="number" min="0" step="0.01" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', e.target.value)} />
+                  <Input aria-label="Price" placeholder="Price" required type="number" min="0" step="0.01" value={item.price} onChange={(e) => updateItem(index, 'price', e.target.value)} />
+                  <Input
+                    aria-label="Tax percent"
+                    placeholder="Tax %"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={item.tax_rate}
+                    onChange={(e) => updateItem(index, 'tax_rate', e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && isLast) {
+                        e.preventDefault();
+                        addItem();
+                      }
+                    }}
+                  />
+                  <span className="item-row__total mono">{formatMoney(lineTotal, form.currency)}</span>
+                  <IconButton
+                    size="sm"
+                    className="icon-button--danger"
+                    onClick={() => removeItem(index)}
+                    aria-label="Remove item"
+                    title="Remove item"
+                    disabled={items.length === 1}
+                  >
+                    <Minus size={16} />
+                  </IconButton>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="totals-box span-2">
+          <div className="totals-box totals-box--sticky span-2">
             <span>Subtotal {formatMoney(totals.subtotal, form.currency)}</span>
             <span>Tax {formatMoney(totals.tax_total, form.currency)}</span>
             <span>Discount {formatMoney(totals.discount_total, form.currency)}</span>

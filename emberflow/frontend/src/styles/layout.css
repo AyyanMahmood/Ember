@@ -291,53 +291,6 @@
   color: var(--color-ink);
 }
 
-.item-row {
-  display: grid;
-  align-items: end;
-  gap: var(--space-3);
-  grid-template-columns: minmax(12rem, 1fr) 5rem 8rem 6rem 2.4rem;
-}
-
-@media (max-width: 920px) {
-  .item-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-.item-row__input {
-  width: 100%;
-}
-
-.item-row__remove {
-  margin-bottom: 0.05rem;
-}
-
-.proposal-item-row {
-  display: grid;
-  align-items: end;
-  gap: var(--space-3);
-  grid-template-columns: minmax(10rem, 0.8fr) minmax(14rem, 1fr) 8rem 2.4rem;
-}
-
-@media (max-width: 920px) {
-  .proposal-item-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-.totals-box,
-.invoice-totals {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  justify-content: flex-end;
-  padding: var(--space-4);
-  background: var(--color-surface-sunken);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-}
-
 .invoice-preview {
   display: grid;
   gap: var(--space-6);
@@ -1288,8 +1241,6 @@
   }
 
   .form-grid,
-  .item-row,
-  .proposal-item-row,
   .filters-row,
   .payment-form,
   .branding-box {

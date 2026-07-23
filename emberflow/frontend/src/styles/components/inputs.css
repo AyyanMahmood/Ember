@@ -443,20 +443,48 @@
 
 .items-editor .item-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
   gap: var(--space-3);
-  align-items: start;
+  align-items: center;
+}
+
+.items-editor .item-row--header {
+  padding: 0 0.1rem;
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.items-editor .item-row__total {
+  text-align: right;
+  padding-right: var(--space-2);
+  color: var(--color-ink);
+  font-weight: var(--weight-bold);
 }
 
 .items-editor .proposal-item-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr auto;
   gap: var(--space-3);
-  align-items: start;
+  align-items: center;
 }
 
-.items-editor .item-remove {
-  margin-top: 1.55rem;
+@media (max-width: 680px) {
+  .items-editor .item-row,
+  .items-editor .proposal-item-row {
+    grid-template-columns: 1fr;
+  }
+
+  .items-editor .item-row--header {
+    display: none;
+  }
+
+  .items-editor .item-row__total {
+    text-align: left;
+    padding-right: 0;
+  }
 }
 
 .password-control {
