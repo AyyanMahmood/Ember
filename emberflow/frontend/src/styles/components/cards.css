@@ -337,7 +337,7 @@ a.ranking-row:focus-visible {
 }
 
 .ranking-row__rank {
-  color: var(--color-blue);
+  color: var(--color-accent);
   font-weight: var(--weight-black);
 }
 

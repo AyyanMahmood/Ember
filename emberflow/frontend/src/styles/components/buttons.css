@@ -66,13 +66,13 @@
 .button--full { width: 100%; }
 
 .button--primary {
-  background: var(--color-blue);
+  background: var(--color-accent);
   color: #FFFFFF;
   border-color: transparent;
 }
 
 .button--primary:hover:not(:disabled) {
-  background: var(--color-blue-dark);
+  background: var(--color-accent-dark);
 }
 
 .button--secondary {

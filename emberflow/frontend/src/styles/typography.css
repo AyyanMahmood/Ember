@@ -83,7 +83,7 @@
   font-weight: var(--weight-black);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-blue);
+  color: var(--color-accent);
 }
 
 .mono {
@@ -95,7 +95,7 @@
 
 .text-ink { color: var(--color-ink); }
 .text-muted { color: var(--color-muted); }
-.text-blue { color: var(--color-blue); }
+.text-blue { color: var(--color-accent); }
 .text-success { color: var(--color-success); }
 .text-warning { color: var(--color-warning); }
 .text-danger { color: var(--color-danger); }

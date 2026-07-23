@@ -28,7 +28,7 @@
 }
 
 .brand-mark:hover {
-  color: var(--color-blue);
+  color: var(--color-accent);
   text-decoration: none;
 }
 
@@ -59,8 +59,8 @@
 }
 
 .side-link.active {
-  background: var(--color-blue-soft);
-  color: var(--color-blue-strong);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
 }
 
 .side-link:focus-visible {

@@ -21,8 +21,8 @@
   width: 3.5rem;
   height: 3.5rem;
   border-radius: var(--radius-lg);
-  background: var(--color-blue-soft);
-  color: var(--color-blue);
+  background: var(--color-surface-strong);
+  color: var(--color-muted);
   flex-shrink: 0;
 }
 

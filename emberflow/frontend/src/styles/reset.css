@@ -31,13 +31,13 @@ body {
 }
 
 a {
-  color: var(--color-blue);
+  color: var(--color-accent);
   text-decoration: none;
   transition: color var(--duration-fast) var(--ease-out);
 }
 
 a:hover {
-  color: var(--color-blue-dark);
+  color: var(--color-accent-dark);
   text-decoration: underline;
 }
 
@@ -119,8 +119,8 @@ hr {
 }
 
 ::selection {
-  background: var(--color-blue-soft);
-  color: var(--color-blue-strong);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
 }
 
 ::-webkit-scrollbar {

@@ -46,7 +46,7 @@
 .page-header__eyebrow {
   font-size: var(--text-overline);
   font-weight: var(--weight-black);
-  color: var(--color-blue);
+  color: var(--color-accent);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin: 0;
@@ -202,8 +202,8 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: var(--radius-md);
-  background: var(--color-blue-soft);
-  color: var(--color-blue);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
   margin-bottom: var(--space-2);
 }
 
@@ -233,7 +233,7 @@
   flex-wrap: wrap;
   padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-4);
-  background: var(--color-blue-soft);
+  background: var(--color-accent-soft);
   border: 1px solid var(--color-highlight-border);
   border-radius: var(--radius-md);
 }
@@ -314,7 +314,7 @@
 
 .ranking-row__rank {
   font-weight: var(--weight-black);
-  color: var(--color-blue);
+  color: var(--color-accent);
   font-size: var(--text-body-sm);
 }
 
@@ -423,7 +423,7 @@
 }
 
 .eyebrow {
-  color: var(--color-blue);
+  color: var(--color-accent);
   font-size: var(--text-overline);
   font-weight: var(--weight-black);
   margin: 0 0 var(--space-1);
@@ -595,7 +595,7 @@
   width: 1rem;
   height: 1rem;
   border: 2px solid var(--color-line);
-  border-top-color: var(--color-blue);
+  border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin var(--duration-base) linear infinite;
 }
@@ -900,7 +900,7 @@
 .usage-meter__fill {
   height: 100%;
   border-radius: var(--radius-full);
-  background: var(--color-blue);
+  background: var(--color-accent);
   transition: width var(--duration-slow) var(--ease-out);
 }
 
@@ -957,7 +957,7 @@
   width: 2rem;
   height: 2rem;
   border-radius: var(--radius-full);
-  background: var(--color-blue);
+  background: var(--color-accent);
   color: white;
   font-weight: var(--weight-black);
 }
@@ -1122,14 +1122,14 @@
 
 .legal-section ul li::before {
   content: "\2022";
-  color: var(--color-blue);
+  color: var(--color-accent);
   font-weight: var(--weight-black);
   left: 0;
   position: absolute;
 }
 
 .legal-section a {
-  color: var(--color-blue);
+  color: var(--color-accent);
   font-weight: var(--weight-extrabold);
 }
 
@@ -1149,7 +1149,7 @@
 }
 
 .legal-contact-cta a {
-  color: var(--color-blue);
+  color: var(--color-accent);
   font-weight: var(--weight-extrabold);
 }
 

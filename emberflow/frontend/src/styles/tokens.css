@@ -5,20 +5,24 @@
   /* Dark theme — the default, primary experience. Cool slate/graphite neutrals, no warm undertone. */
   --color-ink: #EDEFF3;
   --color-muted: #8B93A3;
-  --color-bg: #0B0D10;
-  --color-surface: #111318;
-  --color-surface-strong: #191C22;
-  --color-surface-glass: rgba(17, 19, 24, 0.72);
-  --color-surface-sunken: #0D0F13;
+  --color-bg: #0A0C0E;
+  --color-surface: #0F1114;
+  --color-surface-strong: #171A1F;
+  --color-surface-glass: rgba(15, 17, 20, 0.72);
+  --color-surface-sunken: #0C0E10;
   --color-surface-hover: rgba(255, 255, 255, 0.045);
   --color-surface-hover-strong: rgba(255, 255, 255, 0.075);
   --color-surface-stripe: rgba(255, 255, 255, 0.025);
-  --color-line: #262A32;
+  --color-line: #23262B;
 
-  --color-blue: #5B9DF9;
-  --color-blue-dark: #82B4FF;
-  --color-blue-soft: rgba(91, 157, 249, 0.16);
-  --color-blue-strong: #CBE1FF;
+  /* Primary accent — "Ember" terracotta, inspired by Anthropic/Claude's brand orange.
+     Kept deliberately muted/desaturated: never neon, never candy-bright. This is the ONLY
+     brand accent in the system — used for primary buttons, active nav, focus rings, links,
+     and interactive highlights. Do not add a second competing accent color. */
+  --color-accent: #DC8259;
+  --color-accent-dark: #E89E7C;
+  --color-accent-soft: rgba(220, 130, 89, 0.16);
+  --color-accent-strong: #F4CBB2;
 
   --color-success: #34D399;
   --color-success-soft: rgba(52, 211, 153, 0.14);
@@ -35,28 +39,39 @@
   --color-draft: #A9AFBC;
   --color-draft-soft: rgba(169, 175, 188, 0.14);
 
-  --color-input-bg: #14171C;
+  --color-input-bg: #131518;
 
-  --color-info-bg: rgba(91, 157, 249, 0.12);
-  --color-info-border: rgba(91, 157, 249, 0.35);
+  --color-info-bg: rgba(220, 130, 89, 0.1);
+  --color-info-border: rgba(220, 130, 89, 0.3);
 
-  --color-avatar-fallback-bg: #262B33;
-  --color-highlight-border: rgba(91, 157, 249, 0.5);
-  --shadow-highlight: 0 24px 60px rgba(91, 157, 249, 0.22);
-  --color-overlay-surface: rgba(11, 13, 16, 0.92);
+  --color-avatar-fallback-bg: #23262B;
+  --color-highlight-border: rgba(220, 130, 89, 0.5);
+  --shadow-highlight: 0 24px 60px rgba(220, 130, 89, 0.2);
+  --color-overlay-surface: rgba(10, 12, 14, 0.92);
 
-  --color-ambient-glow-1: rgba(91, 157, 249, 0.07);
-  --color-ambient-glow-2: rgba(91, 157, 249, 0.035);
+  --color-ambient-glow-1: rgba(220, 130, 89, 0.06);
+  --color-ambient-glow-2: rgba(220, 130, 89, 0.03);
 
   /* Theme-independent: a dark scrim behind modals/drawers reads correctly on both themes */
   --color-overlay: rgba(6, 8, 12, 0.4);
 
+  /* ── SIDEBAR ──────────────────────────────────────────────────────────
+     Everything the sidebar (frontend/src/styles/components/sidebar.css) uses lives here so
+     it can be retuned in one place. Deliberately near-black and separated from the content
+     area by nothing but .sidebar's 1px border-right (var(--color-line)) — no heavy divider. */
+  --color-sidebar-bg: #08090B;
+  --color-sidebar-text: #F4F1EC;
+  --color-sidebar-text-muted: #9B9689;
+  --color-sidebar-hover: rgba(220, 130, 89, 0.1);
+  --color-sidebar-active: rgba(220, 130, 89, 0.16);
+  --color-sidebar-active-text: #F0AE87;
+
   --radius-none: 0;
   --radius-xs: 2px;
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
   --radius-full: 9999px;
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.24);
@@ -65,7 +80,7 @@
   --shadow-elevated: 0 16px 36px rgba(0, 0, 0, 0.42);
   --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 30px 90px rgba(0, 0, 0, 0.55);
-  --shadow-focus: 0 0 0 3px rgba(91, 157, 249, 0.28);
+  --shadow-focus: 0 0 0 3px rgba(220, 130, 89, 0.3);
   --shadow-focus-danger: 0 0 0 3px rgba(248, 113, 113, 0.28);
 
   --space-1: 4px;
@@ -143,7 +158,8 @@
   --z-toast: 600;
 }
 
-/* Light theme — explicit opt-in via the theme toggle, persisted in localStorage. Cool slate neutrals, no cream/beige. */
+/* Light theme — explicit opt-in via the theme toggle, persisted in localStorage. Cool slate
+   neutrals, no cream/beige. Secondary experience — dark is primary; this gets a lighter pass. */
 :root[data-theme='light'] {
   --color-ink: #0F172A;
   --color-muted: #64748B;
@@ -157,10 +173,10 @@
   --color-surface-stripe: rgba(241, 245, 249, 0.35);
   --color-line: #E2E8F0;
 
-  --color-blue: #3B82F6;
-  --color-blue-dark: #2563EB;
-  --color-blue-soft: #DBEAFE;
-  --color-blue-strong: #1E40AF;
+  --color-accent: #C1602F;
+  --color-accent-dark: #A34E25;
+  --color-accent-soft: #FBE9DD;
+  --color-accent-strong: #7C3A18;
 
   --color-success: #067647;
   --color-success-soft: #DCFCE7;
@@ -179,16 +195,24 @@
 
   --color-input-bg: #FFFFFF;
 
-  --color-info-bg: #EFF6FF;
-  --color-info-border: #BFDBFE;
+  --color-info-bg: #FCEEE6;
+  --color-info-border: #F0C7AC;
 
   --color-avatar-fallback-bg: #E2E8F0;
-  --color-highlight-border: rgba(59, 130, 246, 0.55);
-  --shadow-highlight: 0 24px 60px rgba(59, 130, 246, 0.16);
+  --color-highlight-border: rgba(193, 96, 47, 0.5);
+  --shadow-highlight: 0 24px 60px rgba(193, 96, 47, 0.16);
   --color-overlay-surface: rgba(247, 248, 250, 0.92);
 
-  --color-ambient-glow-1: rgba(59, 130, 246, 0.08);
-  --color-ambient-glow-2: rgba(59, 130, 246, 0.04);
+  --color-ambient-glow-1: rgba(193, 96, 47, 0.07);
+  --color-ambient-glow-2: rgba(193, 96, 47, 0.035);
+
+  /* Sidebar stays dark even in light mode — dark is the primary sidebar experience. */
+  --color-sidebar-bg: #14110D;
+  --color-sidebar-text: #F4F1EC;
+  --color-sidebar-text-muted: #A79E8E;
+  --color-sidebar-hover: rgba(220, 130, 89, 0.14);
+  --color-sidebar-active: rgba(220, 130, 89, 0.2);
+  --color-sidebar-active-text: #F2B98F;
 
   --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
   --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.06);
@@ -196,7 +220,7 @@
   --shadow-elevated: 0 16px 36px rgba(15, 23, 42, 0.12);
   --shadow-lg: 0 20px 48px rgba(15, 23, 42, 0.1);
   --shadow-xl: 0 30px 90px rgba(15, 23, 42, 0.2);
-  --shadow-focus: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  --shadow-focus: 0 0 0 3px rgba(193, 96, 47, 0.25);
   --shadow-focus-danger: 0 0 0 3px rgba(180, 35, 24, 0.15);
 }
 

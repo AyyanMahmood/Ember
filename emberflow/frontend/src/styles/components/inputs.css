@@ -27,7 +27,7 @@
     border-color var(--duration-fast) var(--ease-out),
     box-shadow var(--duration-fast) var(--ease-out);
   outline: none;
-  caret-color: var(--color-blue);
+  caret-color: var(--color-accent);
 }
 
 .input::placeholder,
@@ -45,7 +45,7 @@
 .input:focus-visible,
 .textarea:focus-visible,
 .select:focus-visible {
-  border-color: var(--color-blue);
+  border-color: var(--color-accent);
   box-shadow: var(--shadow-focus);
 }
 
@@ -136,7 +136,7 @@
 }
 
 .input-with-addon:focus-within {
-  border-color: var(--color-blue);
+  border-color: var(--color-accent);
   box-shadow: var(--shadow-focus);
 }
 
@@ -223,8 +223,8 @@
 }
 
 .checkbox-input:checked + .checkbox-box {
-  background: var(--color-blue);
-  border-color: var(--color-blue);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 .checkbox-input:focus-visible + .checkbox-box {
@@ -237,8 +237,8 @@
 }
 
 .checkbox-wrapper:hover .checkbox-input:checked + .checkbox-box {
-  background: var(--color-blue-dark);
-  border-color: var(--color-blue-dark);
+  background: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
 }
 
 .checkbox-box::after {
@@ -292,7 +292,7 @@
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: var(--color-blue);
+  background: var(--color-accent);
   transform: scale(0);
   transition: transform var(--duration-fast) var(--ease-spring);
 }
@@ -302,7 +302,7 @@
 }
 
 .radio-input:checked + .radio-box {
-  border-color: var(--color-blue);
+  border-color: var(--color-accent);
 }
 
 .radio-input:checked + .radio-box::after {
@@ -319,7 +319,7 @@
 }
 
 .radio-wrapper:hover .radio-input:checked + .radio-box {
-  border-color: var(--color-blue-dark);
+  border-color: var(--color-accent-dark);
 }
 
 .radio-group {
@@ -369,11 +369,11 @@
 }
 
 .switch-input:checked + .switch-track {
-  background: var(--color-blue);
+  background: var(--color-accent);
 }
 
 .switch:hover .switch-input:checked + .switch-track {
-  background: var(--color-blue-dark);
+  background: var(--color-accent-dark);
 }
 
 .switch-input:checked + .switch-track .switch-thumb {
