@@ -18,10 +18,17 @@
   /* Primary accent — "Ember" terracotta, inspired by Anthropic/Claude's brand orange.
      Kept deliberately muted/desaturated: never neon, never candy-bright. This is the ONLY
      brand accent in the system — used for primary buttons, active nav, focus rings, links,
-     and interactive highlights. Do not add a second competing accent color. */
-  --color-accent: #DC8259;
+     and interactive highlights. Do not add a second competing accent color.
+     #C0603A chosen (over a lighter/brighter terracotta) specifically for contrast: white
+     button text on it is ~4.2:1, and it's ~4.6:1 against --color-bg as text/links — a
+     brighter accent looked nicer in isolation but fell to ~2.9:1 with white text, which is
+     the same class of readability bug this palette was introduced to fix. --color-accent-dark
+     is a brighter variant for text/icon hover emphasis; button hover darkens via a brightness
+     filter instead of swapping to this token, so hover can never converge with the text color
+     again (see .button--primary:hover in buttons.css). */
+  --color-accent: #C0603A;
   --color-accent-dark: #E89E7C;
-  --color-accent-soft: rgba(220, 130, 89, 0.16);
+  --color-accent-soft: rgba(192, 96, 58, 0.16);
   --color-accent-strong: #F4CBB2;
 
   --color-success: #34D399;
@@ -41,16 +48,16 @@
 
   --color-input-bg: #131518;
 
-  --color-info-bg: rgba(220, 130, 89, 0.1);
-  --color-info-border: rgba(220, 130, 89, 0.3);
+  --color-info-bg: rgba(192, 96, 58, 0.1);
+  --color-info-border: rgba(192, 96, 58, 0.3);
 
   --color-avatar-fallback-bg: #23262B;
-  --color-highlight-border: rgba(220, 130, 89, 0.5);
-  --shadow-highlight: 0 24px 60px rgba(220, 130, 89, 0.2);
+  --color-highlight-border: rgba(192, 96, 58, 0.5);
+  --shadow-highlight: 0 24px 60px rgba(192, 96, 58, 0.2);
   --color-overlay-surface: rgba(10, 12, 14, 0.92);
 
-  --color-ambient-glow-1: rgba(220, 130, 89, 0.06);
-  --color-ambient-glow-2: rgba(220, 130, 89, 0.03);
+  --color-ambient-glow-1: rgba(192, 96, 58, 0.06);
+  --color-ambient-glow-2: rgba(192, 96, 58, 0.03);
 
   /* Theme-independent: a dark scrim behind modals/drawers reads correctly on both themes */
   --color-overlay: rgba(6, 8, 12, 0.4);
@@ -62,8 +69,8 @@
   --color-sidebar-bg: #08090B;
   --color-sidebar-text: #F4F1EC;
   --color-sidebar-text-muted: #9B9689;
-  --color-sidebar-hover: rgba(220, 130, 89, 0.1);
-  --color-sidebar-active: rgba(220, 130, 89, 0.16);
+  --color-sidebar-hover: rgba(192, 96, 58, 0.1);
+  --color-sidebar-active: rgba(192, 96, 58, 0.16);
   --color-sidebar-active-text: #F0AE87;
 
   --radius-none: 0;
@@ -80,7 +87,7 @@
   --shadow-elevated: 0 16px 36px rgba(0, 0, 0, 0.42);
   --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 30px 90px rgba(0, 0, 0, 0.55);
-  --shadow-focus: 0 0 0 3px rgba(220, 130, 89, 0.3);
+  --shadow-focus: 0 0 0 3px rgba(192, 96, 58, 0.3);
   --shadow-focus-danger: 0 0 0 3px rgba(248, 113, 113, 0.28);
 
   --space-1: 4px;
@@ -211,8 +218,8 @@
   --color-sidebar-bg: #14110D;
   --color-sidebar-text: #F4F1EC;
   --color-sidebar-text-muted: #A79E8E;
-  --color-sidebar-hover: rgba(220, 130, 89, 0.14);
-  --color-sidebar-active: rgba(220, 130, 89, 0.2);
+  --color-sidebar-hover: rgba(192, 96, 58, 0.14);
+  --color-sidebar-active: rgba(192, 96, 58, 0.2);
   --color-sidebar-active-text: #F2B98F;
 
   --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);

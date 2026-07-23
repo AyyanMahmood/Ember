@@ -16,7 +16,8 @@
     border-color var(--duration-fast) var(--ease-out),
     color var(--duration-fast) var(--ease-out),
     transform var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
+    box-shadow var(--duration-fast) var(--ease-out),
+    filter var(--duration-fast) var(--ease-out);
 }
 
 .button:hover {
@@ -77,7 +78,7 @@
 }
 
 .button--primary:hover:not(:disabled) {
-  background: var(--color-accent-dark);
+  filter: brightness(0.92);
   color: #FFFFFF;
 }
 
