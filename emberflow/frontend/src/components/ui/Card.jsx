@@ -6,6 +6,8 @@ export const Card = forwardRef(function Card({
   className = '',
   variant = 'default',
   padding = true,
+  onClick,
+  onKeyDown,
   ...props
 }, ref) {
   const variantClasses = {
@@ -22,8 +24,26 @@ export const Card = forwardRef(function Card({
     className,
   ].filter(Boolean).join(' ');
 
+  const isInteractive = variant === 'interactive' && Boolean(onClick);
+
+  const handleKeyDown = (event) => {
+    onKeyDown?.(event);
+    if (isInteractive && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      onClick(event);
+    }
+  };
+
   return (
-    <section ref={ref} className={classes} {...props}>
+    <section
+      ref={ref}
+      className={classes}
+      onClick={onClick}
+      onKeyDown={isInteractive ? handleKeyDown : onKeyDown}
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      {...props}
+    >
       {children}
     </section>
   );

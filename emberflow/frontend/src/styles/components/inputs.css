@@ -42,9 +42,9 @@
   border-color: var(--color-muted);
 }
 
-.input:focus,
-.textarea:focus,
-.select:focus {
+.input:focus-visible,
+.textarea:focus-visible,
+.select:focus-visible {
   border-color: var(--color-blue);
   box-shadow: var(--shadow-focus);
 }
@@ -64,9 +64,9 @@
   background: var(--color-danger-soft);
 }
 
-.input--error:focus,
-.textarea--error:focus,
-.select--error:focus {
+.input--error:focus-visible,
+.textarea--error:focus-visible,
+.select--error:focus-visible {
   border-color: var(--color-danger);
   box-shadow: var(--shadow-focus-danger);
 }
@@ -92,7 +92,7 @@
   cursor: pointer;
 }
 
-.select:focus {
+.select:focus-visible {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233B82F6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
 
@@ -145,7 +145,7 @@
   flex: 1;
 }
 
-.input-with-addon .input:focus {
+.input-with-addon .input:focus-visible {
   box-shadow: none;
 }
 
@@ -336,7 +336,7 @@
   background: white;
   border-radius: 50%;
   box-shadow: var(--shadow-sm);
-  transition: transform var(--duration-fast) var(--ease-out);
+  transition: transform var(--duration-fast) var(--ease-spring);
 }
 
 .switch:hover .switch-track {
