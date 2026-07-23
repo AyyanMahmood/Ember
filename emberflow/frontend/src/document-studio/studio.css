@@ -244,12 +244,6 @@
 
 .template-selector__thumb-frame {
   overflow: hidden;
-  display: flex;
-  justify-content: center;
-}
-
-.template-selector__thumb-scale {
-  transform-origin: top center;
   pointer-events: none;
 }
 

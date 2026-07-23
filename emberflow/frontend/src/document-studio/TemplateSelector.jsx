@@ -3,24 +3,18 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { DOCUMENT_THEMES } from './themes.js';
 import { InvoiceDocument } from './InvoiceDocument.jsx';
 import { ProposalDocument } from './ProposalDocument.jsx';
-import { DOCUMENT_PAGE_WIDTH, DOCUMENT_PAGE_HEIGHT } from './DocumentTemplate.jsx';
-
-const THUMB_WIDTH = 220;
-const THUMB_SCALE = THUMB_WIDTH / DOCUMENT_PAGE_WIDTH;
+import { ScaledPreview } from './ScaledPreview.jsx';
 
 function ThemeThumbnail({ kind, data, profile, themeId }) {
   return (
-    <div className="template-selector__thumb-frame" style={{ height: DOCUMENT_PAGE_HEIGHT * THUMB_SCALE }}>
-      <div
-        className="template-selector__thumb-scale"
-        style={{ width: DOCUMENT_PAGE_WIDTH, height: DOCUMENT_PAGE_HEIGHT, transform: `scale(${THUMB_SCALE})` }}
-      >
+    <div className="template-selector__thumb-frame">
+      <ScaledPreview>
         {kind === 'invoice' ? (
           <InvoiceDocument invoice={data} profile={profile} themeId={themeId} />
         ) : (
           <ProposalDocument proposal={data} profile={profile} themeId={themeId} />
         )}
-      </div>
+      </ScaledPreview>
     </div>
   );
 }
