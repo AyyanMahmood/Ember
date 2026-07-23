@@ -555,6 +555,18 @@
   border-top: 1px solid var(--color-line);
 }
 
+.form-actions--sticky {
+  position: sticky;
+  bottom: var(--space-4);
+  z-index: 2;
+  margin-top: 0;
+  padding: var(--space-4);
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
 @media (max-width: 680px) {
   .form-actions {
     flex-direction: column;

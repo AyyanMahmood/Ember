@@ -2,8 +2,9 @@ import { ExternalLink, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Avatar } from '../components/ui/Avatar.jsx';
 import { Button } from '../components/ui/Button.jsx';
-import { Card } from '../components/ui/Card.jsx';
+import { Card, CardHeader } from '../components/ui/Card.jsx';
 import { Input, Select, Textarea } from '../components/ui/Input.jsx';
+import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import FeatureGate from '../components/FeatureGate.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
@@ -12,6 +13,29 @@ import { openBillingPortal, startCheckout } from '../services/subscriptions.js';
 import { supabase } from '../services/supabase.js';
 import { CURRENCIES } from '../utils/invoice.js';
 import { formatLimit, PLANS } from '../utils/plans.js';
+
+function UsageMeter({ label, used, limit }) {
+  const unlimited = !Number.isFinite(limit);
+  const pct = unlimited ? 0 : Math.min((used / limit) * 100, 100);
+  const near = !unlimited && pct >= 80;
+
+  return (
+    <div className="usage-meter">
+      <div className="usage-meter__header">
+        <span className="muted small">{label}</span>
+        <strong>{used} / {formatLimit(limit)}</strong>
+      </div>
+      {!unlimited && (
+        <div className="usage-meter__track">
+          <div
+            className={`usage-meter__fill ${near ? 'usage-meter__fill--warning' : ''}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -163,7 +187,13 @@ export default function SettingsPage() {
     }
   }
 
-  if (loading) return <Card variant="default">Loading settings...</Card>;
+  if (loading) {
+    return (
+      <div className="page-stack" role="status" aria-live="polite">
+        <LoadingSpinner size="lg" label="Loading settings..." />
+      </div>
+    );
+  }
 
   return (
     <div className="page-stack">
@@ -176,54 +206,60 @@ export default function SettingsPage() {
 
       {error ? <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card> : null}
 
-      <Card variant="default">
-        <form className="form-grid" onSubmit={handleSubmit}>
-          {error ? <p className="form-error span-2">{error}</p> : null}
-          {message ? <p className="form-success span-2">{message}</p> : null}
-          <div className="span-2 avatar-settings-row">
-            <Avatar
-              src={form.avatar_url}
-              name={form.full_name}
-              size="lg"
-            />
-            <label className="file-upload">
-              <Upload size={16} />
-              {uploadingAvatar ? 'Uploading...' : 'Upload avatar'}
-              <input type="file" accept="image/png,image/jpeg,image/webp" onChange={handleAvatarUpload} />
-            </label>
-          </div>
-          <Input label="Name" required value={form.full_name} onChange={(e) => updateField('full_name', e.target.value)} />
-          <Input label="Business name" value={form.business_name} onChange={(e) => updateField('business_name', e.target.value)} />
-          <Input label="Email" required type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} />
-          <Input label="Phone" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />
-          <Input label="Country" value={form.country} onChange={(e) => updateField('country', e.target.value)} />
-          <Select label="Default currency" value={form.currency} onChange={(e) => updateField('currency', e.target.value)} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
-          <Textarea label="Address" rows={3} className="span-2" value={form.address} onChange={(e) => updateField('address', e.target.value)} />
-          <Input label="Invoice prefix" value={form.invoice_prefix} onChange={(e) => updateField('invoice_prefix', e.target.value.toUpperCase())} />
-          <Textarea label="Payment instructions" rows={4} className="span-2" value={form.payment_instructions} onChange={(e) => updateField('payment_instructions', e.target.value)} />
+      <form className="page-stack" onSubmit={handleSubmit}>
+        {message ? <p className="form-success">{message}</p> : null}
 
-          <div className="span-2">
-            <FeatureGate feature="branding" title="Invoice branding" message="Upgrade to Pro to add logo and custom invoice branding.">
-              <div className="branding-box">
-                {form.logo_url ? <img src={form.logo_url} alt="Business logo" /> : <div className="logo-placeholder">Logo</div>}
-                <label className="file-upload">
-                  <Upload size={16} />
-                  {uploading ? 'Uploading...' : 'Upload logo'}
-                  <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleLogoUpload} />
-                </label>
-                <Input label="Invoice accent color" type="color" value={form.invoice_brand_color} onChange={(e) => updateField('invoice_brand_color', e.target.value)} />
-                <Textarea label="Invoice footer" rows={4} className="span-2" value={form.invoice_footer} onChange={(e) => updateField('invoice_footer', e.target.value)} />
-              </div>
-            </FeatureGate>
+        <Card variant="default">
+          <CardHeader title="Profile" subtitle="Your name and how clients see you." />
+          <div className="form-grid">
+            <div className="span-2 avatar-settings-row">
+              <Avatar src={form.avatar_url} name={form.full_name} size="lg" />
+              <label className="file-upload">
+                <Upload size={16} />
+                {uploadingAvatar ? 'Uploading...' : 'Upload avatar'}
+                <input type="file" accept="image/png,image/jpeg,image/webp" onChange={handleAvatarUpload} />
+              </label>
+            </div>
+            <Input label="Name" required value={form.full_name} onChange={(e) => updateField('full_name', e.target.value)} />
+            <Input label="Email" required type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} />
+            <Input label="Phone" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />
+            <Input label="Country" value={form.country} onChange={(e) => updateField('country', e.target.value)} />
           </div>
+        </Card>
 
-          <div className="form-actions span-2">
-            <Button variant="primary" disabled={saving} type="submit">
-              {saving ? 'Saving...' : 'Save settings'}
-            </Button>
+        <Card variant="default">
+          <CardHeader title="Business & invoicing" subtitle="Used on generated invoices and proposals." />
+          <div className="form-grid">
+            <Input label="Business name" value={form.business_name} onChange={(e) => updateField('business_name', e.target.value)} />
+            <Select label="Default currency" value={form.currency} onChange={(e) => updateField('currency', e.target.value)} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
+            <Input label="Invoice prefix" value={form.invoice_prefix} onChange={(e) => updateField('invoice_prefix', e.target.value.toUpperCase())} />
+            <Textarea label="Address" rows={3} className="span-2" value={form.address} onChange={(e) => updateField('address', e.target.value)} />
+            <Textarea label="Payment instructions" rows={4} className="span-2" value={form.payment_instructions} onChange={(e) => updateField('payment_instructions', e.target.value)} />
           </div>
-        </form>
-      </Card>
+        </Card>
+
+        <FeatureGate feature="branding" title="Invoice branding" message="Upgrade to Pro to add logo and custom invoice branding.">
+          <Card variant="default">
+            <CardHeader title="Branding" subtitle="Logo and accent color shown on invoice PDFs." />
+            <div className="branding-box">
+              {form.logo_url ? <img src={form.logo_url} alt="Business logo" /> : <div className="logo-placeholder">Logo</div>}
+              <label className="file-upload">
+                <Upload size={16} />
+                {uploading ? 'Uploading...' : 'Upload logo'}
+                <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleLogoUpload} />
+              </label>
+              <Input label="Invoice accent color" type="color" value={form.invoice_brand_color} onChange={(e) => updateField('invoice_brand_color', e.target.value)} />
+              <Textarea label="Invoice footer" rows={4} className="span-2" value={form.invoice_footer} onChange={(e) => updateField('invoice_footer', e.target.value)} />
+            </div>
+          </Card>
+        </FeatureGate>
+
+        <div className="form-actions form-actions--sticky">
+          <Button variant="primary" disabled={saving} type="submit">
+            {saving ? 'Saving...' : 'Save settings'}
+          </Button>
+        </div>
+      </form>
 
       <Card variant="default">
         <div className="panel__header">
@@ -238,18 +274,8 @@ export default function SettingsPage() {
           ) : null}
         </div>
         <div className="subscription-grid">
-          <div>
-            <span className="muted small">Invoice usage</span>
-            <strong>
-              {subscription.usage.invoicesThisMonth} / {formatLimit(subscription.invoiceLimit)}
-            </strong>
-          </div>
-          <div>
-            <span className="muted small">Client usage</span>
-            <strong>
-              {subscription.usage.clients} / {formatLimit(subscription.clientLimit)}
-            </strong>
-          </div>
+          <UsageMeter label="Invoice usage" used={subscription.usage.invoicesThisMonth} limit={subscription.invoiceLimit} />
+          <UsageMeter label="Client usage" used={subscription.usage.clients} limit={subscription.clientLimit} />
           <div>
             <span className="muted small">Status</span>
             <strong>{subscription.subscription?.status || 'active'}</strong>
