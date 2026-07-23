@@ -28,8 +28,6 @@ module.exports = async function handler(req, res) {
     let customerId = subscription?.paddle_customer_id;
     if (!customerId) {
       const existing = await paddleFetch(`/customers?email=${encodeURIComponent(user.email)}`);
-console.log("Existing customer search:");
-console.log(JSON.stringify(existing, null, 2));
       if (existing && existing.length > 0) {
         customerId = existing[0].id;
       } else {
