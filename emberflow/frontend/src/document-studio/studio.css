@@ -91,6 +91,17 @@
   scrollbar-gutter: stable;
 }
 
+/* Phone: trim the preview-surface padding so the scaled document gets the
+   available width instead of losing 48px of it to gutters. Applies to both the
+   inline preview on the invoice/proposal detail pages and the form bottom
+   sheet (this selector is intentionally not scoped under .studio-preview, since
+   the detail pages render the surface standalone). */
+@media (max-width: 680px) {
+  .studio-preview__surface {
+    padding: var(--space-4);
+  }
+}
+
 /* Tablet: keep the split but let it narrow before stacking */
 @media (max-width: 1200px) {
   .studio-layout {

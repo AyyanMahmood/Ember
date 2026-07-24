@@ -433,7 +433,12 @@
 
 .items-editor .item-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+  /* minmax(0, …) lets each cell shrink below its input's intrinsic min-content
+     width; bare 1fr/2fr tracks resolve to minmax(auto, …), so the number/text
+     inputs would refuse to shrink and push the row past the viewport in the
+     tablet band (681–920px) where the studio is single-column and this row is
+     still six columns. */
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: var(--space-3);
   align-items: center;
 }
@@ -456,7 +461,7 @@
 
 .items-editor .proposal-item-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: var(--space-3);
   align-items: center;
 }
