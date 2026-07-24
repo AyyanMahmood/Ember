@@ -149,6 +149,7 @@ export function EmberSelect({
   }
 
   const triggerLabel = selectedOption?.label || (value ? String(value) : '');
+  const activeDescId = activeIndex >= 0 && filtered[activeIndex] ? `${id}-opt-${activeIndex}` : undefined;
 
   return (
     <div className={`input-wrapper ${className}`.trim()} ref={containerRef}>
@@ -193,8 +194,12 @@ export function EmberSelect({
                   type="text"
                   value={query}
                   placeholder="Search…"
+                  role="combobox"
                   aria-label={label ? `Search ${label}` : 'Search'}
+                  aria-expanded="true"
                   aria-controls={listboxId}
+                  aria-autocomplete="list"
+                  aria-activedescendant={activeDescId}
                   autoComplete="off"
                   onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
                   onKeyDown={onKeyDown}
@@ -209,7 +214,7 @@ export function EmberSelect({
               role="listbox"
               tabIndex={searchable ? -1 : 0}
               aria-label={label || undefined}
-              aria-activedescendant={activeIndex >= 0 && filtered[activeIndex] ? `${id}-opt-${activeIndex}` : undefined}
+              aria-activedescendant={searchable ? undefined : activeDescId}
               onKeyDown={searchable ? undefined : onKeyDown}
             >
               {filtered.length === 0 ? (
