@@ -1,0 +1,171 @@
+/* ── EmberSelect ─────────────────────────────────────────────────────────
+   Themed replacement for a native <select>: a button trigger matched to the
+   .input surface, opening a floating listbox in the Ember design language. */
+
+.ember-select {
+  position: relative;
+  width: 100%;
+}
+
+.ember-select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-input-bg);
+  color: var(--color-ink);
+  padding: 0.78rem 0.85rem;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.ember-select__trigger:hover:not(:disabled) {
+  border-color: var(--color-muted);
+}
+
+.ember-select__trigger:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+.ember-select__trigger[aria-expanded='true'] {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+.ember-select__trigger:disabled {
+  background: var(--color-bg);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ember-select__trigger--error {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.ember-select__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ember-select__value--placeholder {
+  color: var(--color-muted);
+  opacity: 0.7;
+}
+
+.ember-select__chevron {
+  flex-shrink: 0;
+  color: var(--color-muted);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.ember-select__trigger[aria-expanded='true'] .ember-select__chevron {
+  transform: rotate(180deg);
+}
+
+.ember-select__panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  right: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  max-height: 18rem;
+  padding: var(--space-1);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
+  box-shadow: var(--shadow-xl);
+  animation: color-picker-in var(--duration-fast) var(--ease-out);
+  transform-origin: top center;
+}
+
+.ember-select__search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-2);
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-muted);
+}
+
+.ember-select__search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--color-ink);
+  font-size: var(--text-body-sm);
+  font-family: inherit;
+  padding: 0.6rem 0;
+}
+
+.ember-select__search input::placeholder {
+  color: var(--color-muted);
+  opacity: 0.6;
+}
+
+.ember-select__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.ember-select__list:focus-visible {
+  outline: none;
+}
+
+.ember-select__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0.55rem 0.6rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-size: var(--text-body-sm);
+  cursor: pointer;
+}
+
+.ember-select__option-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ember-select__option svg {
+  flex-shrink: 0;
+  color: var(--color-accent);
+}
+
+.ember-select__option--active {
+  background: var(--color-surface-hover-strong);
+}
+
+.ember-select__option--selected {
+  font-weight: var(--weight-medium);
+}
+
+.ember-select__empty {
+  padding: var(--space-4) var(--space-2);
+  text-align: center;
+  color: var(--color-muted);
+  font-size: var(--text-body-sm);
+}
