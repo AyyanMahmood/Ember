@@ -1130,6 +1130,15 @@
     flex-direction: column;
   }
 
+  /* Tighten the vertical rhythm between stacked page sections by one step on
+     phones (20 → 16px). Most visible on list pages whose first card content
+     starts flush at the card's top edge (e.g. Proposals, where the table
+     reflows to cards and the panel's top padding is cancelled), so the header
+     → first-card gap otherwise reads loose. */
+  .page-stack {
+    gap: var(--space-4);
+  }
+
   .form-grid,
   .filters-row,
   .payment-form,
