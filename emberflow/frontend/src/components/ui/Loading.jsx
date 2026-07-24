@@ -70,7 +70,7 @@ export function Skeleton({ variant = 'text', width, height, className = '', anim
 
 export function SkeletonCard({ className = '', lines = 3, avatar = false, action = false, ...props }) {
   return (
-    <div className={`skeleton skeleton--card ${className}`.trim()} {...props} aria-hidden="true">
+    <div className={`skeleton-card ${className}`.trim()} {...props} aria-hidden="true">
       {avatar && <Skeleton variant="avatar" className="skeleton-card__avatar" />}
       <div className="skeleton-card__content">
         <Skeleton variant="heading" className="skeleton-card__title" />
