@@ -54,6 +54,12 @@ export default function ClientFormPage() {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
+  function updatePhone(value) {
+    // Allow digits plus the punctuation international numbers use
+    // (+, spaces, hyphens, parens); reject letters.
+    updateField('phone', value.replace(/[^\d+\-\s()]/g, ''));
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setSaving(true);
@@ -91,7 +97,14 @@ export default function ClientFormPage() {
           <Input label="Name" required autoFocus value={form.name} onChange={(e) => updateField('name', e.target.value)} />
           <Input label="Email" type="email" required value={form.email} onChange={(e) => updateField('email', e.target.value)} />
           <Input label="Company" value={form.company} onChange={(e) => updateField('company', e.target.value)} />
-          <Input label="Phone" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />
+          <Input
+            label="Phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={form.phone}
+            onChange={(e) => updatePhone(e.target.value)}
+          />
           <EmberSelect label="Country" searchable placeholder="Select country" value={form.country} onChange={(value) => updateField('country', value)} options={COUNTRY_OPTIONS} />
           <Textarea label="Notes" rows={5} className="span-2" value={form.notes} onChange={(e) => updateField('notes', e.target.value)} />
           <div className="form-actions span-2">
