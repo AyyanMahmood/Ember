@@ -66,6 +66,7 @@ export default function AppLayout() {
 
   return (
     <div className={`app-shell ${collapsed ? 'app-shell--collapsed' : ''}`}>
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       {open && <div className="sidebar-overlay" onClick={() => setOpen(false)} />}
       <aside className={`sidebar ${open ? 'sidebar--open' : ''} ${collapsed ? 'sidebar--collapsed' : ''}`}>
         <div className="brand-row">
@@ -166,7 +167,7 @@ export default function AppLayout() {
             </NavLink>
           </div>
         </header>
-        <main className="content">
+        <main className="content" id="main-content" tabIndex={-1}>
           <Outlet />
         </main>
       </div>
