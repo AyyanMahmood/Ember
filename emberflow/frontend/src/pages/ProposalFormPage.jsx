@@ -4,13 +4,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, IconButton } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input, Select, Textarea } from '../components/ui/Input.jsx';
+import { EmberSelect } from '../components/ui/EmberSelect.jsx';
 import { ConfirmDialog } from '../components/ui/Modal.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import FeatureGate from '../components/FeatureGate.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
 import { createProposal, getProfile } from '../services/api.js';
-import { CURRENCIES } from '../utils/invoice.js';
+import { CURRENCY_OPTIONS } from '../data/currencies.js';
 import { formatMoney } from '../utils/format.js';
 import { ProposalDocument } from '../document-studio/ProposalDocument.jsx';
 import { ScaledPreview } from '../document-studio/ScaledPreview.jsx';
@@ -266,7 +267,7 @@ export default function ProposalFormPage() {
                   <Textarea label="Project details" required rows={4} className="span-2" value={form.project_summary} onChange={(e) => updateField('project_summary', e.target.value)} />
                   <Textarea label="Scope" required rows={5} className="span-2" value={form.scope} onChange={(e) => updateField('scope', e.target.value)} />
                   <Input label="Timeline" required value={form.timeline} onChange={(e) => updateField('timeline', e.target.value)} />
-                  <Select label="Currency" value={form.currency} onChange={(e) => updateField('currency', e.target.value)} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
+                  <EmberSelect label="Currency" searchable value={form.currency} onChange={(value) => updateField('currency', value)} options={CURRENCY_OPTIONS} />
                 </div>
               </Card>
 

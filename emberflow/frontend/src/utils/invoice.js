@@ -1,5 +1,4 @@
 export const INVOICE_STATUSES = ['draft', 'sent', 'paid', 'overdue'];
-export const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'PKR', 'INR'];
 
 export function normalizeInvoiceItems(items) {
   return items

@@ -4,13 +4,15 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Button, IconButton } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input, Select, Textarea } from '../components/ui/Input.jsx';
+import { EmberSelect } from '../components/ui/EmberSelect.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import UpgradeModal from '../components/UpgradeModal.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
 import { createInvoice, getInvoice, getProfile, listClients, updateInvoice } from '../services/api.js';
 import { formatMoney, addDaysISO, todayISO } from '../utils/format.js';
-import { CURRENCIES, INVOICE_STATUSES, calculateInvoiceTotals, nextInvoiceNumber, normalizeInvoiceItems } from '../utils/invoice.js';
+import { INVOICE_STATUSES, calculateInvoiceTotals, nextInvoiceNumber, normalizeInvoiceItems } from '../utils/invoice.js';
+import { CURRENCY_OPTIONS } from '../data/currencies.js';
 import { InvoiceDocument } from '../document-studio/InvoiceDocument.jsx';
 import { ScaledPreview } from '../document-studio/ScaledPreview.jsx';
 import { TemplateSelector } from '../document-studio/TemplateSelector.jsx';
@@ -244,7 +246,7 @@ export default function InvoiceFormPage() {
                 ]} />
                 <Input label="Invoice date" type="date" required value={form.invoice_date} onChange={(e) => updateField('invoice_date', e.target.value)} />
                 <Input label="Due date" type="date" required value={form.due_date} onChange={(e) => updateField('due_date', e.target.value)} />
-                <Select label="Currency" value={form.currency} onChange={(e) => updateField('currency', e.target.value)} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
+                <EmberSelect label="Currency" searchable value={form.currency} onChange={(value) => updateField('currency', value)} options={CURRENCY_OPTIONS} />
                 <Select label="Status" value={form.status} onChange={(e) => updateField('status', e.target.value)} options={INVOICE_STATUSES.map((s) => ({ value: s, label: s }))} />
                 <Input label="Discount" type="number" min="0" step="0.01" value={form.discount_total} onChange={(e) => updateField('discount_total', e.target.value)} />
                 <Textarea label="Notes" rows={4} className="span-2" value={form.notes} onChange={(e) => updateField('notes', e.target.value)} />

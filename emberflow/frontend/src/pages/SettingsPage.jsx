@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { Avatar } from '../components/ui/Avatar.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Card, CardHeader } from '../components/ui/Card.jsx';
-import { Input, Select, Textarea } from '../components/ui/Input.jsx';
+import { Input, Textarea } from '../components/ui/Input.jsx';
+import { EmberSelect } from '../components/ui/EmberSelect.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import FeatureGate from '../components/FeatureGate.jsx';
 import { useAuth } from '../hooks/useAuth.js';
@@ -11,7 +12,7 @@ import { useSubscription } from '../hooks/useSubscription.js';
 import { getProfile, upsertProfile } from '../services/api.js';
 import { openBillingPortal, startCheckout } from '../services/subscriptions.js';
 import { supabase } from '../services/supabase.js';
-import { CURRENCIES } from '../utils/invoice.js';
+import { CURRENCY_OPTIONS } from '../data/currencies.js';
 import { formatLimit, PLANS } from '../utils/plans.js';
 import { ColorPicker } from '../document-studio/ColorPicker.jsx';
 import { derivePalette } from '../document-studio/color.js';
@@ -233,7 +234,7 @@ export default function SettingsPage() {
           <CardHeader title="Business & invoicing" subtitle="Used on generated invoices and proposals." />
           <div className="form-grid">
             <Input label="Business name" value={form.business_name} onChange={(e) => updateField('business_name', e.target.value)} />
-            <Select label="Default currency" value={form.currency} onChange={(e) => updateField('currency', e.target.value)} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
+            <EmberSelect label="Default currency" searchable value={form.currency} onChange={(value) => updateField('currency', value)} options={CURRENCY_OPTIONS} />
             <Input label="Invoice prefix" value={form.invoice_prefix} onChange={(e) => updateField('invoice_prefix', e.target.value.toUpperCase())} />
             <Textarea label="Address" rows={3} className="span-2" value={form.address} onChange={(e) => updateField('address', e.target.value)} />
             <Textarea label="Payment instructions" rows={4} className="span-2" value={form.payment_instructions} onChange={(e) => updateField('payment_instructions', e.target.value)} />
