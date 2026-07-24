@@ -244,7 +244,7 @@ export default function SettingsPage() {
           <Card variant="default">
             <CardHeader title="Branding" subtitle="Logo and brand color used across every invoice and proposal template." />
             <div className="branding-box">
-              {form.logo_url ? <img src={form.logo_url} alt="Business logo" /> : <div className="logo-placeholder">Logo</div>}
+              {form.logo_url ? <img src={form.logo_url} alt="Business logo" decoding="async" /> : <div className="logo-placeholder">Logo</div>}
               <label className="file-upload">
                 <Upload size={16} />
                 {uploading ? 'Uploading...' : 'Upload logo'}

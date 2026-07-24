@@ -48,6 +48,8 @@ export const Avatar = forwardRef(function Avatar({
           src={src}
           alt={alt || name || 'Avatar'}
           className="avatar__image"
+          loading="lazy"
+          decoding="async"
           onError={(e) => {
             e.currentTarget.style.display = 'none';
             e.currentTarget.nextElementSibling?.style.setProperty('display', 'flex');
