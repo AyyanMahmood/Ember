@@ -9,6 +9,10 @@
     />
     <meta name="theme-color" content="#0A0C0E" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#F7F8FA" media="(prefers-color-scheme: light)" />
+    <!-- Tells Chromium's Auto Dark Theme the page already implements both
+         schemes correctly, so it stops force-inverting light mode (the cause
+         of light mode rendering as a washed blue-grey on Android Chrome/Arc). -->
+    <meta name="color-scheme" content="light dark" />
     <title>EmberFlow</title>
     <script>
       (function () {
