@@ -1,7 +1,7 @@
 /* ── Landing page — dedicated stylesheet ─────────────────────────────────
-   Kept separate from layout.css's shared marketing classes (.hero-section,
-   .feature-grid, .pricing-section, etc.) which FeaturesPage/PricingPage still
-   use, so rebuilding this page can't regress those. Prefixed .lp- throughout. */
+   Kept separate from layout.css's shared marketing classes (.feature-grid,
+   .pricing-grid, etc.) which FeaturesPage/PricingPage still use, so
+   rebuilding this page can't regress those. Prefixed .lp- throughout. */
 
 .lp-reveal {
   opacity: 0;

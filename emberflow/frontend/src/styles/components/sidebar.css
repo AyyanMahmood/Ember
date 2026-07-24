@@ -241,43 +241,6 @@
   text-overflow: ellipsis;
 }
 
-.avatar-preview {
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid var(--color-line);
-}
-
-.avatar-fallback {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: var(--color-avatar-fallback-bg);
-  color: var(--color-ink);
-  font-weight: var(--weight-black);
-}
-
-.avatar-preview--sm,
-.avatar-fallback--sm {
-  width: 2rem;
-  height: 2rem;
-  font-size: 0.75rem;
-}
-
-.avatar-preview--md,
-.avatar-fallback--md {
-  width: 2.4rem;
-  height: 2.4rem;
-  font-size: 0.8rem;
-}
-
-.avatar-preview--lg,
-.avatar-fallback--lg {
-  width: 4rem;
-  height: 4rem;
-  font-size: 1.15rem;
-}
-
 .sidebar-overlay {
   display: none;
   position: fixed;

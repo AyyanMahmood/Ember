@@ -57,24 +57,14 @@
   cursor: not-allowed;
 }
 
-.input--error,
-.textarea--error,
-.select--error {
+.input--error {
   border-color: var(--color-danger);
   background: var(--color-danger-soft);
 }
 
-.input--error:focus-visible,
-.textarea--error:focus-visible,
-.select--error:focus-visible {
+.input--error:focus-visible {
   border-color: var(--color-danger);
   box-shadow: var(--shadow-focus-danger);
-}
-
-.input--success,
-.textarea--success,
-.select--success {
-  border-color: var(--color-success);
 }
 
 .textarea {
@@ -485,42 +475,6 @@
     text-align: left;
     padding-right: 0;
   }
-}
-
-.password-control {
-  position: relative;
-  display: grid;
-}
-
-.password-control .input {
-  padding-right: 3rem;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-sm);
-  color: var(--color-muted);
-  cursor: pointer;
-  padding: 0;
-  transition: color var(--duration-fast) var(--ease-out);
-}
-
-.password-toggle:hover {
-  color: var(--color-ink);
-}
-
-.password-toggle:focus-visible {
-  box-shadow: var(--shadow-focus);
 }
 
 .form-grid {
