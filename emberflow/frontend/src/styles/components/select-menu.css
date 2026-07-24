@@ -5,6 +5,7 @@
 .ember-select {
   position: relative;
   width: 100%;
+  min-width: 0;
 }
 
 .ember-select__trigger {
@@ -62,6 +63,7 @@
 
 .ember-select__value {
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

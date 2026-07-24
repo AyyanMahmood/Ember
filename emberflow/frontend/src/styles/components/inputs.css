@@ -16,6 +16,12 @@
 .textarea,
 .select {
   width: 100%;
+  /* Allow the control to shrink inside a grid/flex cell. Without this, form
+     controls keep min-width:auto and refuse to shrink below their intrinsic
+     content width — a native <select> below its widest option (e.g. a long
+     client company name on the invoice form) or a type=date widget — which
+     forces the column wider than the viewport on narrow phones. */
+  min-width: 0;
   border: 1.5px solid var(--color-line);
   border-radius: var(--radius-md);
   background: var(--color-input-bg);
