@@ -139,6 +139,16 @@
     padding: 0 var(--space-4);
   }
 
+  /* Stacked (card) tables never scroll horizontally, so they don't need the
+     edge-to-edge bleed above — it also zeroes out top/bottom spacing, which
+     collapses the gap against sibling filters/bulk-action bars and makes the
+     first/last card sit flush while later content (e.g. pagination) doesn't.
+     Let the panel's own padding govern spacing on all sides instead. */
+  .table-wrap:has(.table--stack) {
+    margin: 0;
+    padding: 0;
+  }
+
   .table {
     min-width: 100%;
   }
@@ -208,6 +218,20 @@
 
   .table--stack td.table__expand {
     justify-content: flex-start;
+  }
+
+  /* Pagination controls (page-size select + first/prev/pages/next/last) are a
+     non-wrapping flex row that can exceed a 360px viewport once there are a
+     few page buttons — wrap them instead of letting the row force overflow. */
+  .table__pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .table__pages {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
 
