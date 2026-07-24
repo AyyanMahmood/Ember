@@ -2,7 +2,8 @@ import { Plus, Search, Filter, Edit, Trash2, FilePlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, IconButton } from "../components/ui/Button.jsx";
-import { Input, Select } from "../components/ui/Input.jsx";
+import { Input } from "../components/ui/Input.jsx";
+import { EmberSelect } from "../components/ui/EmberSelect.jsx";
 import { Card } from "../components/ui/Card.jsx";
 import { Table } from "../components/ui/Table.jsx";
 import { EmptyState } from "../components/ui/EmptyState.jsx";
@@ -174,11 +175,10 @@ export default function ClientsPage() {
             leftIcon={<Search size={16} />}
             className="filters-row__input"
           />
-          <Select
+          <EmberSelect
             value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            options={countries.map((c) => ({ value: c, label: c }))}
-            placeholder="All countries"
+            onChange={(value) => setCountry(value)}
+            options={[{ value: '', label: 'All countries' }, ...countries.map((c) => ({ value: c, label: c }))]}
             leftIcon={<Filter size={16} />}
             className="filters-row__select"
           />

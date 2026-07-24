@@ -31,6 +31,7 @@ export function EmberSelect({
   hint,
   id: providedId,
   emptyMessage = 'No matches',
+  leftIcon,
   className = '',
 }) {
   const generatedId = useId();
@@ -175,6 +176,7 @@ export function EmberSelect({
           onClick={() => (open ? closeMenu() : openMenu())}
           onKeyDown={onKeyDown}
         >
+          {leftIcon && <span className="ember-select__icon" aria-hidden="true">{leftIcon}</span>}
           <span className={`ember-select__value${triggerLabel ? '' : ' ember-select__value--placeholder'}`}>
             {triggerLabel || placeholder}
           </span>

@@ -3,9 +3,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input, Textarea } from '../components/ui/Input.jsx';
+import { EmberSelect } from '../components/ui/EmberSelect.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { createClient, getClient, updateClient } from '../services/api.js';
+import { COUNTRY_OPTIONS } from '../data/countries.js';
 
 const initialForm = {
   name: '',
@@ -90,7 +92,7 @@ export default function ClientFormPage() {
           <Input label="Email" type="email" required value={form.email} onChange={(e) => updateField('email', e.target.value)} />
           <Input label="Company" value={form.company} onChange={(e) => updateField('company', e.target.value)} />
           <Input label="Phone" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />
-          <Input label="Country" value={form.country} onChange={(e) => updateField('country', e.target.value)} />
+          <EmberSelect label="Country" searchable placeholder="Select country" value={form.country} onChange={(value) => updateField('country', value)} options={COUNTRY_OPTIONS} />
           <Textarea label="Notes" rows={5} className="span-2" value={form.notes} onChange={(e) => updateField('notes', e.target.value)} />
           <div className="form-actions span-2">
             <Button as={Link} variant="ghost" to="/app/clients">Cancel</Button>

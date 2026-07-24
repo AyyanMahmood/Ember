@@ -13,6 +13,7 @@ import { getProfile, upsertProfile } from '../services/api.js';
 import { openBillingPortal, startCheckout } from '../services/subscriptions.js';
 import { supabase } from '../services/supabase.js';
 import { CURRENCY_OPTIONS } from '../data/currencies.js';
+import { COUNTRY_OPTIONS } from '../data/countries.js';
 import { formatLimit, PLANS } from '../utils/plans.js';
 import { ColorPicker } from '../document-studio/ColorPicker.jsx';
 import { derivePalette } from '../document-studio/color.js';
@@ -226,7 +227,7 @@ export default function SettingsPage() {
             <Input label="Name" required value={form.full_name} onChange={(e) => updateField('full_name', e.target.value)} />
             <Input label="Email" required type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} />
             <Input label="Phone" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />
-            <Input label="Country" value={form.country} onChange={(e) => updateField('country', e.target.value)} />
+            <EmberSelect label="Country" searchable placeholder="Select country" value={form.country} onChange={(value) => updateField('country', value)} options={COUNTRY_OPTIONS} />
           </div>
         </Card>
 

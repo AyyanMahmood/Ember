@@ -54,7 +54,14 @@
   background: var(--color-danger-soft);
 }
 
+.ember-select__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--color-muted);
+}
+
 .ember-select__value {
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
