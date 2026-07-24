@@ -311,3 +311,26 @@ Question every screen, spacing decision, interaction, hierarchy, and animation. 
 | Trust/correctness fixes (fake metrics, blank status badge, checkout PII log, CORS) | Complete (roadmap Phase 0) |
 
 A full audit and a 10-phase implementation roadmap toward a dark-first, white-label-ready premium redesign is in progress on `opclaude-redesign`. See `PROJECT_STATUS.md` → "Redesign Roadmap Progress" for phase-by-phase status.
+
+---
+
+## ⏸️ RESUME HERE — Release Candidate QA (active mode, 2026-07-24)
+
+**Current mode: RELEASE CANDIDATE QA.** The user is doing real-device QA on **Arc Browser for Android (Chromium/Blink)**, test device **Samsung Galaxy A06 (~360px CSS width)**. They send bugs in **batches with screenshots**; wait for a batch before acting.
+
+**Rules for this phase (strict):**
+- **No new features** unless the user explicitly asks. Prioritize stability over polish.
+- Fix **only** the bugs in the current batch. **No unrelated refactors** (note critical nearby issues separately instead of fixing them).
+- **Commit every 3–4 logical fixes**, run `npm run build` (in `frontend/`), confirm green **before continuing**.
+- Diagnose root causes from code + screenshots. **No speculative CSS.** If a cause can't be confidently located, tell the user the exact component / CSS file / selector / grid-flex container instead of guessing.
+
+**Branch:** `opclaude-redesign`. Working tree was clean at handoff. Last relevant commits (newest first):
+- `ae2efb7` Fix crumpled landing navbar on mobile (retarget `.marketing-nav__inner`, the real flex container; `layout.css`)
+- `787aacb` Widen EmberSelect search icon→text gap 8→12px (`.ember-select__search`)
+- `8904341` Invoice mobile overflow fix: `min-width:0` on `.input/.textarea/.select` + `.ember-select`/`__value` (native Client `<select>` couldn't shrink → root cause). **Unverified on real device** — user to confirm with a long client company name.
+- `3197897` Tighten mobile `page-stack` gap 20→16px
+- Earlier this session: EmberSelect component + centralized `src/data/currencies.js` & `src/data/countries.js` (Palestine pinned first, Israel + ILS excluded — **do not change**), Phase 7 (perf/a11y/hardening: code-splitting, ErrorBoundary, skip link, touch targets) complete.
+
+**Known open item (deferred, do NOT do unprompted):** spacing tokens are **px**; migrating to rem is only worthwhile if paired with unpinning `html { font-size: 16px }` (`reset.css:8`) — recommended as its own tracked, device-tested task, not during RC QA.
+
+**Verification limitation:** no headless browser / real Android device available in-session — fixes are verified by build + code analysis, not on-device rendering. Say so honestly; ask the user to confirm on Arc/Android.
