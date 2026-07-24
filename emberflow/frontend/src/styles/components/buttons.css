@@ -217,3 +217,16 @@
   width: 20px;
   height: 20px;
 }
+
+/*
+ * Touch targets: on coarse pointers (touch), compact row-action icon buttons
+ * grow to the 44px minimum tap target while keeping their 16px glyph. Desktop
+ * (fine pointer) density is unaffected. The icon column reflows to cards on
+ * phones (Phase 6.5), so these are the primary touch controls.
+ */
+@media (pointer: coarse) {
+  .icon-button--sm {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}

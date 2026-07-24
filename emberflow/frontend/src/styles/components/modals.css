@@ -189,3 +189,11 @@
   }
 }
 
+/* Touch: enlarge the dialog close button to a 44px tap target. */
+@media (pointer: coarse) {
+  .modal-close {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
