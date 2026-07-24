@@ -314,7 +314,7 @@ A full audit and a 10-phase implementation roadmap toward a dark-first, white-la
 
 ---
 
-## ⏸️ RESUME HERE — Release Candidate QA (active mode, 2026-07-24)
+## ⏸️ RESUME HERE — Release Candidate QA (active mode, 2026-07-25)
 
 **Current mode: RELEASE CANDIDATE QA.** The user is doing real-device QA on **Arc Browser for Android (Chromium/Blink)**, test device **Samsung Galaxy A06 (~360px CSS width)**. They send bugs in **batches with screenshots**; wait for a batch before acting.
 
@@ -325,11 +325,16 @@ A full audit and a 10-phase implementation roadmap toward a dark-first, white-la
 - Diagnose root causes from code + screenshots. **No speculative CSS.** If a cause can't be confidently located, tell the user the exact component / CSS file / selector / grid-flex container instead of guessing.
 
 **Branch:** `opclaude-redesign`. Working tree was clean at handoff. Last relevant commits (newest first):
+- `987f6c4` Widen EmberSelect search field left padding 8→16px + search→list gap 4→8px (`select-menu.css`, Batch 2 #3/#4)
+- `e348c13` Client phone field: `type="tel"`/`inputMode="tel"` + strip non-digit/punctuation chars on change (`ClientFormPage.jsx`, Batch 2 #2)
+- `e6e585c` Invoice/Client list mobile fix (Batch 2 #1, release-blocking): root cause was `.table-wrap`'s mobile negative-margin/zero-padding bleed (`tables.css`) — written for horizontally-scrolling tables, but also applied to `.table--stack` (card) tables where it zeroed out vertical spacing and collided with sibling filters-row/pagination. Scoped the bleed off for `.table--stack` via `:has()`; also made `.table__pagination-controls`/`.table__pages` wrap instead of forcing a non-wrapping row that could exceed 360px. Applies to both InvoicesPage and ClientsPage (both use `pagination` + `filters-row`, same shared `Table` component). **Unverified on real device** — ask user to confirm on Arc/Android.
 - `ae2efb7` Fix crumpled landing navbar on mobile (retarget `.marketing-nav__inner`, the real flex container; `layout.css`)
 - `787aacb` Widen EmberSelect search icon→text gap 8→12px (`.ember-select__search`)
-- `8904341` Invoice mobile overflow fix: `min-width:0` on `.input/.textarea/.select` + `.ember-select`/`__value` (native Client `<select>` couldn't shrink → root cause). **Unverified on real device** — user to confirm with a long client company name.
+- `8904341` Invoice mobile overflow fix: `min-width:0` on `.input/.textarea/.select` + `.ember-select`/`__value` (native Client `<select>` couldn't shrink → root cause).
 - `3197897` Tighten mobile `page-stack` gap 20→16px
-- Earlier this session: EmberSelect component + centralized `src/data/currencies.js` & `src/data/countries.js` (Palestine pinned first, Israel + ILS excluded — **do not change**), Phase 7 (perf/a11y/hardening: code-splitting, ErrorBoundary, skip link, touch targets) complete.
+- Earlier: EmberSelect component + centralized `src/data/currencies.js` & `src/data/countries.js` (Palestine pinned first, Israel + ILS excluded — **do not change**), Phase 7 (perf/a11y/hardening) complete.
+
+**Batch 2 open item — theme toggle unreliable on real device (Priority 4, NOT fixed):** Investigated `useTheme.js` (single `ThemeProvider` at `main.jsx` root, `toggleTheme` uses a correct functional `setState` updater — no stale-closure or double-registration bug), `ThemeToggle.jsx`/`IconButton` (plain single `onClick`, no custom touch/pointer handling), and z-index stacking (`sidebar-overlay` only renders while the mobile nav is open, so it can't be silently covering the topbar). Found no JS logic bug. The one structurally mobile-relevant fact: `.topbar` (`topbar.css:6`) uses `position: sticky; top: 0`, which is a known category of Android-Chrome touch/hit-testing flakiness (visual vs. layout viewport drift during the dynamic URL-bar show/hide animation) — plausible but **unconfirmed**, since this environment can't reproduce real Android touch behavior. Did not patch speculatively per the user's explicit instruction. Before touching code, ask the user for repro detail: does the failed tap happen right after scrolling (supports the sticky-header theory) or at rest; does it need a double-tap; light→dark vs dark→light equally affected. Files to hand-inspect if the user wants to skip the Q&A: `frontend/src/styles/components/topbar.css` (sticky positioning), `frontend/src/hooks/useTheme.js`, `frontend/src/components/ui/ThemeToggle.jsx`.
 
 **Known open item (deferred, do NOT do unprompted):** spacing tokens are **px**; migrating to rem is only worthwhile if paired with unpinning `html { font-size: 16px }` (`reset.css:8`) — recommended as its own tracked, device-tested task, not during RC QA.
 
