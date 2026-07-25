@@ -351,6 +351,9 @@ User clarified after seeing Batch 4's two-column result: keep Raycast as a **pro
 6. No Raycast assets/colors/copy anywhere — confirmed via code review, only Ember tokens and existing icons used.
 **Not yet confirmed on-device.**
 
+**Batch 6 (2026-07-25), commit `ec05f15` — build green:**
+Desktop shouldn't need scrolling to reach a field; mobile stays exactly as-is (explicit instruction). Everything below is gated behind `@media (min-width: 768px)` — nothing changes on mobile. Signup (the longer form) now: Name+Email share one row via a new `.auth-card__row` grid (single-column below 768px, so mobile still stacks them the same as always), plus another tightening pass on top of Batch 5's (`.auth-page` outer padding/gap, card padding, form gap, label-to-input gap all step down further at desktop width). Estimated ~600px total content height for signup including card chrome — not measured in an actual browser (no headless browser available, see below), so if a real desktop viewport still requires scrolling, tell me the exact window height and I'll cut further rather than guessing again.
+
 **Verification limitation (ongoing, all sessions so far):** no headless browser or real Android device available in this container — Playwright's bundled Chromium doesn't support macOS 12 here, and `chromium-cli` isn't installed. All fixes are verified by `npm run build` + code/CSS reasoning only, not on-device rendering. Always say so explicitly and ask the user to confirm on Arc/Android before treating a fix as done.
 
 **Branch:** `opclaude-redesign`. Prior batches (newest first, before Batch 3 above):
