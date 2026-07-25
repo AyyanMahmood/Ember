@@ -1,10 +1,10 @@
 import { Check, FileText, Lock, Receipt, Sparkles, Trash2, Upload } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, IconButton } from '../components/ui/Button.jsx';
+import { Badge } from '../components/ui/Badge.jsx';
 import { Card, CardHeader } from '../components/ui/Card.jsx';
 import { Textarea } from '../components/ui/Input.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
-import FeatureGate from '../components/FeatureGate.jsx';
 import UpgradeModal from '../components/UpgradeModal.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
@@ -36,21 +36,25 @@ function friendlyBrandError(err, context) {
   return "Something went wrong saving your brand settings. Please try again.";
 }
 
-function LockedPreview({ profile, onUpgrade }) {
+// A single card/control can be individually locked (rather than gating the
+// whole page) so Free users still see exactly what Pro unlocks in place --
+// same blur+badge language as the Templates page's locked template cards.
+function ProLock({ isPro, onUpgrade, label, children }) {
+  if (isPro) return children;
   return (
-    <div className="brand-studio__locked-preview">
-      <ScaledPreview>
-        <InvoiceDocument invoice={DEMO_INVOICE} profile={profile} />
-      </ScaledPreview>
-      <div className="brand-studio__lock-overlay">
+    <div className="brand-studio__locked-inline">
+      {/* inert (not just pointer-events:none) so a keyboard user can't tab into
+          the blurred controls underneath and activate them -- pointer-events
+          alone blocks clicks but not focus/Enter-key activation. */}
+      <div className="brand-studio__locked-inline-content" aria-hidden="true" inert="">{children}</div>
+      <div className="brand-studio__locked-inline-overlay">
         <span className="brand-studio__lock-badge">
-          <Lock size={16} />
+          <Lock size={13} />
           Pro
         </span>
-        <p>Your logo, brand color, and font render here once you upgrade.</p>
-        <Button variant="primary" size="sm" type="button" onClick={onUpgrade}>
-          Upgrade to Pro
-        </Button>
+        <button type="button" className="brand-studio__locked-inline-cta" onClick={onUpgrade}>
+          Unlock {label} with Pro
+        </button>
       </div>
     </div>
   );
@@ -165,17 +169,25 @@ function BrandControls({
   logoError,
   accentEnabled,
   onAccentEnabledChange,
+  isPro,
+  onUpgrade,
 }) {
   return (
     <div className="page-stack brand-studio__controls">
       <Card variant="default" className="brand-studio__card">
-        <CardHeader title="Logo" subtitle="Appears on every invoice and proposal you send." />
-        <LogoDropzone
-          logoUrl={form.logo_url}
-          uploadingLogo={uploadingLogo}
-          onUploadLogo={onUploadLogo}
-          onRemoveLogo={onRemoveLogo}
+        <CardHeader
+          title="Logo"
+          subtitle="Appears on every invoice and proposal you send."
+          action={!isPro && <Badge variant="blue" size="sm">Pro</Badge>}
         />
+        <ProLock isPro={isPro} onUpgrade={onUpgrade} label="logo upload">
+          <LogoDropzone
+            logoUrl={form.logo_url}
+            uploadingLogo={uploadingLogo}
+            onUploadLogo={onUploadLogo}
+            onRemoveLogo={onRemoveLogo}
+          />
+        </ProLock>
         {logoError && <p className="input-error" role="alert">{logoError}</p>}
       </Card>
 
@@ -184,30 +196,38 @@ function BrandControls({
         <div className="brand-studio__color-row">
           <ColorPicker label="Primary" value={form.invoice_brand_color} onChange={(hex) => onChange('invoice_brand_color', hex)} />
         </div>
-        <label className="checkbox-wrapper brand-studio__accent-toggle">
-          <input
-            type="checkbox"
-            className="checkbox-input"
-            checked={accentEnabled}
-            onChange={(e) => onAccentEnabledChange(e.target.checked)}
-          />
-          <span className="checkbox-box" aria-hidden="true" />
-          <span className="checkbox-label">Use a custom accent color</span>
-        </label>
-        {accentEnabled && (
-          <div className="brand-studio__color-row brand-studio__color-row--accent">
-            <ColorPicker
-              label="Accent override"
-              value={form.brand_accent_color || form.invoice_brand_color}
-              onChange={(hex) => onChange('brand_accent_color', hex)}
+        <ProLock isPro={isPro} onUpgrade={onUpgrade} label="a custom accent color">
+          <label className="checkbox-wrapper brand-studio__accent-toggle">
+            <input
+              type="checkbox"
+              className="checkbox-input"
+              checked={accentEnabled}
+              onChange={(e) => onAccentEnabledChange(e.target.checked)}
             />
-          </div>
-        )}
+            <span className="checkbox-box" aria-hidden="true" />
+            <span className="checkbox-label">Use a custom accent color</span>
+          </label>
+          {accentEnabled && (
+            <div className="brand-studio__color-row brand-studio__color-row--accent">
+              <ColorPicker
+                label="Accent override"
+                value={form.brand_accent_color || form.invoice_brand_color}
+                onChange={(hex) => onChange('brand_accent_color', hex)}
+              />
+            </div>
+          )}
+        </ProLock>
       </Card>
 
       <Card variant="default" className="brand-studio__card">
-        <CardHeader title="Font" subtitle="Applied to your generated invoices and proposals only." />
-        <FontPicker value={form.brand_font} onChange={(id) => onChange('brand_font', id)} />
+        <CardHeader
+          title="Font"
+          subtitle="Applied to your generated invoices and proposals only."
+          action={!isPro && <Badge variant="blue" size="sm">Pro</Badge>}
+        />
+        <ProLock isPro={isPro} onUpgrade={onUpgrade} label="custom fonts">
+          <FontPicker value={form.brand_font} onChange={(id) => onChange('brand_font', id)} />
+        </ProLock>
       </Card>
 
       <Card variant="default" className="brand-studio__card">
@@ -260,6 +280,8 @@ export default function BrandStudioPage() {
     previousLogoPathRef.current = getLogoPathFromUrl(profile.logo_url);
   }, [profile]);
 
+  const isPro = subscription.isPro;
+
   const defaultProfile = useMemo(() => (profile ? {
     ...profile,
     logo_url: '',
@@ -268,7 +290,16 @@ export default function BrandStudioPage() {
     brand_font: DEFAULT_BRAND_FONT,
   } : null), [profile]);
 
-  const brandedProfile = useMemo(() => (profile && form ? { ...profile, ...form } : null), [profile, form]);
+  // Free users only ever get to change color + footer through this UI, but a
+  // Pro->Free downgrade could leave logo_url/brand_font/brand_accent_color
+  // set on the profile from before -- the preview should show exactly what
+  // Free actually renders today, not a stale Pro-only look they can't touch.
+  const brandedProfile = useMemo(() => {
+    if (!profile || !form) return null;
+    const merged = { ...profile, ...form };
+    if (isPro) return merged;
+    return { ...merged, logo_url: '', brand_font: DEFAULT_BRAND_FONT, brand_accent_color: '' };
+  }, [profile, form, isPro]);
 
   const previewProfile = showDefault ? defaultProfile : brandedProfile;
 
@@ -345,8 +376,6 @@ export default function BrandStudioPage() {
     );
   }
 
-  const isPro = subscription.isPro;
-
   const docPreview = docKind === 'invoice'
     ? <InvoiceDocument invoice={DEMO_INVOICE} profile={previewProfile} />
     : <ProposalDocument proposal={DEMO_PROPOSAL} profile={previewProfile} />;
@@ -365,24 +394,20 @@ export default function BrandStudioPage() {
 
       <div className="studio-layout">
         <div className="studio-editor">
-          <FeatureGate
-            feature="branding"
-            title="Brand Studio"
-            message="Upgrade to Pro to customize your logo, brand color, and document font across every invoice and proposal."
-          >
-            <BrandControls
-              form={form}
-              onChange={(field, value) => setForm((current) => ({ ...current, [field]: value }))}
-              onSave={handleSave}
-              saving={saving}
-              onUploadLogo={handleUploadLogo}
-              onRemoveLogo={handleRemoveLogo}
-              uploadingLogo={uploadingLogo}
-              logoError={logoError}
-              accentEnabled={accentEnabled}
-              onAccentEnabledChange={setAccentEnabled}
-            />
-          </FeatureGate>
+          <BrandControls
+            form={form}
+            onChange={(field, value) => setForm((current) => ({ ...current, [field]: value }))}
+            onSave={handleSave}
+            saving={saving}
+            onUploadLogo={handleUploadLogo}
+            onRemoveLogo={handleRemoveLogo}
+            uploadingLogo={uploadingLogo}
+            logoError={logoError}
+            accentEnabled={accentEnabled}
+            onAccentEnabledChange={setAccentEnabled}
+            isPro={isPro}
+            onUpgrade={() => setUpgradeOpen(true)}
+          />
         </div>
 
         <div className={`studio-preview ${previewOpen ? 'studio-preview--open' : ''}`}>
@@ -409,25 +434,26 @@ export default function BrandStudioPage() {
                   <FileText size={14} /> Proposal
                 </button>
               </div>
-              {isPro && (
-                <button
-                  type="button"
-                  className="brand-studio__compare-toggle"
-                  onClick={() => setShowDefault((v) => !v)}
-                >
-                  {showDefault ? 'Showing: Default' : 'Showing: Your brand'}
-                </button>
-              )}
+              <button
+                type="button"
+                className="brand-studio__compare-toggle"
+                onClick={() => setShowDefault((v) => !v)}
+              >
+                {showDefault ? 'Showing: Default' : 'Showing: Your brand'}
+              </button>
             </div>
 
             {subscription.loading ? (
               <LoadingSpinner size="md" label="Checking plan..." />
-            ) : isPro ? (
+            ) : (
               <div key={`${docKind}-${showDefault}`} className="brand-studio__preview-fade">
                 <ScaledPreview>{docPreview}</ScaledPreview>
               </div>
-            ) : (
-              <LockedPreview profile={defaultProfile} onUpgrade={() => setUpgradeOpen(true)} />
+            )}
+            {!isPro && (
+              <p className="brand-studio__preview-hint muted small">
+                <Lock size={12} /> Upgrade to Pro to add your logo, a custom font, and an accent color to this preview.
+              </p>
             )}
           </div>
         </div>

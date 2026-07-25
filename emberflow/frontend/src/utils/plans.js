@@ -13,7 +13,7 @@ export const PLANS = {
     billingCycle: 'free',
     invoiceLimit: 5,
     clientLimit: 10,
-    features: ['5 invoices per month', '10 clients', 'Basic dashboard', 'PDF export'],
+    features: ['5 invoices per month', '10 clients', 'Basic dashboard', 'PDF export', '3 invoice templates', 'Brand color customization'],
   },
   pro_monthly: {
     id: PLAN_IDS.pro_monthly,
@@ -23,7 +23,7 @@ export const PLANS = {
     billingCycle: 'monthly',
     invoiceLimit: Infinity,
     clientLimit: Infinity,
-    features: ['Unlimited invoices', 'Unlimited clients', 'Proposals', 'Analytics', 'Payment tracking', 'Branding'],
+    features: ['Unlimited invoices', 'Unlimited clients', 'Proposals', 'Analytics', 'Payment tracking', 'Logo, custom fonts & accent color', '17 invoice templates'],
   },
   pro_yearly: {
     id: PLAN_IDS.pro_yearly,

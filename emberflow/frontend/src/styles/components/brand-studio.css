@@ -207,6 +207,54 @@
   color: var(--color-accent);
 }
 
+/* ── Inline card locks (Free plan) ───────────────────────────────────── */
+
+.brand-studio__locked-inline {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.brand-studio__locked-inline-content {
+  filter: blur(2.5px) saturate(0.7);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+.brand-studio__locked-inline-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: var(--color-overlay-surface);
+}
+
+.brand-studio__locked-inline-cta {
+  border: none;
+  background: transparent;
+  color: var(--color-accent);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.brand-studio__locked-inline-cta:hover {
+  color: var(--color-accent-dark);
+}
+
+.brand-studio__preview-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+}
+
 /* ── Preview toolbar (doc-type tabs + compare toggle) ───────────────── */
 
 .brand-studio__preview-toolbar {
@@ -268,32 +316,7 @@
   animation: brand-studio-reveal var(--duration-base) var(--ease-out);
 }
 
-/* ── Locked preview (free plan) ──────────────────────────────────────── */
-
-.brand-studio__locked-preview {
-  position: relative;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.brand-studio__locked-preview .scaled-preview {
-  filter: blur(3px) saturate(0.7);
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.brand-studio__lock-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  padding: var(--space-6);
-  text-align: center;
-  background: linear-gradient(180deg, rgba(10, 12, 14, 0.15) 0%, rgba(10, 12, 14, 0.75) 100%);
-}
+/* ── Lock badge (reused by the inline card locks above) ──────────────── */
 
 .brand-studio__lock-badge {
   display: inline-flex;
@@ -305,11 +328,4 @@
   color: #fff;
   font-size: var(--text-caption);
   font-weight: var(--weight-bold);
-}
-
-.brand-studio__lock-overlay p {
-  max-width: 22rem;
-  color: #fff;
-  font-size: var(--text-body-sm);
-  font-weight: var(--weight-medium);
 }
