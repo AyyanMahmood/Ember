@@ -315,49 +315,34 @@ A full audit and a 10-phase implementation roadmap toward a dark-first, white-la
 
 ---
 
-## ⏸️ RESUME HERE — Bundle 1: Authentication (active mode, 2026-07-25)
+## ⏸️ RESUME HERE — Release Candidate QA (active mode, 2026-07-25)
 
-**Current mode: FEATURE BUNDLE 1 — AUTHENTICATION.** This interrupts the prior Release Candidate QA mode (see "Paused: Release Candidate QA" below) — the user explicitly asked to start this bundle. Resume RC QA once this bundle is confirmed working end-to-end.
-
-**Scope:** Google OAuth, Microsoft OAuth, password strength meter, disposable email detection, auth UX polish. No new backend/architecture — Supabase Auth's `signInWithOAuth` is used natively; the existing `handle_new_user()` Postgres trigger (provider-agnostic, fires on any `auth.users` insert) needed no changes.
-
-**Done, committed, build green (`opclaude-redesign`):**
-- `b7721fe` — `signInWithGoogle`/`signInWithMicrosoft` in `useAuth.js` (providers `'google'`/`'azure'`); OAuth buttons + divider in `AuthPage.jsx`; `PasswordStrengthMeter` component (`components/ui/PasswordStrengthMeter.jsx` + `utils/passwordStrength.js`, local heuristic scorer, no `zxcvbn`); disposable email check (`utils/auth.js:isDisposableEmail` + `data/disposableEmailDomains.js`, curated ~300-domain list).
-- `e428ecd` — disable OAuth buttons while any auth request is in flight; friendly error copy for "provider is not enabled" (the error Supabase returns until a provider is configured in the dashboard).
-
-**Rejected approach, don't re-attempt:** the `disposable-email-domains` npm package (121k domains) is **700KB gzipped** — too heavy even lazy-loaded for a signup-time check. Went with a small curated list instead (`data/disposableEmailDomains.js`, same pattern as `currencies.js`/`countries.js`). If it needs expanding, keep adding to that array rather than pulling in the npm package.
-
-**Not done — requires the user's action outside this codebase, cannot be done from here:**
-1. **Google Cloud Console:** create OAuth Client ID, set authorized redirect URI to the Supabase callback (`https://<project-ref>.supabase.co/auth/v1/callback`), paste Client ID/Secret into Supabase Dashboard → Authentication → Providers → Google.
-2. **Azure/Entra portal:** register an app (decide account type: work/school only vs. + personal Microsoft accounts — affects who can sign in), same Supabase callback URL as redirect URI, paste Application ID/Secret into Supabase Dashboard → Authentication → Providers → Azure.
-3. **Account linking:** user chose **auto-link silently** for existing email/password accounts signing in via OAuth with a matching verified email. Confirm/enable Supabase's automatic identity-linking setting in Authentication → Settings — this is a dashboard toggle, not application code.
-Until (1)/(2) are done, clicking the OAuth buttons will show "This sign-in method isn't set up yet" (the friendly-mapped error) rather than crashing — that's expected, not a bug.
-
-**Verification limitation (this session):** no headless browser available in this container — Playwright's bundled Chromium doesn't support macOS 12 (`ERROR: Playwright does not support chromium on mac12`), and `chromium-cli` isn't installed. Verified instead via: `npm run build` green, dev server boots and serves `/signup` (HTTP 200), and the new/changed modules (`AuthPage.jsx`, `PasswordStrengthMeter.jsx`) transform through Vite without errors. **The actual visual rendering (OAuth button layout, divider, strength-meter bar/colors) has not been eyeballed — please check `/login` and `/signup` in a real browser before considering this bundle done.**
-
----
-
-### Paused: Release Candidate QA (2026-07-25)
-
-The user was doing real-device QA on **Arc Browser for Android (Chromium/Blink)**, test device **Samsung Galaxy A06 (~360px CSS width)**, sending bugs in **batches with screenshots**. Resume this mode (wait for the next batch before acting) once Bundle 1 is closed out.
+**Current mode: RELEASE CANDIDATE QA**, real-device testing on **Arc Browser for Android (Chromium/Blink)**, test device **Samsung Galaxy A06 (~360px CSS width)**. User sends bugs in **batches with screenshots**; wait for a batch before acting. This mode was briefly interrupted for Bundle 1 (Authentication feature work — Google/Microsoft OAuth, password strength meter, disposable email detection, auth UX polish), which is now folded back into this same QA thread since Batch 3 covered both a QA bug and Bundle 1 follow-up together.
 
 **Rules for this phase (strict):**
 - **No new features** unless the user explicitly asks. Prioritize stability over polish.
 - Fix **only** the bugs in the current batch. **No unrelated refactors** (note critical nearby issues separately instead of fixing them).
 - **Commit every 3–4 logical fixes**, run `npm run build` (in `frontend/`), confirm green **before continuing**.
 - Diagnose root causes from code + screenshots. **No speculative CSS.** If a cause can't be confidently located, tell the user the exact component / CSS file / selector / grid-flex container instead of guessing.
+- **Never add the "Co-Authored-By: Claude" trailer to commit messages** — user explicitly had 62 prior commits rewritten to strip it (`git filter-branch` + force-push, 2026-07-25) and does not want it back. Watch for this specifically since it's in muscle memory from the default commit workflow.
 
-**Branch:** `opclaude-redesign`. Last relevant QA commits (newest first, predate Bundle 1):
+**Batch 3 (2026-07-25), commit `5233613` — build green:**
+1. **P1 blocker, invoice cards overflowing mobile — fixed.** Root cause: `frontend/src/styles/components/tables.css`, `.table__actions` (used inside the mobile `.table--stack` card layout) had no `flex-wrap`. Invoice rows render up to 6 icon-buttons (Mark sent + Mark paid + Copy + Download + Edit + Delete, each a 44px touch target per the `@media (pointer: coarse)` rule) vs. Proposals' 3 — a non-wrapping flex row's minimum size is "every button on one line," which is wider than a 360px card. Proposals never hit this because it has fewer actions. Fix: `flex-wrap: wrap; justify-content: flex-end;` scoped to `.table--stack .table__actions`. **Not yet confirmed on-device.**
+2. **OAuth — code was already done in Bundle 1; configuration is external.** Gave the user exact Google Cloud Console + Azure/Entra portal + Supabase Dashboard steps in-chat (project ref `rzwgbrwjrzapbagbksof`, callback URL `https://rzwgbrwjrzapbagbksof.supabase.co/auth/v1/callback`). No code changes needed once the user completes that — the `signInWithGoogle`/`signInWithMicrosoft` flow in `useAuth.js` already works against it.
+3. **Auth UI polish** (not a redesign — spacing/hierarchy/typography/breathing room only, no gradients/glassmorphism/heavy animation): auth card now has a real `max-width` (26rem) instead of shrink-wrapping, more generous card padding and form gap, primary CTA bumped to `size="lg"`, password eye-toggle button got real hover/focus states (`.input-addon-btn` in `inputs.css`). Also fixed a real inconsistency found while doing this: `ForgotPasswordPage.jsx`/`ResetPasswordPage.jsx` headings weren't using the `heading-xl` class (fell back to unstyled browser-default `<h1>`) and their `<form>` wasn't using `auth-card__form`, so their spacing silently didn't match `AuthPage.jsx`. **Not yet confirmed on-device.**
+4. **EmberSelect search padding widened again** (`select-menu.css`): panel padding 4→8px, search left padding 16→20px. This is the **third** round of widening this same spot (previously 8→16px and icon-gap 8→12px) — if the user reports it's still too tight after this, stop guessing at padding values and ask them for a screenshot with pixel measurements rather than nudging numbers again.
+
+**Verification limitation (ongoing, all sessions so far):** no headless browser or real Android device available in this container — Playwright's bundled Chromium doesn't support macOS 12 here, and `chromium-cli` isn't installed. All fixes are verified by `npm run build` + code/CSS reasoning only, not on-device rendering. Always say so explicitly and ask the user to confirm on Arc/Android before treating a fix as done.
+
+**Branch:** `opclaude-redesign`. Prior batches (newest first, before Batch 3 above):
 - `b338960` Fix light theme rendering blue-tinted on Android Chrome/Arc (`index.html`, Batch 2 #5, **confirmed on-device**): root cause was Chromium's Auto Dark Theme force-inverting the light palette despite CSS `color-scheme` being set — added `<meta name="color-scheme" content="light dark">`. Toggle JS/state logic was never buggy (single tap, correct); this was a browser rendering override, not a code bug. User confirmed by disabling "Force dark mode" in Chrome settings before the fix landed.
 - `987f6c4` Widen EmberSelect search field left padding 8→16px + search→list gap 4→8px (`select-menu.css`, Batch 2 #3/#4)
 - `e348c13` Client phone field: `type="tel"`/`inputMode="tel"` + strip non-digit/punctuation chars on change (`ClientFormPage.jsx`, Batch 2 #2)
-- `e6e585c` Invoice/Client list mobile fix (Batch 2 #1, release-blocking): root cause was `.table-wrap`'s mobile negative-margin/zero-padding bleed (`tables.css`) — written for horizontally-scrolling tables, but also applied to `.table--stack` (card) tables where it zeroed out vertical spacing and collided with sibling filters-row/pagination. Scoped the bleed off for `.table--stack` via `:has()`; also made `.table__pagination-controls`/`.table__pages` wrap instead of forcing a non-wrapping row that could exceed 360px. Applies to both InvoicesPage and ClientsPage (both use `pagination` + `filters-row`, same shared `Table` component). **Unverified on real device** — ask user to confirm on Arc/Android.
+- `e6e585c` Invoice/Client list mobile fix (Batch 2 #1, release-blocking): root cause was `.table-wrap`'s mobile negative-margin/zero-padding bleed (`tables.css`) — written for horizontally-scrolling tables, but also applied to `.table--stack` (card) tables where it zeroed out vertical spacing and collided with sibling filters-row/pagination. Scoped the bleed off for `.table--stack` via `:has()`; also made `.table__pagination-controls`/`.table__pages` wrap instead of forcing a non-wrapping row that could exceed 360px. Applies to both InvoicesPage and ClientsPage (both use `pagination` + `filters-row`, same shared `Table` component).
 - `ae2efb7` Fix crumpled landing navbar on mobile (retarget `.marketing-nav__inner`, the real flex container; `layout.css`)
 - `787aacb` Widen EmberSelect search icon→text gap 8→12px (`.ember-select__search`)
 - `8904341` Invoice mobile overflow fix: `min-width:0` on `.input/.textarea/.select` + `.ember-select`/`__value` (native Client `<select>` couldn't shrink → root cause).
 - `3197897` Tighten mobile `page-stack` gap 20→16px
-- Earlier: EmberSelect component + centralized `src/data/currencies.js` & `src/data/countries.js` (Palestine pinned first, Israel + ILS excluded — **do not change**), Phase 7 (perf/a11y/hardening) complete.
+- Earlier: EmberSelect component + centralized `src/data/currencies.js` & `src/data/countries.js` (Palestine pinned first, Israel + ILS excluded — **do not change**), Phase 7 (perf/a11y/hardening) complete; Bundle 1 (Google/Microsoft OAuth code, password strength meter, disposable email detection) — commits `b7721fe`, `e428ecd`, both folded into this thread as of Batch 3.
 
 **Known open item (deferred, do NOT do unprompted):** spacing tokens are **px**; migrating to rem is only worthwhile if paired with unpinning `html { font-size: 16px }` (`reset.css:8`) — recommended as its own tracked, device-tested task, not during RC QA.
-
-**Verification limitation:** no headless browser / real Android device available in-session — fixes are verified by build + code analysis, not on-device rendering. Say so honestly; ask the user to confirm on Arc/Android.
