@@ -643,6 +643,79 @@
   gap: var(--space-4);
 }
 
+.auth-oauth {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-line);
+}
+
+.password-strength {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: calc(var(--space-2) * -1);
+}
+
+.password-strength__track {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-1);
+}
+
+.password-strength__segment {
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-line);
+  transition: background var(--duration-base) ease;
+}
+
+.password-strength__segment--weak {
+  background: var(--color-danger);
+}
+
+.password-strength__segment--fair {
+  background: var(--color-warning);
+}
+
+.password-strength__segment--good {
+  background: var(--color-accent);
+}
+
+.password-strength__segment--strong {
+  background: var(--color-success);
+}
+
+.password-strength__label {
+  font-size: var(--text-caption);
+  color: var(--color-muted);
+}
+
+.password-strength__label--weak {
+  color: var(--color-danger);
+}
+
+.password-strength__label--fair {
+  color: var(--color-warning);
+}
+
+.password-strength__label--strong {
+  color: var(--color-success);
+}
+
 .marketing-page {
   color: var(--color-ink);
 }

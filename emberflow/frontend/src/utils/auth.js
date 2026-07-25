@@ -1,6 +1,13 @@
+import { isDisposableEmailDomain } from '../data/disposableEmailDomains.js';
+
 export function authRedirectUrl(path) {
   const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
   return new URL(path, baseUrl).toString();
+}
+
+export function isDisposableEmail(email) {
+  const domain = email.split('@')[1];
+  return Boolean(domain) && isDisposableEmailDomain(domain);
 }
 
 export function friendlyAuthError(error) {

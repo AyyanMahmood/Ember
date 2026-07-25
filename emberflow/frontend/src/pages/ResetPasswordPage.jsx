@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input } from '../components/ui/Input.jsx';
+import { PasswordStrengthMeter } from '../components/ui/PasswordStrengthMeter.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { friendlyAuthError } from '../utils/auth.js';
 
@@ -53,6 +54,7 @@ export default function ResetPasswordPage() {
               </button>
             }
           />
+          <PasswordStrengthMeter password={password} />
           {error ? <p className="form-error">{error}</p> : null}
           <Button variant="primary" fullWidth disabled={submitting} type="submit">
             {submitting ? 'Saving...' : 'Update password'}
