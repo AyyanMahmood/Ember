@@ -10,7 +10,7 @@ EmberFlow is a premium freelancer finance operating system for independent profe
 - **Payment tracking** — Manual payment records, balance reconciliation, overdue monitoring
 - **Analytics** — Revenue totals, monthly collections, overdue tracking, top-client rankings
 - **Dashboard** — At-a-glance metrics, recent activity, status summaries
-- **Authentication** — Email/password auth with password reset flow
+- **Authentication** — Email/password auth with password reset flow, Google/Microsoft OAuth (pending provider config — see RESUME HERE)
 - **Settings** — Profile, business info, invoice branding, subscription management
 
 ---
@@ -309,14 +309,37 @@ Question every screen, spacing decision, interaction, hierarchy, and animation. 
 | Micro-interactions and animation | Basic transitions in place |
 | Premium redesign (OpenClaude-level polish) | Remaining work |
 | Trust/correctness fixes (fake metrics, blank status badge, checkout PII log, CORS) | Complete (roadmap Phase 0) |
+| Bundle 1: Authentication (Google/Microsoft OAuth, password strength meter, disposable email detection) | Code complete; **blocked on external dashboard config** — see RESUME HERE |
 
 A full audit and a 10-phase implementation roadmap toward a dark-first, white-label-ready premium redesign is in progress on `opclaude-redesign`. See `PROJECT_STATUS.md` → "Redesign Roadmap Progress" for phase-by-phase status.
 
 ---
 
-## ⏸️ RESUME HERE — Release Candidate QA (active mode, 2026-07-25)
+## ⏸️ RESUME HERE — Bundle 1: Authentication (active mode, 2026-07-25)
 
-**Current mode: RELEASE CANDIDATE QA.** The user is doing real-device QA on **Arc Browser for Android (Chromium/Blink)**, test device **Samsung Galaxy A06 (~360px CSS width)**. They send bugs in **batches with screenshots**; wait for a batch before acting.
+**Current mode: FEATURE BUNDLE 1 — AUTHENTICATION.** This interrupts the prior Release Candidate QA mode (see "Paused: Release Candidate QA" below) — the user explicitly asked to start this bundle. Resume RC QA once this bundle is confirmed working end-to-end.
+
+**Scope:** Google OAuth, Microsoft OAuth, password strength meter, disposable email detection, auth UX polish. No new backend/architecture — Supabase Auth's `signInWithOAuth` is used natively; the existing `handle_new_user()` Postgres trigger (provider-agnostic, fires on any `auth.users` insert) needed no changes.
+
+**Done, committed, build green (`opclaude-redesign`):**
+- `b7721fe` — `signInWithGoogle`/`signInWithMicrosoft` in `useAuth.js` (providers `'google'`/`'azure'`); OAuth buttons + divider in `AuthPage.jsx`; `PasswordStrengthMeter` component (`components/ui/PasswordStrengthMeter.jsx` + `utils/passwordStrength.js`, local heuristic scorer, no `zxcvbn`); disposable email check (`utils/auth.js:isDisposableEmail` + `data/disposableEmailDomains.js`, curated ~300-domain list).
+- `e428ecd` — disable OAuth buttons while any auth request is in flight; friendly error copy for "provider is not enabled" (the error Supabase returns until a provider is configured in the dashboard).
+
+**Rejected approach, don't re-attempt:** the `disposable-email-domains` npm package (121k domains) is **700KB gzipped** — too heavy even lazy-loaded for a signup-time check. Went with a small curated list instead (`data/disposableEmailDomains.js`, same pattern as `currencies.js`/`countries.js`). If it needs expanding, keep adding to that array rather than pulling in the npm package.
+
+**Not done — requires the user's action outside this codebase, cannot be done from here:**
+1. **Google Cloud Console:** create OAuth Client ID, set authorized redirect URI to the Supabase callback (`https://<project-ref>.supabase.co/auth/v1/callback`), paste Client ID/Secret into Supabase Dashboard → Authentication → Providers → Google.
+2. **Azure/Entra portal:** register an app (decide account type: work/school only vs. + personal Microsoft accounts — affects who can sign in), same Supabase callback URL as redirect URI, paste Application ID/Secret into Supabase Dashboard → Authentication → Providers → Azure.
+3. **Account linking:** user chose **auto-link silently** for existing email/password accounts signing in via OAuth with a matching verified email. Confirm/enable Supabase's automatic identity-linking setting in Authentication → Settings — this is a dashboard toggle, not application code.
+Until (1)/(2) are done, clicking the OAuth buttons will show "This sign-in method isn't set up yet" (the friendly-mapped error) rather than crashing — that's expected, not a bug.
+
+**Verification limitation (this session):** no headless browser available in this container — Playwright's bundled Chromium doesn't support macOS 12 (`ERROR: Playwright does not support chromium on mac12`), and `chromium-cli` isn't installed. Verified instead via: `npm run build` green, dev server boots and serves `/signup` (HTTP 200), and the new/changed modules (`AuthPage.jsx`, `PasswordStrengthMeter.jsx`) transform through Vite without errors. **The actual visual rendering (OAuth button layout, divider, strength-meter bar/colors) has not been eyeballed — please check `/login` and `/signup` in a real browser before considering this bundle done.**
+
+---
+
+### Paused: Release Candidate QA (2026-07-25)
+
+The user was doing real-device QA on **Arc Browser for Android (Chromium/Blink)**, test device **Samsung Galaxy A06 (~360px CSS width)**, sending bugs in **batches with screenshots**. Resume this mode (wait for the next batch before acting) once Bundle 1 is closed out.
 
 **Rules for this phase (strict):**
 - **No new features** unless the user explicitly asks. Prioritize stability over polish.
@@ -324,7 +347,7 @@ A full audit and a 10-phase implementation roadmap toward a dark-first, white-la
 - **Commit every 3–4 logical fixes**, run `npm run build` (in `frontend/`), confirm green **before continuing**.
 - Diagnose root causes from code + screenshots. **No speculative CSS.** If a cause can't be confidently located, tell the user the exact component / CSS file / selector / grid-flex container instead of guessing.
 
-**Branch:** `opclaude-redesign`. Working tree was clean at handoff. Last relevant commits (newest first):
+**Branch:** `opclaude-redesign`. Last relevant QA commits (newest first, predate Bundle 1):
 - `b338960` Fix light theme rendering blue-tinted on Android Chrome/Arc (`index.html`, Batch 2 #5, **confirmed on-device**): root cause was Chromium's Auto Dark Theme force-inverting the light palette despite CSS `color-scheme` being set — added `<meta name="color-scheme" content="light dark">`. Toggle JS/state logic was never buggy (single tap, correct); this was a browser rendering override, not a code bug. User confirmed by disabling "Force dark mode" in Chrome settings before the fix landed.
 - `987f6c4` Widen EmberSelect search field left padding 8→16px + search→list gap 4→8px (`select-menu.css`, Batch 2 #3/#4)
 - `e348c13` Client phone field: `type="tel"`/`inputMode="tel"` + strip non-digit/punctuation chars on change (`ClientFormPage.jsx`, Batch 2 #2)
