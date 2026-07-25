@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RotateCcw, CreditCard, CalendarX, HelpCircle } from 'lucide-react';
 
-export default function RefundPolicy() {
+export default function RefundPolicyPage() {
   useEffect(() => {
     document.title = 'Refund Policy | EmberFlow';
   }, []);

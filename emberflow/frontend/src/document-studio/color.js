@@ -3,7 +3,7 @@
 // from the single brand color stored on the profile (profiles.invoice_brand_color),
 // rather than requiring separate primary/accent/secondary columns in the database.
 
-function hexToRgb(hex) {
+export function hexToRgb(hex) {
   const clean = (hex || '#2563eb').replace('#', '');
   const full = clean.length === 3 ? clean.split('').map((c) => c + c).join('') : clean;
   const int = parseInt(full, 16);
@@ -14,7 +14,7 @@ function hexToRgb(hex) {
   };
 }
 
-function rgbToHex({ r, g, b }) {
+export function rgbToHex({ r, g, b }) {
   const clamp = (v) => Math.max(0, Math.min(255, Math.round(v)));
   return `#${[r, g, b].map((v) => clamp(v).toString(16).padStart(2, '0')).join('')}`;
 }

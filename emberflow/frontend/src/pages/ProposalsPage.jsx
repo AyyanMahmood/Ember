@@ -106,7 +106,7 @@ export default function ProposalsPage() {
             title="Download PDF"
             disabled={pdfLoadingId === row.id}
           >
-            {pdfLoadingId === row.id ? <span className="spinner spinner--xs" /> : <Download size={14} />}
+            {pdfLoadingId === row.id ? <LoadingSpinner size="xs" label="Downloading PDF..." /> : <Download size={14} />}
           </IconButton>
           <IconButton
             size="sm"

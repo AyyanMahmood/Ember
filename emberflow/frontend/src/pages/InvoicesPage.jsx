@@ -224,7 +224,7 @@ export default function InvoicesPage() {
           title="Download PDF"
           disabled={pdfLoadingId === row.id}
         >
-          {pdfLoadingId === row.id ? <span className="spinner spinner--xs" /> : <Download size={14} />}
+          {pdfLoadingId === row.id ? <LoadingSpinner size="xs" label="Downloading PDF..." /> : <Download size={14} />}
         </IconButton>
         <IconButton as={Link} size="sm" to={`/app/invoices/${row.id}/edit`} aria-label="Edit" title="Edit">
           <Edit size={14} />

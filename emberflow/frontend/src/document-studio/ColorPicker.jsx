@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { isValidHex } from './color.js';
+import { hexToRgb, isValidHex, rgbToHex } from './color.js';
 
 const PRESETS = [
   '#DC8259', '#2563EB', '#7C3AED', '#DB2777', '#DC2626',
@@ -31,15 +31,11 @@ function saveRecent(hex) {
 }
 
 function hexToRgbParts(hex) {
-  const clean = (isValidHex(hex) ? hex : '#000000').replace('#', '');
-  const full = clean.length === 3 ? clean.split('').map((c) => c + c).join('') : clean;
-  const int = parseInt(full, 16);
-  return { r: (int >> 16) & 255, g: (int >> 8) & 255, b: int & 255 };
+  return hexToRgb(isValidHex(hex) ? hex : '#000000');
 }
 
-function rgbPartsToHex({ r, g, b }) {
-  const clamp = (v) => Math.max(0, Math.min(255, Number(v) || 0));
-  return `#${[r, g, b].map((v) => clamp(v).toString(16).padStart(2, '0')).join('')}`.toUpperCase();
+function rgbPartsToHex(parts) {
+  return rgbToHex(parts).toUpperCase();
 }
 
 export function ColorPicker({ label, value, onChange }) {

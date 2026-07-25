@@ -26,7 +26,7 @@ const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage.jsx'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage.jsx'));
 const TermsPage = lazy(() => import('./pages/TermsPage.jsx'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage.jsx'));
-const RefundPolicy = lazy(() => import('./pages/RefundPolicy.jsx'));
+const RefundPolicyPage = lazy(() => import('./pages/RefundPolicyPage.jsx'));
 const ContactPage = lazy(() => import('./pages/ContactPage.jsx'));
 
 export default function App() {
@@ -40,7 +40,7 @@ export default function App() {
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/refund" element={<RefundPolicy />} />
+          <Route path="/refund" element={<RefundPolicyPage />} />
           <Route path="/contact" element={<ContactPage />} />
         </Route>
         <Route path="/login" element={<AuthPage mode="login" />} />
