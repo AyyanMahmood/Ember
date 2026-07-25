@@ -72,7 +72,88 @@ export const DOCUMENT_THEMES = [
     layout: 'sidebar',
     serif: false,
     isPremium: true,
+    // Deliberately no forceDark: the sidebar layout's own CSS (.doc-sidebar/
+    // .doc-sidebar-main) already gets its dark-column/light-content split by
+    // swapping which of --doc-ink/--doc-bg each side uses -- forceDark would
+    // flip both variables globally and invert that split (light sidebar,
+    // dark main), the opposite of this theme's own description. That
+    // combination is real and looks good, just different -- see
+    // "signature-reverse" below.
+  },
+  {
+    id: 'ledger',
+    name: 'Ledger',
+    description: 'Dense, tabular, precise — a statement-style layout for the numbers-first client.',
+    layout: 'ledger',
+    serif: false,
+    isPremium: false,
+  },
+  {
+    id: 'stub',
+    name: 'Stub',
+    description: 'Classic tear-off remittance stub, reimagined — totals sit in their own detachable-looking panel.',
+    layout: 'stub',
+    serif: false,
+    isPremium: true,
+  },
+  {
+    id: 'masthead',
+    name: 'Masthead',
+    description: 'Editorial, newspaper-style header — an oversized wordmark and a thin byline rule.',
+    layout: 'masthead',
+    serif: true,
+    isPremium: true,
+  },
+  {
+    id: 'technical',
+    name: 'Technical',
+    description: 'Monospace figures and labels against a clean sans body — built for developers and technical studios.',
+    layout: 'technical',
+    serif: false,
+    isPremium: true,
+  },
+  {
+    id: 'duotone',
+    name: 'Duotone',
+    description: 'A bold color spine along the edge with a vertical wordmark — modern, light-footprint color.',
+    layout: 'duotone',
+    serif: false,
+    isPremium: true,
+  },
+  {
+    id: 'corporate-noir',
+    name: 'Corporate Noir',
+    description: 'The Corporate letterhead panel, reworked for a true dark background.',
+    layout: 'boxed',
+    serif: false,
+    isPremium: true,
     forceDark: true,
+  },
+  {
+    id: 'formal-noir',
+    name: 'Formal Noir',
+    description: "Executive's two-column serif header, at midnight — restrained and severe.",
+    layout: 'formal',
+    serif: true,
+    isPremium: true,
+    forceDark: true,
+  },
+  {
+    id: 'signature-reverse',
+    name: 'Signature Reverse',
+    description: "Ember Signature's column arrangement, flipped — a light label column beside a dramatic dark canvas.",
+    layout: 'sidebar',
+    serif: false,
+    isPremium: true,
+    forceDark: true,
+  },
+  {
+    id: 'swiss',
+    name: 'Swiss',
+    description: "Elegant's centered composition, stripped of serif for a minimalist grid-first read.",
+    layout: 'centered',
+    serif: false,
+    isPremium: true,
   },
 ];
 

@@ -117,6 +117,7 @@ export const DocumentTemplate = forwardRef(function DocumentTemplate({
       className={`doc-page doc-page--${theme.layout} ${isDark ? 'doc-page--dark' : ''} ${theme.serif ? 'doc-page--serif' : ''}`}
       style={style}
       data-theme-id={theme.id}
+      data-business-name={profile?.business_name || profile?.full_name || 'Your business'}
     >
       {isSidebar ? (
         <div className="doc-sidebar-shell">

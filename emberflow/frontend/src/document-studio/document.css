@@ -496,3 +496,211 @@
 }
 
 .doc-page--sidebar .doc-parties { gap: 24px; }
+
+/* ── Ledger: dense, tabular, statement-style ────────────────────────── */
+
+.doc-page--ledger {
+  font-size: 12px;
+}
+
+.doc-page--ledger .doc-header {
+  border-bottom: 1px solid var(--doc-ink);
+  padding-bottom: 12px;
+  align-items: end;
+}
+
+.doc-page--ledger .doc-header__logo--placeholder {
+  border-radius: 2px;
+  background: transparent;
+  border: 1px solid var(--doc-ink);
+}
+
+.doc-page--ledger .doc-header__title {
+  font-size: 16px;
+  color: var(--doc-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.doc-page--ledger .doc-meta {
+  padding: 10px 0;
+  gap: 28px;
+}
+
+.doc-page--ledger .doc-table th {
+  border-bottom: 1px solid var(--doc-ink);
+  padding: 6px 8px;
+}
+
+.doc-page--ledger .doc-table td {
+  padding: 7px 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.doc-page--ledger .doc-table tr:nth-child(even) td {
+  background: var(--doc-soft);
+}
+
+.doc-page--ledger .doc-totals {
+  background: transparent;
+  border: 1px solid var(--doc-ink);
+  border-radius: 2px;
+  width: 220px;
+}
+
+.doc-page--ledger .doc-status {
+  border-radius: 2px;
+  background: transparent;
+  border: 1px solid var(--doc-primary);
+}
+
+/* ── Stub: tear-off remittance panel ─────────────────────────────────── */
+
+.doc-page--stub .doc-totals {
+  position: relative;
+  margin-top: 32px;
+  width: 280px;
+  border: 1px dashed var(--doc-line);
+  background: var(--doc-soft);
+}
+
+.doc-page--stub .doc-totals::before {
+  content: '';
+  position: absolute;
+  top: -17px;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--doc-line);
+}
+
+.doc-page--stub .doc-totals::after {
+  content: 'DETACH AND RETURN WITH PAYMENT';
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 10px;
+  background: var(--doc-bg);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--doc-muted);
+  white-space: nowrap;
+}
+
+/* ── Masthead: editorial, newspaper-style nameplate ──────────────────── */
+
+.doc-page--masthead .doc-header {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  border-top: 3px double var(--doc-ink);
+  border-bottom: 1px solid var(--doc-ink);
+  padding: 18px 0 14px;
+  gap: 6px;
+}
+
+.doc-page--masthead .doc-header__logo,
+.doc-page--masthead .doc-header__logo--placeholder {
+  display: none;
+}
+
+.doc-page--masthead .doc-header__identity {
+  order: 1;
+  justify-items: center;
+  text-align: center;
+}
+
+.doc-page--masthead .doc-header__identity strong {
+  font-family: var(--doc-serif);
+  font-size: 30px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.doc-page--masthead .doc-header__title-block {
+  order: 2;
+  justify-items: center;
+  text-align: center;
+  padding-top: 4px;
+  border-top: 1px solid var(--doc-line);
+  width: 100%;
+}
+
+.doc-page--masthead .doc-header__title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--doc-muted);
+}
+
+.doc-page--masthead .doc-parties {
+  justify-content: center;
+  text-align: center;
+}
+
+.doc-page--masthead .doc-party { justify-items: center; }
+
+/* ── Technical: monospace figures for developer/technical studios ───── */
+
+.doc-page--technical {
+  --doc-tech-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.doc-page--technical .doc-header__title,
+.doc-page--technical .doc-header__subtitle,
+.doc-page--technical .doc-meta__label,
+.doc-page--technical .doc-meta__value,
+.doc-page--technical .doc-table__num,
+.doc-page--technical .doc-totals__row,
+.doc-page--technical .doc-status {
+  font-family: var(--doc-tech-mono);
+}
+
+.doc-page--technical .doc-header {
+  border-bottom-style: dashed;
+}
+
+.doc-page--technical .doc-status {
+  border-radius: 3px;
+  text-transform: lowercase;
+}
+
+.doc-page--technical .doc-table th {
+  font-family: var(--doc-tech-mono);
+  text-transform: lowercase;
+  letter-spacing: 0;
+}
+
+/* ── Duotone: a color spine with a vertical wordmark ─────────────────── */
+
+.doc-page.doc-page--duotone {
+  padding-left: 96px;
+}
+
+.doc-page--duotone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 64px;
+  background: var(--doc-primary);
+}
+
+.doc-page--duotone::after {
+  content: attr(data-business-name);
+  position: absolute;
+  top: 44px;
+  left: 22px;
+  color: var(--doc-on-primary);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.doc-page--duotone .doc-header {
+  border-bottom-color: var(--doc-primary);
+}
