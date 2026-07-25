@@ -5,12 +5,8 @@ import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input } from '../components/ui/Input.jsx';
 import { PasswordStrengthMeter } from '../components/ui/PasswordStrengthMeter.jsx';
-import { StatusBadge } from '../components/ui/Badge.jsx';
-import { FEATURES } from '../data/features.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { friendlyAuthError, isDisposableEmail } from '../utils/auth.js';
-
-const SHOWCASE_FEATURES = FEATURES.slice(0, 3);
 
 function GoogleIcon() {
   return (
@@ -90,141 +86,84 @@ export default function AuthPage({ mode }) {
   }
 
   return (
-    <div className="auth-shell">
-      <aside className="auth-showcase" aria-hidden="true">
-        <div className="auth-showcase__intro">
-          <p className="overline">EmberFlow</p>
-          <h2 className="auth-showcase__title">Run your freelance business like a company.</h2>
-          <p className="auth-showcase__subtitle">
-            Clients, invoices, proposals, payments, and revenue — in one calm workspace built for the work you
-            actually do.
-          </p>
-        </div>
-
-        <div className="lp-glimpse">
-          <div className="lp-glimpse-card">
-            <div className="lp-glimpse-card__head">
-              <span className="lp-glimpse-card__title">Recent invoices</span>
-              <span className="lp-glimpse-card__meta">This month</span>
-            </div>
-            <div className="lp-glimpse-row">
-              <div className="lp-glimpse-row__client">
-                <strong>Nine Studio</strong>
-                <span>INV-1042 · Design retainer</span>
-              </div>
-              <StatusBadge status="paid" size="sm" />
-            </div>
-            <div className="lp-glimpse-row">
-              <div className="lp-glimpse-row__client">
-                <strong>Arclight Labs</strong>
-                <span>INV-1041 · Brand system</span>
-              </div>
-              <StatusBadge status="sent" size="sm" />
-            </div>
-            <div className="lp-glimpse-row">
-              <div className="lp-glimpse-row__client">
-                <strong>Field &amp; Co.</strong>
-                <span>INV-1039 · Website build</span>
-              </div>
-              <StatusBadge status="overdue" size="sm" />
-            </div>
+    <div className="auth-page">
+      <Link className="brand-mark" to="/">
+        EmberFlow
+      </Link>
+      <Card variant="strong">
+        <form className="auth-card__form" onSubmit={handleSubmit}>
+          <div className="auth-card__header">
+            <p className="eyebrow">{isSignup ? 'Create account' : 'Welcome back'}</p>
+            <h1 className="heading-xl">{isSignup ? 'Start your workspace' : 'Sign in to EmberFlow'}</h1>
           </div>
-        </div>
-
-        <ul className="auth-showcase__features">
-          {SHOWCASE_FEATURES.map(([title, text, Icon]) => (
-            <li key={title}>
-              <span className="auth-showcase__feature-icon"><Icon size={18} /></span>
-              <div>
-                <strong>{title}</strong>
-                <p>{text}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </aside>
-
-      <div className="auth-page">
-        <Link className="brand-mark" to="/">
-          EmberFlow
-        </Link>
-        <Card variant="strong">
-          <form className="auth-card__form" onSubmit={handleSubmit}>
-            <div className="auth-card__header">
-              <p className="eyebrow">{isSignup ? 'Create account' : 'Welcome back'}</p>
-              <h1 className="heading-xl">{isSignup ? 'Start your workspace' : 'Sign in to EmberFlow'}</h1>
-            </div>
-            <div className="auth-oauth">
-              <Button
-                type="button"
-                variant="secondary"
-                size="lg"
-                fullWidth
-                leftIcon={<GoogleIcon />}
-                loading={oauthSubmitting === 'google'}
-                disabled={Boolean(oauthSubmitting) || submitting}
-                onClick={() => handleOAuth('google')}
-                aria-label="Continue with Google"
-                title="Continue with Google"
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                size="lg"
-                fullWidth
-                leftIcon={<MicrosoftIcon />}
-                loading={oauthSubmitting === 'microsoft'}
-                disabled={Boolean(oauthSubmitting) || submitting}
-                onClick={() => handleOAuth('microsoft')}
-                aria-label="Continue with Microsoft"
-                title="Continue with Microsoft"
-              />
-            </div>
-            <div className="auth-divider">
-              <span>or</span>
-            </div>
-            {isSignup ? (
-              <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="name" />
-            ) : null}
-            <Input label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" />
-            <Input
-              label="Password"
-              type={passwordVisible ? 'text' : 'password'}
-              required
-              minLength={8}
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              autoComplete={isSignup ? 'new-password' : 'current-password'}
-              rightAddon={
-                <button type="button" className="input-addon-btn" onClick={() => setPasswordVisible((v) => !v)} aria-label={passwordVisible ? 'Hide password' : 'Show password'}>
-                  {passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              }
+          <div className="auth-oauth">
+            <Button
+              type="button"
+              variant="secondary"
+              fullWidth
+              leftIcon={<GoogleIcon />}
+              loading={oauthSubmitting === 'google'}
+              disabled={Boolean(oauthSubmitting) || submitting}
+              onClick={() => handleOAuth('google')}
+              aria-label="Continue with Google"
+              title="Continue with Google"
             />
-            {isSignup ? <PasswordStrengthMeter password={form.password} /> : null}
-            {error ? <p className="form-error">{error}</p> : null}
-            {success ? <p className="form-success">{success}</p> : null}
-            <Button variant="primary" size="lg" fullWidth disabled={submitting || Boolean(oauthSubmitting)} type="submit">
-              {submitting ? 'Working...' : isSignup ? 'Create account' : 'Login'}
-            </Button>
-            {isSignup ? (
-              <p className="center muted small">
-                By continuing you agree to our <Link to="/terms">Terms of Service</Link> and{' '}
-                <Link to="/privacy">Privacy Policy</Link>.
-              </p>
-            ) : null}
-            <p className="center muted">
-              {isSignup ? 'Already have an account?' : 'New to EmberFlow?'}{' '}
-              <Link to={isSignup ? '/login' : '/register'}>{isSignup ? 'Login' : 'Create one'}</Link>
+            <Button
+              type="button"
+              variant="secondary"
+              fullWidth
+              leftIcon={<MicrosoftIcon />}
+              loading={oauthSubmitting === 'microsoft'}
+              disabled={Boolean(oauthSubmitting) || submitting}
+              onClick={() => handleOAuth('microsoft')}
+              aria-label="Continue with Microsoft"
+              title="Continue with Microsoft"
+            />
+          </div>
+          <div className="auth-divider">
+            <span>or</span>
+          </div>
+          {isSignup ? (
+            <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="name" />
+          ) : null}
+          <Input label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" />
+          <Input
+            label="Password"
+            type={passwordVisible ? 'text' : 'password'}
+            required
+            minLength={8}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            autoComplete={isSignup ? 'new-password' : 'current-password'}
+            rightAddon={
+              <button type="button" className="input-addon-btn" onClick={() => setPasswordVisible((v) => !v)} aria-label={passwordVisible ? 'Hide password' : 'Show password'}>
+                {passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            }
+          />
+          {isSignup ? <PasswordStrengthMeter password={form.password} /> : null}
+          {error ? <p className="form-error">{error}</p> : null}
+          {success ? <p className="form-success">{success}</p> : null}
+          <Button variant="primary" fullWidth disabled={submitting || Boolean(oauthSubmitting)} type="submit">
+            {submitting ? 'Working...' : isSignup ? 'Create account' : 'Login'}
+          </Button>
+          {isSignup ? (
+            <p className="center muted small">
+              By continuing you agree to our <Link to="/terms">Terms of Service</Link> and{' '}
+              <Link to="/privacy">Privacy Policy</Link>.
             </p>
-            {!isSignup ? (
-              <p className="center muted">
-                <Link to="/forgot-password">Forgot password?</Link>
-              </p>
-            ) : null}
-          </form>
-        </Card>
-      </div>
+          ) : null}
+          <p className="center muted">
+            {isSignup ? 'Already have an account?' : 'New to EmberFlow?'}{' '}
+            <Link to={isSignup ? '/login' : '/register'}>{isSignup ? 'Login' : 'Create one'}</Link>
+          </p>
+          {!isSignup ? (
+            <p className="center muted">
+              <Link to="/forgot-password">Forgot password?</Link>
+            </p>
+          ) : null}
+        </form>
+      </Card>
     </div>
   );
 }

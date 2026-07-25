@@ -624,111 +624,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* Two-column shell: a feature showcase (desktop only, real product content —
-   not fabricated marketing copy) alongside the auth form. Single column
-   (form only) below 960px, matching the mobile-first responsiveness rule. */
-.auth-shell {
-  display: grid;
-  grid-template-columns: 1fr;
-  min-height: 100vh;
-}
-
-@media (min-width: 960px) {
-  .auth-shell {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-}
-
-.auth-showcase {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-8);
-  padding: var(--space-12) var(--space-10);
-  background: var(--color-surface-sunken);
-  border-right: 1px solid var(--color-line);
-}
-
-@media (min-width: 960px) {
-  .auth-showcase {
-    display: flex;
-  }
-}
-
-.auth-showcase__intro {
-  display: grid;
-  gap: var(--space-3);
-  max-width: 30rem;
-}
-
-.auth-showcase__title {
-  margin: 0;
-  font-size: var(--text-heading-xl);
-  font-weight: var(--weight-bold);
-  letter-spacing: -0.01em;
-  color: var(--color-ink);
-  line-height: var(--leading-heading);
-}
-
-.auth-showcase__subtitle {
-  margin: 0;
-  max-width: 26rem;
-  color: var(--color-muted);
-  font-size: var(--text-body);
-  line-height: var(--leading-body);
-}
-
-/* Reuses the landing page's product-glimpse card verbatim for visual
-   consistency, but a perpetually bobbing card is too "showcase-y" for a
-   calm sign-in screen — the auth polish rules explicitly rule out that
-   kind of motion here, so it's switched off in this context only. */
-.auth-showcase .lp-glimpse-card {
-  animation: none;
-  margin-left: 0;
-}
-
-.auth-showcase__features {
-  display: grid;
-  max-width: 26rem;
-  gap: var(--space-4);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.auth-showcase__features li {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-}
-
-.auth-showcase__feature-icon {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--radius-md);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-}
-
-.auth-showcase__features strong {
-  display: block;
-  margin-bottom: 2px;
-  color: var(--color-ink);
-  font-size: var(--text-body-sm);
-  font-weight: var(--weight-semibold);
-}
-
-.auth-showcase__features p {
-  margin: 0;
-  color: var(--color-muted);
-  font-size: var(--text-caption);
-  line-height: var(--leading-body);
-}
-
 .screen-loader,
 .auth-page {
   display: flex;
@@ -740,7 +635,14 @@
 
 .auth-page {
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-5);
+  /* Scoped deep-terracotta accent for the primary CTA only (see
+     .auth-page .button--primary below) — this is NOT a global token
+     override. Text/links keep the app-wide --color-accent because that
+     exact value is contrast-tuned (see tokens.css) for text-on-dark use;
+     darkening it further would drop small text below 4.5:1 AA. Darkening
+     only improves white-on-button contrast, so it's safe there. */
+  --auth-accent-deep: #AB5736;
 }
 
 .auth-page .brand-mark {
@@ -751,12 +653,13 @@
 .auth-page .panel {
   width: 100%;
   max-width: 26rem;
-  padding: var(--space-8) var(--space-6);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
 }
 
 @media (max-width: 480px) {
   .auth-page .panel {
-    padding: var(--space-6) var(--space-5);
+    padding: var(--space-5);
   }
 }
 
@@ -770,7 +673,49 @@
 
 .auth-card__form {
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-4);
+}
+
+/* Denser label-to-input rhythm than the rest of the app's forms — scoped to
+   auth only, other pages haven't asked for this and Input is shared. */
+.auth-page .input-wrapper {
+  gap: var(--space-1);
+}
+
+/* filter: brightness() on hover (buttons.css) applies on top of whatever
+   background is present, so it darkens this correctly without needing its
+   own hover rule. */
+.auth-page .button--primary {
+  background: var(--auth-accent-deep);
+}
+
+/* Buttons already default to --radius-lg app-wide — bump one step further
+   here since inputs/card round up TO --radius-lg below, and everything on
+   this screen should land on the same, slightly softer radius together. */
+.auth-page .button {
+  border-radius: var(--radius-xl);
+}
+
+.auth-page .input,
+.auth-page .textarea,
+.auth-page .select,
+.auth-page .input-with-addon {
+  border-radius: var(--radius-lg);
+}
+
+/* Password-visibility toggle: was sitting in its own bordered/filled
+   compartment (.input-addon's default box styling) — strip that so it
+   reads as part of the input surface instead of a separate control. */
+.auth-page .input-addon {
+  padding: 0 var(--space-3);
+  background: transparent;
+  border: none;
+}
+
+/* Required asterisks stay in the DOM (and the underlying <input required>
+   stays required for validation) — this only hides the visual mark. */
+.auth-page .label span[aria-hidden='true'] {
+  display: none;
 }
 
 .auth-oauth {

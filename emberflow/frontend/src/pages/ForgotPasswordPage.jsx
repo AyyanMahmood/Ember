@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
           <Input label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           {error ? <p className="form-error">{error}</p> : null}
           {message ? <p className="form-success">{message}</p> : null}
-          <Button variant="primary" size="lg" fullWidth disabled={submitting} type="submit">
+          <Button variant="primary" fullWidth disabled={submitting} type="submit">
             {submitting ? 'Sending...' : 'Send reset link'}
           </Button>
           <Link className="center muted" to="/login">
