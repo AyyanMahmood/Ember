@@ -33,15 +33,15 @@ export default function ForgotPasswordPage() {
         EmberFlow
       </Link>
       <Card variant="strong">
-        <form onSubmit={handleSubmit}>
-          <div>
+        <form className="auth-card__form" onSubmit={handleSubmit}>
+          <div className="auth-card__header">
             <p className="eyebrow">Account recovery</p>
-            <h1>Reset your password</h1>
+            <h1 className="heading-xl">Reset your password</h1>
           </div>
           <Input label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           {error ? <p className="form-error">{error}</p> : null}
           {message ? <p className="form-success">{message}</p> : null}
-          <Button variant="primary" fullWidth disabled={submitting} type="submit">
+          <Button variant="primary" size="lg" fullWidth disabled={submitting} type="submit">
             {submitting ? 'Sending...' : 'Send reset link'}
           </Button>
           <Link className="center muted" to="/login">

@@ -220,6 +220,17 @@
     justify-content: flex-start;
   }
 
+  /* Invoice rows can show up to 6 action icon-buttons (44px touch targets,
+     see @media (pointer: coarse) below) — more than Proposals' 3, which is
+     why only Invoice cards were overflowing. A non-wrapping .table__actions
+     has no min-content size smaller than "every button in one row", so it
+     pushes the card wider than the viewport instead of shrinking. Letting it
+     wrap gives it a real minimum (one button wide) so it fits. */
+  .table--stack .table__actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
   /* Pagination controls (page-size select + first/prev/pages/next/last) are a
      non-wrapping flex row that can exceed a 360px viewport once there are a
      few page buttons — wrap them instead of letting the row force overflow. */

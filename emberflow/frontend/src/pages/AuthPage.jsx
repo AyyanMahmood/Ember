@@ -92,7 +92,7 @@ export default function AuthPage({ mode }) {
       </Link>
       <Card variant="strong">
         <form className="auth-card__form" onSubmit={handleSubmit}>
-          <div>
+          <div className="auth-card__header">
             <p className="eyebrow">{isSignup ? 'Create account' : 'Welcome back'}</p>
             <h1 className="heading-xl">{isSignup ? 'Start your workspace' : 'Sign in to EmberFlow'}</h1>
           </div>
@@ -134,7 +134,7 @@ export default function AuthPage({ mode }) {
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             autoComplete={isSignup ? 'new-password' : 'current-password'}
             rightAddon={
-              <button type="button" onClick={() => setPasswordVisible((v) => !v)} aria-label={passwordVisible ? 'Hide password' : 'Show password'}>
+              <button type="button" className="input-addon-btn" onClick={() => setPasswordVisible((v) => !v)} aria-label={passwordVisible ? 'Hide password' : 'Show password'}>
                 {passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             }
@@ -142,7 +142,7 @@ export default function AuthPage({ mode }) {
           {isSignup ? <PasswordStrengthMeter password={form.password} /> : null}
           {error ? <p className="form-error">{error}</p> : null}
           {success ? <p className="form-success">{success}</p> : null}
-          <Button variant="primary" fullWidth disabled={submitting || Boolean(oauthSubmitting)} type="submit">
+          <Button variant="primary" size="lg" fullWidth disabled={submitting || Boolean(oauthSubmitting)} type="submit">
             {submitting ? 'Working...' : isSignup ? 'Create account' : 'Login'}
           </Button>
           <p className="center muted">

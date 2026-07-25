@@ -35,10 +35,10 @@ export default function ResetPasswordPage() {
         EmberFlow
       </Link>
       <Card variant="strong">
-        <form onSubmit={handleSubmit}>
-          <div>
+        <form className="auth-card__form" onSubmit={handleSubmit}>
+          <div className="auth-card__header">
             <p className="eyebrow">Secure account</p>
-            <h1>Create a new password</h1>
+            <h1 className="heading-xl">Create a new password</h1>
           </div>
           <Input
             label="New password"
@@ -49,14 +49,14 @@ export default function ResetPasswordPage() {
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
             rightAddon={
-              <button type="button" onClick={() => setPasswordVisible((v) => !v)} aria-label={passwordVisible ? 'Hide password' : 'Show password'}>
+              <button type="button" className="input-addon-btn" onClick={() => setPasswordVisible((v) => !v)} aria-label={passwordVisible ? 'Hide password' : 'Show password'}>
                 {passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             }
           />
           <PasswordStrengthMeter password={password} />
           {error ? <p className="form-error">{error}</p> : null}
-          <Button variant="primary" fullWidth disabled={submitting} type="submit">
+          <Button variant="primary" size="lg" fullWidth disabled={submitting} type="submit">
             {submitting ? 'Saving...' : 'Update password'}
           </Button>
         </form>
