@@ -142,7 +142,7 @@ export default function AuthPage({ mode }) {
           {isSignup ? <PasswordStrengthMeter password={form.password} /> : null}
           {error ? <p className="form-error">{error}</p> : null}
           {success ? <p className="form-success">{success}</p> : null}
-          <Button variant="primary" fullWidth disabled={submitting} type="submit">
+          <Button variant="primary" fullWidth disabled={submitting || Boolean(oauthSubmitting)} type="submit">
             {submitting ? 'Working...' : isSignup ? 'Create account' : 'Login'}
           </Button>
           <p className="center muted">

@@ -38,5 +38,9 @@ export function friendlyAuthError(error) {
     return 'This link is invalid or expired. Request a new link and try again.';
   }
 
+  if (normalized.includes('provider is not enabled') || normalized.includes('unsupported provider')) {
+    return 'This sign-in method isn’t set up yet. Please use email and password, or try again later.';
+  }
+
   return message;
 }
