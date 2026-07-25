@@ -100,23 +100,27 @@ export default function AuthPage({ mode }) {
             <Button
               type="button"
               variant="secondary"
+              size="lg"
               fullWidth
               leftIcon={<GoogleIcon />}
+              loading={oauthSubmitting === 'google'}
               disabled={Boolean(oauthSubmitting) || submitting}
               onClick={() => handleOAuth('google')}
-            >
-              {oauthSubmitting === 'google' ? 'Redirecting…' : 'Continue with Google'}
-            </Button>
+              aria-label="Continue with Google"
+              title="Continue with Google"
+            />
             <Button
               type="button"
               variant="secondary"
+              size="lg"
               fullWidth
               leftIcon={<MicrosoftIcon />}
+              loading={oauthSubmitting === 'microsoft'}
               disabled={Boolean(oauthSubmitting) || submitting}
               onClick={() => handleOAuth('microsoft')}
-            >
-              {oauthSubmitting === 'microsoft' ? 'Redirecting…' : 'Continue with Microsoft'}
-            </Button>
+              aria-label="Continue with Microsoft"
+              title="Continue with Microsoft"
+            />
           </div>
           <div className="auth-divider">
             <span>or</span>
@@ -145,6 +149,12 @@ export default function AuthPage({ mode }) {
           <Button variant="primary" size="lg" fullWidth disabled={submitting || Boolean(oauthSubmitting)} type="submit">
             {submitting ? 'Working...' : isSignup ? 'Create account' : 'Login'}
           </Button>
+          {isSignup ? (
+            <p className="center muted small">
+              By continuing you agree to our <Link to="/terms">Terms of Service</Link> and{' '}
+              <Link to="/privacy">Privacy Policy</Link>.
+            </p>
+          ) : null}
           <p className="center muted">
             {isSignup ? 'Already have an account?' : 'New to EmberFlow?'}{' '}
             <Link to={isSignup ? '/login' : '/register'}>{isSignup ? 'Login' : 'Create one'}</Link>

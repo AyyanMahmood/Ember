@@ -121,7 +121,11 @@
   color: var(--color-ink);
   font-size: var(--text-body-sm);
   font-family: inherit;
-  padding: 0.6rem 0;
+  /* The input itself had zero horizontal padding — the icon + container
+     padding pushed the *box* right, but text inside always sat flush
+     against the input's own left edge. Three rounds of container padding
+     never fixed it because the input's own padding was the actual gap. */
+  padding: 0.6rem var(--space-3);
 }
 
 .ember-select__search input::placeholder {
