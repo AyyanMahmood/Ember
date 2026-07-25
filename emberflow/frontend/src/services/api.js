@@ -41,10 +41,21 @@ export async function getProfile() {
 }
 
 export async function upsertProfile(values) {
+  // A real UPDATE, not .upsert() -- every caller here operates on a profile
+  // row that's already guaranteed to exist (getProfile() bootstraps it on
+  // first load), and partial payloads (e.g. Brand Studio only sending
+  // logo_url/invoice_brand_color, not the full profile) break .upsert():
+  // Postgres's INSERT ... ON CONFLICT DO UPDATE still builds and validates
+  // an insert-candidate row from the provided columns BEFORE it even checks
+  // for a conflict, so any NOT NULL column with no default (profiles.email)
+  // that isn't in the payload fails immediately with a not-null violation --
+  // even though the row already exists and only an UPDATE was ever intended.
+  const { id, ...patch } = values;
   return requireData(
     await supabase
       .from("profiles")
-      .upsert(values, { onConflict: "id" })
+      .update(patch)
+      .eq("id", id)
       .select()
       .single(),
   );

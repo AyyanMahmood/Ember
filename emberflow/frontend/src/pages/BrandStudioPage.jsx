@@ -61,6 +61,22 @@ const DEMO_PROPOSAL = {
 
 const DEMO_INVOICE = buildDemoInvoice();
 
+// Some thrown errors are already meant for users (our own client-side
+// validation in brandAssets.js, and the enforce_branding_pro_only trigger's
+// "Pro subscription required..." message) -- pass those through as-is.
+// Anything else is raw Postgres/PostgREST/Supabase-storage text (constraint
+// names, "relation", "duplicate key", bucket internals, etc.) that should
+// never reach a user; log it for diagnosis and show one generic message.
+const SAFE_ERROR_PATTERNS = [/^pro subscription required/i, /logo must be/i, /choose a logo file/i, /couldn't upload your logo/i];
+
+function friendlyBrandError(err, context) {
+  const message = err?.message || '';
+  // eslint-disable-next-line no-console
+  console.error(`Brand Studio error (${context}):`, err);
+  if (SAFE_ERROR_PATTERNS.some((pattern) => pattern.test(message))) return message;
+  return "Something went wrong saving your brand settings. Please try again.";
+}
+
 function LockedPreview({ profile, onUpgrade }) {
   return (
     <div className="brand-studio__locked-preview">
@@ -284,7 +300,7 @@ export default function BrandStudioPage() {
         await deleteLogoAsset(oldPath);
       }
     } catch (err) {
-      setLogoError(err.message);
+      setLogoError(friendlyBrandError(err, 'logo upload'));
       // The new object was never linked to the profile -- safe to clean up.
       if (uploaded?.path) deleteLogoAsset(uploaded.path);
     } finally {
@@ -303,7 +319,7 @@ export default function BrandStudioPage() {
       previousLogoPathRef.current = null;
       if (oldPath) await deleteLogoAsset(oldPath);
     } catch (err) {
-      setLogoError(err.message);
+      setLogoError(friendlyBrandError(err, 'logo remove'));
     } finally {
       setUploadingLogo(false);
     }
@@ -323,7 +339,7 @@ export default function BrandStudioPage() {
       });
       setMessage('Brand saved.');
     } catch (err) {
-      setError(err.message);
+      setError(friendlyBrandError(err, 'save'));
     } finally {
       setSaving(false);
     }

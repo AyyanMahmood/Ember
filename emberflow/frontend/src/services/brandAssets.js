@@ -31,7 +31,11 @@ export async function uploadLogoFile(userId, file) {
     upsert: false,
     contentType: file.type,
   });
-  if (uploadError) throw new Error(uploadError.message || 'Logo upload failed.');
+  if (uploadError) {
+    // eslint-disable-next-line no-console
+    console.error('Logo upload failed (storage):', uploadError);
+    throw new Error("We couldn't upload your logo right now. Please try again in a moment.");
+  }
 
   const { data } = supabase.storage.from('logos').getPublicUrl(path);
   return { path, publicUrl: data.publicUrl };
