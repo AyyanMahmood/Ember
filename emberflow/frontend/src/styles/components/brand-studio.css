@@ -4,38 +4,80 @@
    — only Brand-Studio-specific bits (logo controls, font picker, locked
    preview, compare toggle) live here. */
 
-.brand-studio__back {
+.brand-studio__eyebrow {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  margin-bottom: var(--space-2);
-  color: var(--color-muted);
-  font-size: var(--text-body-sm);
-  font-weight: var(--weight-medium);
-  text-decoration: none;
-  transition: color var(--duration-fast) var(--ease-out);
+  color: var(--color-accent-dark);
 }
 
-.brand-studio__back:hover {
-  color: var(--color-ink);
+/* ── Cards ────────────────────────────────────────────────────────────── */
+
+.brand-studio__controls {
+  gap: var(--space-6);
 }
 
-/* ── Logo ─────────────────────────────────────────────────────────────── */
+.brand-studio__card {
+  transition: border-color var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
+}
 
-.brand-studio__logo-row {
+.brand-studio__card:has(.brand-studio__dropzone--active) {
+  border-color: var(--color-accent);
+}
+
+/* ── Logo dropzone ────────────────────────────────────────────────────── */
+
+.brand-studio__dropzone {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  flex-wrap: wrap;
+  padding: var(--space-4);
+  border: 1.5px dashed var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.brand-studio__dropzone:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.brand-studio__dropzone:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+.brand-studio__dropzone--active {
+  border-color: var(--color-accent);
+  border-style: solid;
+  background: var(--color-accent-soft);
+}
+
+.brand-studio__dropzone--busy {
+  cursor: wait;
+  opacity: 0.75;
 }
 
 .brand-studio__logo-preview {
+  flex-shrink: 0;
   width: 4.5rem;
   height: 4.5rem;
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-line);
   object-fit: contain;
-  background: var(--color-surface-sunken);
+  background: var(--color-surface);
+  transition: transform var(--duration-fast) var(--ease-spring);
+}
+
+.brand-studio__dropzone:hover .brand-studio__logo-preview {
+  transform: scale(1.04);
 }
 
 .brand-studio__logo-preview--empty {
@@ -43,14 +85,28 @@
   align-items: center;
   justify-content: center;
   color: var(--color-muted);
-  font-size: var(--text-caption);
-  font-weight: var(--weight-semibold);
 }
 
-.brand-studio__logo-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+.brand-studio__dropzone-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.brand-studio__dropzone-copy strong {
+  font-size: var(--text-body-sm);
+  color: var(--color-ink);
+}
+
+.brand-studio__dropzone-copy span {
+  font-size: var(--text-caption);
+  color: var(--color-muted);
+}
+
+.brand-studio__dropzone-remove {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
 }
 
 /* ── Colors ───────────────────────────────────────────────────────────── */
@@ -63,6 +119,15 @@
 
 .brand-studio__accent-toggle {
   margin-top: var(--space-4);
+}
+
+.brand-studio__color-row--accent {
+  animation: brand-studio-reveal var(--duration-base) var(--ease-out);
+}
+
+@keyframes brand-studio-reveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Fonts ────────────────────────────────────────────────────────────── */
@@ -197,6 +262,10 @@
 .brand-studio__compare-toggle:hover {
   border-color: var(--color-accent);
   color: var(--color-ink);
+}
+
+.brand-studio__preview-fade {
+  animation: brand-studio-reveal var(--duration-base) var(--ease-out);
 }
 
 /* ── Locked preview (free plan) ──────────────────────────────────────── */

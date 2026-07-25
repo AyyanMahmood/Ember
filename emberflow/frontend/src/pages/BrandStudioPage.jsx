@@ -1,6 +1,5 @@
-import { ArrowLeft, Check, FileText, Lock, Receipt, Trash2, Upload } from 'lucide-react';
+import { Check, FileText, Lock, Receipt, Sparkles, Trash2, Upload } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Button, IconButton } from '../components/ui/Button.jsx';
 import { Card, CardHeader } from '../components/ui/Card.jsx';
 import { Textarea } from '../components/ui/Input.jsx';
@@ -86,6 +85,75 @@ function FontPicker({ value, onChange }) {
   );
 }
 
+function LogoDropzone({ logoUrl, uploadingLogo, onUploadLogo, onRemoveLogo }) {
+  const fileInputRef = useRef(null);
+  const [dragActive, setDragActive] = useState(false);
+
+  function handleFiles(fileList) {
+    const file = fileList?.[0];
+    if (file) onUploadLogo(file);
+  }
+
+  return (
+    <div
+      className={`brand-studio__dropzone ${dragActive ? 'brand-studio__dropzone--active' : ''} ${uploadingLogo ? 'brand-studio__dropzone--busy' : ''}`}
+      onClick={() => fileInputRef.current?.click()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); }
+      }}
+      onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+      onDragLeave={() => setDragActive(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragActive(false);
+        handleFiles(e.dataTransfer.files);
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={logoUrl ? 'Replace logo' : 'Upload logo'}
+    >
+      {logoUrl ? (
+        <img src={logoUrl} alt="Business logo" className="brand-studio__logo-preview" decoding="async" />
+      ) : (
+        <div className="brand-studio__logo-preview brand-studio__logo-preview--empty">
+          <Upload size={20} />
+        </div>
+      )}
+      <div className="brand-studio__dropzone-copy">
+        {uploadingLogo ? (
+          <strong>Uploading...</strong>
+        ) : (
+          <>
+            <strong>{logoUrl ? 'Replace logo' : 'Drop a logo here, or click to browse'}</strong>
+            <span>PNG, JPEG, WebP, or SVG. Up to 2MB.</span>
+          </>
+        )}
+      </div>
+      {logoUrl && !uploadingLogo && (
+        <IconButton
+          aria-label="Remove logo"
+          className="brand-studio__dropzone-remove"
+          onClick={(e) => { e.stopPropagation(); onRemoveLogo(); }}
+        >
+          <Trash2 size={16} />
+        </IconButton>
+      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+        className="sr-only"
+        tabIndex={-1}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          if (file) onUploadLogo(file);
+        }}
+      />
+    </div>
+  );
+}
+
 function BrandControls({
   form,
   onChange,
@@ -98,56 +166,20 @@ function BrandControls({
   accentEnabled,
   onAccentEnabledChange,
 }) {
-  const fileInputRef = useRef(null);
-
   return (
-    <div className="page-stack">
-      <Card variant="default">
+    <div className="page-stack brand-studio__controls">
+      <Card variant="default" className="brand-studio__card">
         <CardHeader title="Logo" subtitle="Appears on every invoice and proposal you send." />
-        <div className="brand-studio__logo-row">
-          {form.logo_url ? (
-            <img src={form.logo_url} alt="Business logo" className="brand-studio__logo-preview" decoding="async" />
-          ) : (
-            <div className="brand-studio__logo-preview brand-studio__logo-preview--empty">Logo</div>
-          )}
-          <div className="brand-studio__logo-actions">
-            <Button
-              variant="secondary"
-              size="sm"
-              type="button"
-              leftIcon={<Upload size={15} />}
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingLogo}
-            >
-              {uploadingLogo ? 'Uploading...' : form.logo_url ? 'Replace logo' : 'Upload logo'}
-            </Button>
-            {form.logo_url && (
-              <IconButton
-                aria-label="Remove logo"
-                onClick={onRemoveLogo}
-                disabled={uploadingLogo}
-              >
-                <Trash2 size={16} />
-              </IconButton>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/svg+xml"
-              className="sr-only"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                event.target.value = '';
-                if (file) onUploadLogo(file);
-              }}
-            />
-          </div>
-        </div>
+        <LogoDropzone
+          logoUrl={form.logo_url}
+          uploadingLogo={uploadingLogo}
+          onUploadLogo={onUploadLogo}
+          onRemoveLogo={onRemoveLogo}
+        />
         {logoError && <p className="input-error" role="alert">{logoError}</p>}
-        <p className="muted small">PNG, JPEG, WebP, or SVG. Up to 2MB.</p>
       </Card>
 
-      <Card variant="default">
+      <Card variant="default" className="brand-studio__card">
         <CardHeader title="Brand color" subtitle="Every shade across your documents is derived from this one color." />
         <div className="brand-studio__color-row">
           <ColorPicker label="Primary" value={form.invoice_brand_color} onChange={(hex) => onChange('invoice_brand_color', hex)} />
@@ -163,7 +195,7 @@ function BrandControls({
           <span className="checkbox-label">Use a custom accent color</span>
         </label>
         {accentEnabled && (
-          <div className="brand-studio__color-row">
+          <div className="brand-studio__color-row brand-studio__color-row--accent">
             <ColorPicker
               label="Accent override"
               value={form.brand_accent_color || form.invoice_brand_color}
@@ -173,12 +205,12 @@ function BrandControls({
         )}
       </Card>
 
-      <Card variant="default">
+      <Card variant="default" className="brand-studio__card">
         <CardHeader title="Font" subtitle="Applied to your generated invoices and proposals only." />
         <FontPicker value={form.brand_font} onChange={(id) => onChange('brand_font', id)} />
       </Card>
 
-      <Card variant="default">
+      <Card variant="default" className="brand-studio__card">
         <CardHeader title="Footer & signature" subtitle="Shown at the bottom of every document." />
         <Textarea
           aria-label="Invoice and proposal footer"
@@ -323,11 +355,7 @@ export default function BrandStudioPage() {
     <div className="page-stack brand-studio">
       <div className="page-header">
         <div>
-          <Link to="/app/settings" className="brand-studio__back">
-            <ArrowLeft size={14} />
-            Settings
-          </Link>
-          <p className="eyebrow">Brand Studio</p>
+          <p className="eyebrow brand-studio__eyebrow"><Sparkles size={13} /> Brand Studio</p>
           <h2 className="heading-xl">Make every invoice and proposal look like you.</h2>
         </div>
       </div>
@@ -395,7 +423,9 @@ export default function BrandStudioPage() {
             {subscription.loading ? (
               <LoadingSpinner size="md" label="Checking plan..." />
             ) : isPro ? (
-              <ScaledPreview>{docPreview}</ScaledPreview>
+              <div key={`${docKind}-${showDefault}`} className="brand-studio__preview-fade">
+                <ScaledPreview>{docPreview}</ScaledPreview>
+              </div>
             ) : (
               <LockedPreview profile={defaultProfile} onUpgrade={() => setUpgradeOpen(true)} />
             )}
