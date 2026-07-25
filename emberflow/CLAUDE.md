@@ -359,6 +359,9 @@ User decided EmberFlow doesn't need a Name field at signup at all — removed it
 
 **Session note:** dev server was started with `npm run dev -- --host` (LAN-visible, prints a `Network:` URL) so the user could test from another device on the same network — this is session-local state, won't persist to the next session, just start it again the same way if asked.
 
+**Batch 8 (2026-07-25), commit `83e8054` — build green:**
+Marketing navbar (`PublicLayout.jsx`) theme toggle moved from between Pricing/Log-in to after "Start free" (now the trailing nav item). Added `.marketing-nav__theme-toggle { margin-left: var(--space-2) }` on top of the existing `nav` gap — a bare icon button as the last item reads closer to the edge than a padded button did in that slot, even at identical container padding, so it needed a touch more separation to not feel glued to the boundary.
+
 **Verification limitation (ongoing, all sessions so far):** no headless browser or real Android device available in this container — Playwright's bundled Chromium doesn't support macOS 12 here, and `chromium-cli` isn't installed. All fixes are verified by `npm run build` + code/CSS reasoning only, not on-device rendering. Always say so explicitly and ask the user to confirm on Arc/Android before treating a fix as done.
 
 **Branch:** `opclaude-redesign`. Prior batches (newest first, before Batch 3 above):
