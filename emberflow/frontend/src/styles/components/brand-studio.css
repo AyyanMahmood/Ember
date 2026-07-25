@@ -1,10 +1,3 @@
-.brand-studio-teaser__title {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--color-accent-dark);
-}
-
 /* ── Brand Studio (/app/settings/brand) ──────────────────────────────
    Reuses .studio-layout/.studio-editor/.studio-preview/.scaled-preview
    from document-studio/studio.css for the split editor/live-preview shell

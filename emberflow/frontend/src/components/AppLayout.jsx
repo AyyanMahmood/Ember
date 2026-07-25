@@ -1,4 +1,4 @@
-import { BarChart3, FileText, Home, LineChart, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings, Users, X } from 'lucide-react';
+import { BarChart3, FileText, Home, LayoutTemplate, LineChart, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings, Sparkles, Users, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
@@ -9,11 +9,13 @@ import { ThemeToggle } from './ui/ThemeToggle.jsx';
 
 const navItems = [
   { to: '/app', label: 'Dashboard', icon: Home, end: true },
-  { to: '/app/clients', label: 'Clients', icon: Users },
   { to: '/app/invoices', label: 'Invoices', icon: FileText },
+  { to: '/app/clients', label: 'Clients', icon: Users },
   { to: '/app/proposals', label: 'Proposals', icon: BarChart3 },
   { to: '/app/analytics', label: 'Analytics', icon: LineChart },
-  { to: '/app/settings', label: 'Settings', icon: Settings },
+  { to: '/app/templates', label: 'Templates', icon: LayoutTemplate },
+  { to: '/app/settings/brand', label: 'Brand Studio', icon: Sparkles, end: true },
+  { to: '/app/settings', label: 'Settings', icon: Settings, end: true },
 ];
 
 const SIDEBAR_COLLAPSED_KEY = 'emberflow-sidebar-collapsed';

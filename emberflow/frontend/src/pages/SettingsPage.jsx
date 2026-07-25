@@ -1,8 +1,6 @@
-import { ArrowRight, ExternalLink, Sparkles, Upload } from 'lucide-react';
+import { ExternalLink, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Avatar } from '../components/ui/Avatar.jsx';
-import { Badge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Card, CardHeader } from '../components/ui/Card.jsx';
 import { Input, Textarea } from '../components/ui/Input.jsx';
@@ -218,21 +216,6 @@ export default function SettingsPage() {
           </Button>
         </div>
       </form>
-
-      <Card variant="default">
-        <CardHeader
-          title={<span className="brand-studio-teaser__title">Brand Studio <Sparkles size={15} /></span>}
-          subtitle="Logo, brand color, and font used across every invoice and proposal."
-          action={
-            <Button as={Link} to="/app/settings/brand" variant="secondary" rightIcon={<ArrowRight size={16} />}>
-              Open Brand Studio
-            </Button>
-          }
-        />
-        {!subscription.loading && !subscription.isPro && (
-          <Badge variant="blue">Pro feature</Badge>
-        )}
-      </Card>
 
       <Card variant="default">
         <div className="panel__header">

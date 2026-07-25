@@ -23,7 +23,7 @@ import { MobilePreviewBackdrop, MobilePreviewFab, MobilePreviewHeader, useMobile
 
 const emptyItem = { description: '', quantity: 1, price: 0, tax_rate: 0 };
 
-function buildInitialForm(clientId = '', prefix = 'INV', currency = 'USD') {
+function buildInitialForm(clientId = '', prefix = 'INV', currency = 'USD', template = DEFAULT_THEME_ID) {
   return {
     invoice_number: nextInvoiceNumber(prefix),
     client_id: clientId,
@@ -33,7 +33,7 @@ function buildInitialForm(clientId = '', prefix = 'INV', currency = 'USD') {
     status: 'draft',
     discount_total: 0,
     notes: '',
-    template: DEFAULT_THEME_ID,
+    template,
   };
 }
 
@@ -46,7 +46,7 @@ export default function InvoiceFormPage() {
   const subscription = useSubscription();
   const [clients, setClients] = useState([]);
   const [profile, setProfile] = useState(null);
-  const [form, setForm] = useState(buildInitialForm(params.get('client') || ''));
+  const [form, setForm] = useState(buildInitialForm(params.get('client') || '', 'INV', 'USD', getTheme(params.get('template')).id));
   const [items, setItems] = useState([{ ...emptyItem }]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -95,7 +95,7 @@ export default function InvoiceFormPage() {
               : [{ ...emptyItem }]
           );
         } else {
-          setForm(buildInitialForm(params.get('client') || '', profileRow.invoice_prefix, profileRow.currency));
+          setForm(buildInitialForm(params.get('client') || '', profileRow.invoice_prefix, profileRow.currency, getTheme(params.get('template')).id));
         }
       } catch (err) {
         setError(err.message);

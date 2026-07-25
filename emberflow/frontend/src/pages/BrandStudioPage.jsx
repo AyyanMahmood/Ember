@@ -12,54 +12,14 @@ import { useSubscription } from '../hooks/useSubscription.js';
 import { useProfile } from '../hooks/useProfile.js';
 import { upsertProfile } from '../services/api.js';
 import { deleteLogoAsset, getLogoPathFromUrl, uploadLogoFile } from '../services/brandAssets.js';
-import { calculateInvoiceTotals } from '../utils/invoice.js';
 import { ColorPicker } from '../document-studio/ColorPicker.jsx';
 import { isValidHex } from '../document-studio/color.js';
 import { BRAND_FONTS, DEFAULT_BRAND_FONT, loadBrandFont } from '../document-studio/fonts.js';
 import { InvoiceDocument } from '../document-studio/InvoiceDocument.jsx';
 import { ProposalDocument } from '../document-studio/ProposalDocument.jsx';
 import { ScaledPreview } from '../document-studio/ScaledPreview.jsx';
+import { SAMPLE_INVOICE as DEMO_INVOICE, SAMPLE_PROPOSAL as DEMO_PROPOSAL } from '../document-studio/sampleDocuments.js';
 import { MobilePreviewBackdrop, MobilePreviewFab, MobilePreviewHeader, useMobilePreviewSheet } from '../document-studio/MobilePreviewSheet.jsx';
-
-// Fixed sample content -- Brand Studio previews a document, it never edits a
-// real one, so this never touches invoices/proposals API or business logic.
-const DEMO_ITEMS = [
-  { id: 'demo-1', description: 'Brand strategy workshop', quantity: 1, price: 1800, tax_rate: 0 },
-  { id: 'demo-2', description: 'Website redesign — 5 pages', quantity: 1, price: 3200, tax_rate: 8 },
-  { id: 'demo-3', description: 'Monthly retainer', quantity: 2, price: 450, tax_rate: 8 },
-];
-
-function buildDemoInvoice() {
-  const totals = calculateInvoiceTotals(DEMO_ITEMS, 0);
-  return {
-    invoice_number: 'INV-1042',
-    invoice_date: '2026-07-01',
-    due_date: '2026-07-15',
-    currency: 'USD',
-    status: 'sent',
-    notes: 'Thanks for your business — let me know if you have any questions.',
-    invoice_items: DEMO_ITEMS,
-    payments: [],
-    clients: { name: 'Nova Studio', company: 'Nova Studio LLC', email: 'hello@novastudio.co' },
-    ...totals,
-  };
-}
-
-const DEMO_PROPOSAL = {
-  title: 'Brand & Website Refresh',
-  client_name: 'Nova Studio',
-  currency: 'USD',
-  timeline: '6 weeks',
-  project_summary: 'A full brand refresh and marketing site rebuild designed to reposition Nova Studio ahead of their Series A.',
-  scope: 'Brand strategy, visual identity, a 5-page marketing site, and a lightweight design system for future campaigns.',
-  proposal_items: [
-    { id: 'demo-1', title: 'Brand strategy & identity', description: 'Positioning, logo, type, color', amount: 2400 },
-    { id: 'demo-2', title: 'Website design & build', description: '5 pages, CMS-ready', amount: 4200 },
-  ],
-  amount: 6600,
-};
-
-const DEMO_INVOICE = buildDemoInvoice();
 
 // Some thrown errors are already meant for users (our own client-side
 // validation in brandAssets.js, and the enforce_branding_pro_only trigger's

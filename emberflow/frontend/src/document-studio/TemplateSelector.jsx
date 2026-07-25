@@ -5,7 +5,7 @@ import { InvoiceDocument } from './InvoiceDocument.jsx';
 import { ProposalDocument } from './ProposalDocument.jsx';
 import { ScaledPreview } from './ScaledPreview.jsx';
 
-function ThemeThumbnail({ kind, data, profile, themeId }) {
+export function ThemeThumbnail({ kind, data, profile, themeId }) {
   return (
     <div className="template-selector__thumb-frame">
       <ScaledPreview>

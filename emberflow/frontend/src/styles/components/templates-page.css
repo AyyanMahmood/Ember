@@ -1,0 +1,26 @@
+/* ── Templates page (/app/templates) ─────────────────────────────────
+   Cards reuse .template-selector__card/__preview/__meta (document-studio/
+   studio.css) as-is for visual consistency with the in-editor template
+   picker -- only the grid container and a couple of non-interactive-card
+   overrides are new here. */
+
+.templates-page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--space-5);
+}
+
+.templates-page-grid__card {
+  cursor: default;
+  padding: var(--space-3);
+}
+
+.templates-page-grid__card:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--color-line);
+}
+
+.templates-page-grid__card .button {
+  margin-top: var(--space-1);
+}
