@@ -97,7 +97,7 @@ export default function AppLayout() {
                 title={collapsed ? item.label : undefined}
                 className={({ isActive }) => `side-link ${isActive ? 'active' : ''}`}
               >
-                <Icon size={18} />
+                <Icon size={16} />
                 <span>{item.label}</span>
               </NavLink>
             );
