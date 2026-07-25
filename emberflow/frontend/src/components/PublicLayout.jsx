@@ -66,11 +66,11 @@ export default function PublicLayout() {
             >
               Pricing
             </Link>
-            <ThemeToggle />
             <Link to="/login">Log in</Link>
             <Link className="button primary" to="/register">
               Start free
             </Link>
+            <ThemeToggle className="marketing-nav__theme-toggle" />
           </nav>
         </div>
       </header>

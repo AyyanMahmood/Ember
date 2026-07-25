@@ -846,6 +846,13 @@
   gap: var(--space-5);
 }
 
+/* Trailing icon button reads as closer to the edge than a padded button
+   would at the same gap — a little extra separation from "Start free"
+   keeps it from feeling glued to the navbar/viewport boundary. */
+.marketing-nav__theme-toggle {
+  margin-left: var(--space-2);
+}
+
 .marketing-nav nav a:not(.button) {
   color: var(--color-muted);
   font-weight: var(--weight-extrabold);
