@@ -17,6 +17,7 @@ export const DOCUMENT_PAGE_HEIGHT = 1056;
 export const DocumentTemplate = forwardRef(function DocumentTemplate({
   theme,
   palette,
+  fontFamily,
   documentType,
   documentTitle,
   documentSubtitle,
@@ -45,6 +46,10 @@ export const DocumentTemplate = forwardRef(function DocumentTemplate({
     '--doc-on-primary': palette.onPrimary,
     width: `${DOCUMENT_PAGE_WIDTH}px`,
     minHeight: `${DOCUMENT_PAGE_HEIGHT}px`,
+    // Brand Studio's chosen font wins over the theme's own default/serif
+    // stack (inline style beats the .doc-page--serif class rule at equal
+    // specificity) -- Brand Studio applies to every theme uniformly.
+    ...(fontFamily ? { '--doc-font': fontFamily } : {}),
   };
 
   const headerBlock = (

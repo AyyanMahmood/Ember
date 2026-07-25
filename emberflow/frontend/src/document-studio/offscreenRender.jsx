@@ -1,5 +1,6 @@
 import { cloneElement } from 'react';
 import { createRoot } from 'react-dom/client';
+import { loadBrandFont } from './fonts.js';
 
 /**
  * Mounts a document component off-screen (not display:none — that would
@@ -8,6 +9,13 @@ import { createRoot } from 'react-dom/client';
  * don't already have a live preview on screen (e.g. a quick "Download PDF"
  * action from a list row). Waits for any logo <img> to finish loading
  * before resolving, since html2canvas needs the image already decoded.
+ *
+ * Also explicitly waits for the profile's Brand Studio font (if any) to
+ * finish loading. InvoiceDocument/ProposalDocument kick off that same
+ * @fontsource dynamic import themselves on mount for the on-screen preview
+ * case, but a "quick download" from a list row mounts and captures this
+ * offscreen copy in one shot with no prior render to have already warmed
+ * it -- without this, html2canvas could snapshot the fallback font mid-FOUT.
  */
 export function renderDocumentOffscreen(element) {
   const container = document.createElement('div');
@@ -20,6 +28,10 @@ export function renderDocumentOffscreen(element) {
   const root = createRoot(container);
   let nodeRef = null;
 
+  const fontReady = Promise.resolve(loadBrandFont(element.props?.profile?.brand_font))
+    .then(() => document.fonts?.ready)
+    .catch(() => {});
+
   return new Promise((resolve, reject) => {
     root.render(cloneElement(element, { ref: (node) => { nodeRef = node; } }));
 
@@ -28,10 +40,13 @@ export function renderDocumentOffscreen(element) {
       requestAnimationFrame(async () => {
         try {
           const images = Array.from(container.querySelectorAll('img'));
-          await Promise.all(images.map((img) => (img.complete ? Promise.resolve() : new Promise((res) => {
-            img.onload = res;
-            img.onerror = res;
-          }))));
+          await Promise.all([
+            fontReady,
+            ...images.map((img) => (img.complete ? Promise.resolve() : new Promise((res) => {
+              img.onload = res;
+              img.onerror = res;
+            }))),
+          ]);
           resolve({
             node: nodeRef,
             cleanup: () => {

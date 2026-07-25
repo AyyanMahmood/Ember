@@ -1,12 +1,18 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { DocumentTemplate } from './DocumentTemplate.jsx';
 import { formatMoney } from '../utils/format.js';
 import { getTheme } from './themes.js';
 import { derivePalette } from './color.js';
+import { getBrandFont, loadBrandFont } from './fonts.js';
 
 export const ProposalDocument = forwardRef(function ProposalDocument({ proposal, profile, themeId }, ref) {
   const theme = getTheme(themeId || proposal?.template);
-  const palette = derivePalette(profile?.invoice_brand_color);
+  const palette = derivePalette(profile?.invoice_brand_color, profile?.brand_accent_color);
+  const fontFamily = getBrandFont(profile?.brand_font).stack;
+
+  useEffect(() => {
+    loadBrandFont(profile?.brand_font);
+  }, [profile?.brand_font]);
   const items = proposal?.proposal_items || [];
 
   const body = (
@@ -59,6 +65,7 @@ export const ProposalDocument = forwardRef(function ProposalDocument({ proposal,
       ref={ref}
       theme={theme}
       palette={palette}
+      fontFamily={fontFamily}
       documentType="proposal"
       documentTitle="Proposal"
       documentSubtitle={proposal?.title}

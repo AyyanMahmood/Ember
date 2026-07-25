@@ -1,13 +1,19 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { DocumentTemplate } from './DocumentTemplate.jsx';
 import { formatDate, formatMoney } from '../utils/format.js';
 import { effectiveStatus } from '../utils/invoice.js';
 import { getTheme } from './themes.js';
 import { derivePalette } from './color.js';
+import { getBrandFont, loadBrandFont } from './fonts.js';
 
 export const InvoiceDocument = forwardRef(function InvoiceDocument({ invoice, profile, themeId }, ref) {
   const theme = getTheme(themeId || invoice?.template);
-  const palette = derivePalette(profile?.invoice_brand_color);
+  const palette = derivePalette(profile?.invoice_brand_color, profile?.brand_accent_color);
+  const fontFamily = getBrandFont(profile?.brand_font).stack;
+
+  useEffect(() => {
+    loadBrandFont(profile?.brand_font);
+  }, [profile?.brand_font]);
   const items = invoice?.invoice_items || [];
   const paidAmount = (invoice?.payments || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
   const balanceDue = Math.max(Number(invoice?.total || 0) - paidAmount, 0);
@@ -98,6 +104,7 @@ export const InvoiceDocument = forwardRef(function InvoiceDocument({ invoice, pr
       ref={ref}
       theme={theme}
       palette={palette}
+      fontFamily={fontFamily}
       documentType="invoice"
       documentTitle="Invoice"
       documentSubtitle={invoice?.invoice_number}

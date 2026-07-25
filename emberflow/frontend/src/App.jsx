@@ -8,6 +8,7 @@ import { PageLoader } from './components/ui/Loading.jsx';
 
 const AuthPage = lazy(() => import('./pages/AuthPage.jsx'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage.jsx'));
+const BrandStudioPage = lazy(() => import('./pages/BrandStudioPage.jsx'));
 const ClientDetailPage = lazy(() => import('./pages/ClientDetailPage.jsx'));
 const ClientFormPage = lazy(() => import('./pages/ClientFormPage.jsx'));
 const ClientsPage = lazy(() => import('./pages/ClientsPage.jsx'));
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="proposals/new" element={<ProposalFormPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="settings/brand" element={<BrandStudioPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

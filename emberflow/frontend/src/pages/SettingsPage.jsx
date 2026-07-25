@@ -1,12 +1,13 @@
-import { ExternalLink, Upload } from 'lucide-react';
+import { ArrowRight, ExternalLink, Sparkles, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Avatar } from '../components/ui/Avatar.jsx';
+import { Badge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Card, CardHeader } from '../components/ui/Card.jsx';
 import { Input, Textarea } from '../components/ui/Input.jsx';
 import { EmberSelect } from '../components/ui/EmberSelect.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
-import FeatureGate from '../components/FeatureGate.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
 import { getProfile, upsertProfile } from '../services/api.js';
@@ -15,8 +16,6 @@ import { supabase } from '../services/supabase.js';
 import { CURRENCY_OPTIONS } from '../data/currencies.js';
 import { COUNTRY_OPTIONS } from '../data/countries.js';
 import { formatLimit, PLANS } from '../utils/plans.js';
-import { ColorPicker } from '../document-studio/ColorPicker.jsx';
-import { derivePalette } from '../document-studio/color.js';
 
 function UsageMeter({ label, used, limit }) {
   const unlimited = !Number.isFinite(limit);
@@ -49,20 +48,16 @@ export default function SettingsPage() {
     business_name: '',
     email: '',
     avatar_url: '',
-    logo_url: '',
     phone: '',
     address: '',
     country: '',
     currency: 'USD',
-    invoice_brand_color: '#3B82F6',
-    invoice_footer: 'Thank you for your business.',
     payment_instructions: '',
     invoice_prefix: 'INV',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [billingAction, setBillingAction] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -76,13 +71,10 @@ export default function SettingsPage() {
           business_name: profile.business_name || '',
           email: profile.email || user.email || '',
           avatar_url: profile.avatar_url || '',
-          logo_url: profile.logo_url || '',
           phone: profile.phone || '',
           address: profile.address || '',
           country: profile.country || '',
           currency: profile.currency || 'USD',
-          invoice_brand_color: profile.invoice_brand_color || '#3B82F6',
-          invoice_footer: profile.invoice_footer || 'Thank you for your business.',
           payment_instructions: profile.payment_instructions || '',
           invoice_prefix: profile.invoice_prefix || 'INV',
         });
@@ -97,28 +89,6 @@ export default function SettingsPage() {
 
   function updateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
-  }
-
-  async function handleLogoUpload(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setError('');
-    try {
-      const extension = file.name.split('.').pop()?.toLowerCase() || 'png';
-      const path = `${user.id}/${Date.now()}.${extension}`;
-      const { error: uploadError } = await supabase.storage.from('logos').upload(path, file, {
-        upsert: true,
-        contentType: file.type,
-      });
-      if (uploadError) throw uploadError;
-      const { data } = supabase.storage.from('logos').getPublicUrl(path);
-      updateField('logo_url', data.publicUrl);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setUploading(false);
-    }
   }
 
   async function handleAvatarUpload(event) {
@@ -242,40 +212,27 @@ export default function SettingsPage() {
           </div>
         </Card>
 
-        <FeatureGate feature="branding" title="Invoice branding" message="Upgrade to Pro to add logo and custom invoice branding.">
-          <Card variant="default">
-            <CardHeader title="Branding" subtitle="Logo and brand color used across every invoice and proposal template." />
-            <div className="branding-box">
-              {form.logo_url ? <img src={form.logo_url} alt="Business logo" decoding="async" /> : <div className="logo-placeholder">Logo</div>}
-              <label className="file-upload">
-                <Upload size={16} />
-                {uploading ? 'Uploading...' : 'Upload logo'}
-                <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleLogoUpload} />
-              </label>
-              <ColorPicker label="Brand color" value={form.invoice_brand_color} onChange={(hex) => updateField('invoice_brand_color', hex)} />
-              <Textarea label="Invoice footer" rows={4} className="span-2" value={form.invoice_footer} onChange={(e) => updateField('invoice_footer', e.target.value)} />
-            </div>
-
-            <div className="palette-preview">
-              <span className="palette-preview__label">Derived palette — this one color generates every shade your document templates use</span>
-              <div className="palette-preview__swatches">
-                {Object.entries(derivePalette(form.invoice_brand_color)).map(([role, hex]) => (
-                  <div className="palette-preview__swatch" key={role}>
-                    <span className="palette-preview__chip" style={{ background: hex }} />
-                    <span className="palette-preview__role">{role}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
-        </FeatureGate>
-
         <div className="form-actions form-actions--sticky">
           <Button variant="primary" disabled={saving} type="submit">
             {saving ? 'Saving...' : 'Save settings'}
           </Button>
         </div>
       </form>
+
+      <Card variant="default">
+        <CardHeader
+          title={<span className="brand-studio-teaser__title">Brand Studio <Sparkles size={15} /></span>}
+          subtitle="Logo, brand color, and font used across every invoice and proposal."
+          action={
+            <Button as={Link} to="/app/settings/brand" variant="secondary" rightIcon={<ArrowRight size={16} />}>
+              Open Brand Studio
+            </Button>
+          }
+        />
+        {!subscription.loading && !subscription.isPro && (
+          <Badge variant="blue">Pro feature</Badge>
+        )}
+      </Card>
 
       <Card variant="default">
         <div className="panel__header">

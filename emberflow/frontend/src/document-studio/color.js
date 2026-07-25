@@ -113,13 +113,18 @@ export function isValidHex(value) {
  * Derive a full brand palette from a single stored hex color. Keeps the whole
  * document system on ONE accent hue (no clashing colors) while still giving
  * templates primary/accent/secondary/soft/on-color roles to work with.
+ *
+ * `accentOverride` (Brand Studio's optional "custom accent") only ever
+ * replaces the derived `accent` role -- primary/secondary/soft/onPrimary
+ * still come from the one base hex, so an override can't reintroduce the
+ * clashing-color problem this whole one-color system exists to prevent.
  */
-export function derivePalette(baseHex) {
+export function derivePalette(baseHex, accentOverride) {
   const base = isValidHex(baseHex) ? baseHex : '#2563EB';
   const primary = base;
   const primaryDark = adjustLightness(base, -0.14);
   const primaryLight = adjustLightness(base, 0.16);
-  const accent = adjustLightness(rotateHue(base, 8), 0.06);
+  const accent = isValidHex(accentOverride) ? accentOverride : adjustLightness(rotateHue(base, 8), 0.06);
   const secondary = adjustSaturation(adjustLightness(base, 0.3), -0.35);
   const soft = withAlpha(base, 0.1);
   const softStrong = withAlpha(base, 0.16);

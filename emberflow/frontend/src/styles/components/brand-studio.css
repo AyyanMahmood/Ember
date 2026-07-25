@@ -1,0 +1,253 @@
+.brand-studio-teaser__title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-accent-dark);
+}
+
+/* ── Brand Studio (/app/settings/brand) ──────────────────────────────
+   Reuses .studio-layout/.studio-editor/.studio-preview/.scaled-preview
+   from document-studio/studio.css for the split editor/live-preview shell
+   — only Brand-Studio-specific bits (logo controls, font picker, locked
+   preview, compare toggle) live here. */
+
+.brand-studio__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  color: var(--color-muted);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.brand-studio__back:hover {
+  color: var(--color-ink);
+}
+
+/* ── Logo ─────────────────────────────────────────────────────────────── */
+
+.brand-studio__logo-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.brand-studio__logo-preview {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-line);
+  object-fit: contain;
+  background: var(--color-surface-sunken);
+}
+
+.brand-studio__logo-preview--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+}
+
+.brand-studio__logo-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ── Colors ───────────────────────────────────────────────────────────── */
+
+.brand-studio__color-row {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.brand-studio__accent-toggle {
+  margin-top: var(--space-4);
+}
+
+/* ── Fonts ────────────────────────────────────────────────────────────── */
+
+.brand-studio__font-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
+  gap: var(--space-3);
+}
+
+.brand-studio__font-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.brand-studio__font-card:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.brand-studio__font-card:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+.brand-studio__font-card--selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.brand-studio__font-sample {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  font-size: 1.25rem;
+  color: var(--color-ink);
+}
+
+.brand-studio__font-meta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.brand-studio__font-meta strong {
+  font-size: var(--text-body-sm);
+  color: var(--color-ink);
+}
+
+.brand-studio__font-meta span {
+  font-size: var(--text-caption);
+  color: var(--color-muted);
+}
+
+.brand-studio__font-check {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  color: var(--color-accent);
+}
+
+/* ── Preview toolbar (doc-type tabs + compare toggle) ───────────────── */
+
+.brand-studio__preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.brand-studio__doc-tabs {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-line);
+}
+
+.brand-studio__doc-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.4rem 0.85rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-muted);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.brand-studio__doc-tab--active {
+  background: var(--color-surface-strong);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-xs);
+}
+
+.brand-studio__compare-toggle {
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-muted);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.brand-studio__compare-toggle:hover {
+  border-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+/* ── Locked preview (free plan) ──────────────────────────────────────── */
+
+.brand-studio__locked-preview {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.brand-studio__locked-preview .scaled-preview {
+  filter: blur(3px) saturate(0.7);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.brand-studio__lock-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  text-align: center;
+  background: linear-gradient(180deg, rgba(10, 12, 14, 0.15) 0%, rgba(10, 12, 14, 0.75) 100%);
+}
+
+.brand-studio__lock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(10, 10, 10, 0.72);
+  color: #fff;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+}
+
+.brand-studio__lock-overlay p {
+  max-width: 22rem;
+  color: #fff;
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+}
