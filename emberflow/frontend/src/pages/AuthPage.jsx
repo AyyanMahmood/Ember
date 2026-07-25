@@ -35,7 +35,7 @@ export default function AuthPage({ mode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn, signUp, signInWithGoogle, signInWithMicrosoft, user, loading } = useAuth();
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -68,7 +68,7 @@ export default function AuthPage({ mode }) {
     setSubmitting(true);
 
     const result = isSignup
-      ? await signUp(form.email, form.password, { full_name: form.name })
+      ? await signUp(form.email, form.password)
       : await signIn(form.email, form.password);
 
     setSubmitting(false);
@@ -123,14 +123,7 @@ export default function AuthPage({ mode }) {
           <div className="auth-divider">
             <span>or</span>
           </div>
-          {isSignup ? (
-            <div className="auth-card__row">
-              <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="name" />
-              <Input label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" />
-            </div>
-          ) : (
-            <Input label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" />
-          )}
+          <Input label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" />
           <Input
             label="Password"
             type={passwordVisible ? 'text' : 'password'}

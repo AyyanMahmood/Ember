@@ -718,20 +718,10 @@
   display: none;
 }
 
-.auth-card__row {
-  display: grid;
-  gap: var(--space-4);
-}
-
 /* Desktop should never need scrolling to reach a field — mobile is
    explicitly fine as-is, so all of this is gated behind min-width and
-   changes nothing below it. Name+Email move onto one row (there's room),
-   and padding/gaps tighten further on top of the density pass above. */
+   changes nothing below it. */
 @media (min-width: 768px) {
-  .auth-card__row {
-    grid-template-columns: 1fr 1fr;
-  }
-
   .auth-page {
     padding: var(--space-4);
     gap: var(--space-3);
