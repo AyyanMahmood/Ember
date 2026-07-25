@@ -124,9 +124,13 @@ export default function AuthPage({ mode }) {
             <span>or</span>
           </div>
           {isSignup ? (
-            <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="name" />
-          ) : null}
-          <Input label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" />
+            <div className="auth-card__row">
+              <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="name" />
+              <Input label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" />
+            </div>
+          ) : (
+            <Input label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" />
+          )}
           <Input
             label="Password"
             type={passwordVisible ? 'text' : 'password'}
