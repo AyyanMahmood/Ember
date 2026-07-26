@@ -422,7 +422,7 @@ Scoped strictly to the three areas requested — SEO, production hardening, perf
 
 ---
 
-## ⏸️ RESUME HERE — Release Candidate QA (active mode, 2026-07-25)
+## Release Candidate QA — Batch History (2026-07-25, superseded by V1 Polish Sprint at end of file)
 
 **Current mode: RELEASE CANDIDATE QA**, real-device testing on **Arc Browser for Android (Chromium/Blink)**, test device **Samsung Galaxy A06 (~360px CSS width)**. User sends bugs in **batches with screenshots**; wait for a batch before acting. This mode was briefly interrupted for Bundle 1 (Authentication feature work — Google/Microsoft OAuth, password strength meter, disposable email detection, auth UX polish), which is now folded back into this same QA thread since Batch 3 covered both a QA bug and Bundle 1 follow-up together.
 
@@ -483,3 +483,64 @@ Marketing navbar (`PublicLayout.jsx`) theme toggle moved from between Pricing/Lo
 - Earlier: EmberSelect component + centralized `src/data/currencies.js` & `src/data/countries.js` (Palestine pinned first, Israel + ILS excluded — **do not change**), Phase 7 (perf/a11y/hardening) complete; Bundle 1 (Google/Microsoft OAuth code, password strength meter, disposable email detection) — commits `b7721fe`, `e428ecd`, both folded into this thread as of Batch 3.
 
 **Known open item (deferred, do NOT do unprompted):** spacing tokens are **px**; migrating to rem is only worthwhile if paired with unpinning `html { font-size: 16px }` (`reset.css:8`) — recommended as its own tracked, device-tested task, not during RC QA.
+
+---
+
+## ⏸️ RESUME HERE — V1 Polish Sprint (active mode, 2026-07-27)
+
+**Payments deferred to V1.5** (business/external — can't go live until November, not a code issue). Removed from the V1 critical path; see PROJECT_STATUS.md → "Paddle Status". Paddle code/UI is untouched and still gets normal QA.
+
+**Current mode: craftsmanship polish sprint, no new features.** Full-app QA audit (5 parallel research passes covering every screen: marketing/auth, dashboard/clients, invoices/proposals, settings/brand-studio/templates/analytics, and a cross-cutting design-system/accessibility/performance pass) produced the prioritized backlog below. Working through **Critical** items now, one at a time, build green after each, committed individually. High/Medium/Low are logged for a follow-up pass — do not fix them opportunistically while doing something else; pull them deliberately.
+
+### CRITICAL
+
+| # | Issue | Where |
+|---|---|---|
+| 1 | `.button--danger`/`--success`/`--warning` switch to white text on hover against light backgrounds — contrast ≈2.77:1 / 1.92:1 / 1.65:1, all fail WCAG AA. Hits every destructive/confirm action app-wide, including `ConfirmDialog`'s default `variant="danger"`. | `styles/components/buttons.css:114-139` |
+| 2 | Password show/hide toggle button is wrapped in `aria-hidden="true"` by `Input`'s `rightAddon` — focusable but invisible to assistive tech, app-wide (every password field with a toggle: login, signup, reset-password, Settings' password-change). | `components/ui/Input.jsx:60-62`, used in `AuthPage.jsx`, `ResetPasswordPage.jsx`, `SettingsPage.jsx` |
+| 3 | Invoice/proposal line items with a blank description or `quantity<=0` are silently excluded from the live totals preview *and* from what's actually saved, with zero indication to the user that a row was dropped — a real money/trust bug in a financial document, not just polish. | `document-studio` item normalization used by `InvoiceFormPage.jsx`, `ProposalFormPage.jsx`, `utils/invoice.js` |
+| 4 | `MobilePreviewSheet` (mobile invoice/proposal preview) behaves like a modal (backdrop, fixed position, focus-on-open) but has no `role="dialog"`/`aria-modal` and no focus trap — a keyboard user can tab out of it into the editor behind the backdrop. `TemplateSelector.jsx` does this correctly for comparison. | `document-studio/MobilePreviewSheet.jsx` |
+
+### HIGH
+
+- Dashboard, Clients, Client Detail, and Client Form all swap to a bare full-page spinner on load instead of a layout-preserving skeleton — `Table`'s own built-in skeleton-row loading state exists and is unused everywhere. (`DashboardPage.jsx`, `ClientsPage.jsx`, `ClientDetailPage.jsx`, `ClientFormPage.jsx`, `components/ui/Table.jsx:80-125`)
+- Dashboard/Clients/Client Detail error states are dead ends: no retry action, and Client Detail's drops the page header/nav entirely instead of an inline banner. (`DashboardPage.jsx:96-104`, `ClientsPage.jsx:161-167`, `ClientDetailPage.jsx:69`)
+- `ClientFormPage` has zero client-side field validation/error messaging even though `Input`/`Textarea`/`EmberSelect` fully support an `error` prop — relies entirely on native browser bubbles. (`ClientFormPage.jsx:94-114`)
+- Three visually unrelated "Pro-locked" treatments for the same concept: Templates (small corner chip), Brand Studio (blur + overlay), Analytics (plain unstyled `FeatureGate` panel) — undermines "one design language." (`TemplatesPage`, `BrandStudioPage`'s `ProLock`, `components/FeatureGate.jsx`)
+- Settings page shares one `error`/`billingAction` state across three unrelated async actions (profile save, avatar upload, billing) rendered in one banner pinned to the top of the page — a failed billing action at the bottom gives no visual link back to what failed. (`SettingsPage.jsx:68-69,180-204,223`)
+- `InvoiceFormPage`/`ProposalFormPage` mix a native browser `<Select>` (Client/Status/Starter) and the themed `EmberSelect` (Currency) on the same form. (`InvoiceFormPage.jsx:243,249,250`, `ProposalFormPage.jsx:264,270`)
+- Features/Pricing pages skip heading hierarchy — `h1` straight to `h3` (card titles), no `h2` anywhere on either page. (`FeaturesPage.jsx`, `PricingPage.jsx`)
+- Auth pages' top-level `.form-error`/`.form-success` messages have no `role="alert"`/`aria-live`, unlike `Input`'s own field-level errors which do. (`AuthPage.jsx`, `ForgotPasswordPage.jsx`, `ResetPasswordPage.jsx`)
+- `InvoiceDetailPage`'s error state collapses the entire page (no header, no back link) — a dead end. (`InvoiceDetailPage.jsx:199`)
+- `ClientDetailPage`'s 3-card stat grid orphans the third card alone in a row at 680-1200px (2-column breakpoint tuned for Dashboard's 4 cards), and the billing-summary stats only render once the client has invoices instead of always showing (even zeroed). (`ClientDetailPage.jsx:93-99`, `styles/layout.css:137-153`)
+
+### MEDIUM
+
+- Landing hero's left column has no entrance animation while the right column's product-glimpse card does (`LandingPage.jsx:86-148`); `.lp-pricing__grid` compresses in the 680-728px band before collapsing to one column (`landing.css:374-379`).
+- `FeaturesPage` icons render bare with no background treatment — a third, different icon presentation vs. the landing page's accent-tinted circles and the app's `stat-card__icon` badges (`FeaturesPage.jsx:28`).
+- Default `Card` (`variant="default"`) has no hover/gap treatment, feels inert next to `.lp-feature-card`'s hover-lift used for the same content on the landing page (`Card.jsx`, `cards.css:1-11`).
+- `ContactPage` icon sits cramped directly against its heading with no gap, unlike Terms/Privacy/Refund's spaced icon-in-heading pattern (`ContactPage.jsx:22-41` vs `layout.css:1066-1073`).
+- Auth OAuth buttons use a real spinner `loading` state; the primary submit/resend buttons only swap their text label — two different loading affordances in the same form (`AuthPage.jsx`).
+- No entrance animation on Dashboard/Clients/Analytics stat grids or tables once loading finishes, unlike `EmptyState`/`Modal`'s fade/slide-in (`DashboardPage.jsx`, `ClientsPage.jsx`, `AnalyticsPage.jsx`).
+- Dashboard stat card icons are confusing: `ArrowUpRight` used for two different metrics, `Minus` used as a plain count's icon (`DashboardPage.jsx:60,76,83`).
+- `ClientsPage`'s country filter `EmberSelect` has no visible/associated label (`ClientsPage.jsx:178-184`).
+- `InvoicesPage` passes an `emptyIcon` prop `Table` never reads, plus a 15-line dead local `EmptyStateIllustration` duplicating `EmptyState.jsx` (`InvoicesPage.jsx:26-40,319`).
+- Settings: Subscription card header is hand-rolled instead of using `CardHeader` like its sibling cards; three different primary-action placement patterns (sticky bar / inline button / flex row) for the page's three save actions; only the "Current password" field shows the eye toggle though the same state governs all three password fields; save success/error text has no `aria-live`.
+- `Modal`/`Drawer` each hand-roll nearly identical focus-trap/scroll-lock logic instead of sharing one hook — a drift risk, not a live bug (`components/ui/Modal.jsx:19-59,166-206`).
+- App page titles are marked up as `h2` (`.heading-xl`) while the real (small, separate) `h1` lives in the topbar — semantically backwards even though a single `h1` does exist. (`AppLayout.jsx:160` vs. every `/app/*` page header)
+- Brand Studio's "Checking plan…" preview swap isn't wrapped in the app's own crossfade convention used everywhere else in that panel (`BrandStudioPage.jsx:446-452`).
+
+### LOW
+
+- Proposals table lacks sort/pagination/bulk-select vs. Invoices (already a known, deliberate infra gap, not new).
+- `InvoiceDetailPage`'s template-switch button shows no spinner/label change while saving (`InvoiceDetailPage.jsx:258-267`).
+- `Table`'s page-size `<select>` uses a hardcoded inline `paddingRight` instead of a spacing token (`Table.jsx:308`).
+- Required-field asterisk duplicated as an inline style in four places instead of one class (`Input.jsx`, `EmberSelect.jsx`).
+- `Drawer`'s `size` prop maps to Tailwind classes that don't exist in this codebase — a silent no-op on a component with zero current call sites.
+- Hardcoded `#fff`/`#FFFFFF` on accent/danger/success/warning button text — already known/intentional (no `--color-on-accent` token exists yet to consolidate into).
+- `!important` used twice on `.button:disabled` — the only non-tokens.css instance in the component CSS.
+- Primary button white-text contrast ≈4.22:1 — just under AA for normal-weight text, already a deliberately-tuned boundary case per `tokens.css`'s own comment.
+- `ClientFormPage`'s phone field strips invalid characters but gives no format/length feedback.
+- Minor animation-consistency nitpicks on Templates/Brand Studio/Analytics card grids.
+
+**Fixing order:** Criticals 1→4 above, each its own commit, `npm run build` green before moving to the next. High/Medium/Low are backlog, not being fixed in this pass unless asked.
