@@ -488,6 +488,19 @@
   font-weight: var(--weight-bold);
 }
 
+.items-editor .item-row__total--excluded {
+  color: var(--color-muted);
+}
+
+.items-editor .item-row__total-note {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-danger);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  white-space: normal;
+}
+
 .items-editor .proposal-item-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;

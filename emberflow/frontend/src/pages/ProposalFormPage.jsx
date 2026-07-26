@@ -197,6 +197,16 @@ export default function ProposalFormPage() {
     event.preventDefault();
     setSaving(true);
     setError('');
+
+    const hasExcludedRow = items.some(
+      (item) => !item.title.trim() && (item.description.trim() || Number(item.amount || 0) > 0)
+    );
+    if (hasExcludedRow) {
+      setError('One or more items have a description or amount but no title, so they would be left off the proposal. Add a title or remove those rows before saving.');
+      setSaving(false);
+      return;
+    }
+
     try {
       const normalizedItems = items
         .map((item) => ({

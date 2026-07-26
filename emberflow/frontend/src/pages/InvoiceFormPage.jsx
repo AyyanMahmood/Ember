@@ -163,6 +163,17 @@ export default function InvoiceFormPage() {
     setSaving(true);
     setError('');
 
+    const hasExcludedRow = items.some((item) => {
+      const counted = Boolean(item.description.trim()) && Number(item.quantity || 0) > 0;
+      const hasData = Boolean(item.description.trim()) || Number(item.price || 0) > 0;
+      return !counted && hasData;
+    });
+    if (hasExcludedRow) {
+      setError('One or more items have a description or price but no quantity, so they would be left off the invoice. Set a quantity or remove those rows before saving.');
+      setSaving(false);
+      return;
+    }
+
     const normalizedItems = normalizeInvoiceItems(items);
     if (normalizedItems.length === 0) {
       setError('Add at least one invoice item with a description and quantity.');
@@ -270,6 +281,8 @@ export default function InvoiceFormPage() {
                 {items.map((item, index) => {
                   const isLast = index === items.length - 1;
                   const lineTotal = Number(item.quantity || 0) * Number(item.price || 0) * (1 + Number(item.tax_rate || 0) / 100);
+                  const counted = Boolean(item.description.trim()) && Number(item.quantity || 0) > 0;
+                  const hasData = Boolean(item.description.trim()) || Number(item.price || 0) > 0;
                   return (
                     <div className="item-row" key={index}>
                       <Input
@@ -297,7 +310,12 @@ export default function InvoiceFormPage() {
                           }
                         }}
                       />
-                      <span className="item-row__total mono">{formatMoney(lineTotal, form.currency)}</span>
+                      <div className={`item-row__total mono ${!counted ? 'item-row__total--excluded' : ''}`}>
+                        <span>{formatMoney(lineTotal, form.currency)}</span>
+                        {!counted && hasData ? (
+                          <span className="item-row__total-note">Excluded — needs a quantity</span>
+                        ) : null}
+                      </div>
                       <IconButton
                         size="sm"
                         className="icon-button--danger"
