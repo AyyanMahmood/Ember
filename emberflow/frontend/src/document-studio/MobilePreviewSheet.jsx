@@ -14,14 +14,34 @@ export function useMobilePreviewSheet() {
   const [open, setOpen] = useState(false);
   const fabRef = useRef(null);
   const closeButtonRef = useRef(null);
+  const sheetRef = useRef(null);
 
   useEffect(() => {
     if (!open) return undefined;
     document.body.style.overflow = 'hidden';
     closeButtonRef.current?.focus();
 
+    const trapFocus = (event) => {
+      const focusableElements = sheetRef.current?.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusableElements?.length) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') setOpen(false);
+      if (event.key === 'Tab') trapFocus(event);
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -37,6 +57,7 @@ export function useMobilePreviewSheet() {
     closeSheet: () => setOpen(false),
     fabRef,
     closeButtonRef,
+    sheetRef,
   };
 }
 

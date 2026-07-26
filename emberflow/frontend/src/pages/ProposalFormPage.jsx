@@ -116,7 +116,7 @@ export default function ProposalFormPage() {
   const [focusItemIndex, setFocusItemIndex] = useState(null);
   const titleRefs = useRef([]);
   const documentRef = useRef(null);
-  const { open: previewOpen, openSheet: openPreview, closeSheet: closePreview, fabRef, closeButtonRef: previewCloseRef } = useMobilePreviewSheet();
+  const { open: previewOpen, openSheet: openPreview, closeSheet: closePreview, fabRef, closeButtonRef: previewCloseRef, sheetRef: previewSheetRef } = useMobilePreviewSheet();
 
   useEffect(() => {
     getProfile().then(setProfile).catch((err) => setError(err.message)).finally(() => setProfileLoading(false));
@@ -349,7 +349,13 @@ export default function ProposalFormPage() {
               </div>
             </div>
 
-            <div className={`studio-preview ${previewOpen ? 'studio-preview--open' : ''}`}>
+            <div
+              ref={previewSheetRef}
+              className={`studio-preview ${previewOpen ? 'studio-preview--open' : ''}`}
+              role={previewOpen ? 'dialog' : undefined}
+              aria-modal={previewOpen ? 'true' : undefined}
+              aria-label="Proposal preview"
+            >
               <MobilePreviewHeader title="Proposal preview" onClose={closePreview} closeButtonRef={previewCloseRef} />
               <div className="studio-preview__surface">
                 {profileLoading ? (

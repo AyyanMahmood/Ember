@@ -56,7 +56,7 @@ export default function InvoiceFormPage() {
   const [focusItemIndex, setFocusItemIndex] = useState(null);
   const descriptionRefs = useRef([]);
   const documentRef = useRef(null);
-  const { open: previewOpen, openSheet: openPreview, closeSheet: closePreview, fabRef, closeButtonRef: previewCloseRef } = useMobilePreviewSheet();
+  const { open: previewOpen, openSheet: openPreview, closeSheet: closePreview, fabRef, closeButtonRef: previewCloseRef, sheetRef: previewSheetRef } = useMobilePreviewSheet();
 
   useEffect(() => {
     if (focusItemIndex !== null && descriptionRefs.current[focusItemIndex]) {
@@ -347,7 +347,13 @@ export default function InvoiceFormPage() {
             </div>
           </div>
 
-          <div className={`studio-preview ${previewOpen ? 'studio-preview--open' : ''}`}>
+          <div
+            ref={previewSheetRef}
+            className={`studio-preview ${previewOpen ? 'studio-preview--open' : ''}`}
+            role={previewOpen ? 'dialog' : undefined}
+            aria-modal={previewOpen ? 'true' : undefined}
+            aria-label="Invoice preview"
+          >
             <MobilePreviewHeader title="Invoice preview" onClose={closePreview} closeButtonRef={previewCloseRef} />
             <div className="studio-preview__surface">
               <ScaledPreview>
