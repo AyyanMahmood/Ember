@@ -65,6 +65,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [billingAction, setBillingAction] = useState('');
+  const [billingError, setBillingError] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -179,12 +180,12 @@ export default function SettingsPage() {
 
   async function checkout(plan) {
     setBillingAction(plan);
-    setError('');
+    setBillingError('');
     try {
       const { url } = await startCheckout(plan);
       window.location.assign(url);
     } catch (err) {
-      setError(err.message);
+      setBillingError(err.message);
     } finally {
       setBillingAction('');
     }
@@ -192,12 +193,12 @@ export default function SettingsPage() {
 
   async function manageBilling() {
     setBillingAction('portal');
-    setError('');
+    setBillingError('');
     try {
       const { url } = await openBillingPortal();
       window.location.assign(url);
     } catch (err) {
-      setError(err.message);
+      setBillingError(err.message);
     } finally {
       setBillingAction('');
     }
@@ -340,6 +341,7 @@ export default function SettingsPage() {
             <strong>{subscription.subscription?.status || 'active'}</strong>
           </div>
         </div>
+        {billingError ? <p className="form-error" role="alert">{billingError}</p> : null}
         {!subscription.isPro ? (
           <div className="billing-actions">
             <Button variant="primary" type="button" onClick={() => checkout('pro_monthly')} disabled={Boolean(billingAction)}>
