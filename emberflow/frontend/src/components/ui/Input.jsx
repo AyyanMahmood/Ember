@@ -58,7 +58,7 @@ export const Input = forwardRef(function Input({
             {...props}
           />
           {rightAddon && (
-            <span className="input-addon" aria-hidden="true">{rightAddon}</span>
+            <span className="input-addon">{rightAddon}</span>
           )}
         </div>
       ) : leftIcon ? (
