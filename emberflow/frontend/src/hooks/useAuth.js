@@ -63,6 +63,12 @@ export function AuthProvider({ children }) {
           redirectTo: authRedirectUrl('/reset-password'),
         }),
       updatePassword: (password) => supabase.auth.updateUser({ password }),
+      resendVerificationEmail: (email) =>
+        supabase.auth.resend({
+          type: 'signup',
+          email,
+          options: { emailRedirectTo: authRedirectUrl('/login') },
+        }),
       signOut: () => supabase.auth.signOut(),
     }),
     [session, user, loading]

@@ -34,13 +34,15 @@ export default function AuthPage({ mode }) {
   const isSignup = mode === 'signup';
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUp, signInWithGoogle, signInWithMicrosoft, user, loading } = useAuth();
+  const { signIn, signUp, signInWithGoogle, signInWithMicrosoft, resendVerificationEmail, user, loading } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [oauthSubmitting, setOauthSubmitting] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendState, setResendState] = useState('idle');
 
   if (loading) return <div className="screen-loader">Checking session...</div>;
   if (user) return <Navigate to="/app" replace />;
@@ -59,6 +61,8 @@ export default function AuthPage({ mode }) {
     event.preventDefault();
     setError('');
     setSuccess('');
+    setNeedsVerification(false);
+    setResendState('idle');
 
     if (isSignup && isDisposableEmail(form.email)) {
       setError('Please use a permanent email address to create an account.');
@@ -73,16 +77,35 @@ export default function AuthPage({ mode }) {
 
     setSubmitting(false);
     if (result.error) {
+      const rawMessage = (result.error.message || '').toLowerCase();
+      if (!isSignup && rawMessage.includes('email not confirmed')) {
+        setNeedsVerification(true);
+      }
       setError(friendlyAuthError(result.error));
       return;
     }
 
     if (isSignup && !result.data.session) {
       setSuccess('Check your email to confirm your account, then sign in.');
+      setNeedsVerification(true);
       return;
     }
 
     navigate(location.state?.from || '/app');
+  }
+
+  async function handleResend() {
+    if (!form.email) return;
+    setResendState('sending');
+    setError('');
+    const { error: resendError } = await resendVerificationEmail(form.email);
+    if (resendError) {
+      setResendState('idle');
+      setError(friendlyAuthError(resendError));
+      return;
+    }
+    setResendState('sent');
+    setSuccess('Verification email resent. Check your inbox.');
   }
 
   return (
@@ -141,6 +164,17 @@ export default function AuthPage({ mode }) {
           {isSignup ? <PasswordStrengthMeter password={form.password} /> : null}
           {error ? <p className="form-error">{error}</p> : null}
           {success ? <p className="form-success">{success}</p> : null}
+          {needsVerification ? (
+            <Button
+              type="button"
+              variant="ghost"
+              fullWidth
+              disabled={resendState !== 'idle'}
+              onClick={handleResend}
+            >
+              {resendState === 'sending' ? 'Sending...' : resendState === 'sent' ? 'Email sent' : 'Resend verification email'}
+            </Button>
+          ) : null}
           <Button variant="primary" fullWidth disabled={submitting || Boolean(oauthSubmitting)} type="submit">
             {submitting ? 'Working...' : isSignup ? 'Create account' : 'Login'}
           </Button>

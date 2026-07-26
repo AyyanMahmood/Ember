@@ -312,6 +312,8 @@ Question every screen, spacing decision, interaction, hierarchy, and animation. 
 | Bundle 1: Authentication (Google/Microsoft OAuth, password strength meter, disposable email detection) | Code complete; **blocked on external dashboard config** — see RESUME HERE |
 | Bundle 2: Brand Studio (Pro-only logo/color/font branding) | Superseded by Bundle 3 below (critical bugs fixed, free tier added, first-class nav) |
 | Bundle 3: Brand Studio Polish & Premium Positioning | Code complete, all approved migrations applied to production, build green. Live device/account testing still not done this session — see below |
+| V1 Audit (2026-07-27) | Complete — full feature-by-feature status report produced across all 15 areas (auth, pages, invoices, proposals, brand studio, subscriptions, security, SEO, performance, prod readiness). Findings drove the two bundles below. |
+| Production Authentication bundle (2026-07-27): resend verification email, in-app password change | Code complete, build green — see "Production Authentication" section below |
 
 A full audit and a 10-phase implementation roadmap toward a dark-first, white-label-ready premium redesign is in progress on `opclaude-redesign`. See `PROJECT_STATUS.md` → "Redesign Roadmap Progress" for phase-by-phase status.
 
@@ -376,6 +378,19 @@ Brand Studio promoted from a Settings subsection to EmberFlow's flagship first-c
 **Migrations applied this session (all explicitly approved before applying):** `004_logos_bucket.sql`, `005_expand_brand_fonts.sql`, `006_brand_studio_free_tier.sql`.
 
 **Not done:** live device/browser testing of any of this (same standing limitation as every prior session — no headless browser or Android device available in this container). All verification is `npm run build` + code/schema reasoning. **Please confirm on a real account (Free and Pro) before treating this as fully done**, especially: the free-tier color save now going through, logo upload actually landing in the (now-created) bucket, and the new templates rendering correctly in a real browser.
+
+---
+
+## Production Authentication (2026-07-27)
+
+Follow-up to the 2026-07-27 V1 Audit, which found two concrete code-addressable gaps under Authentication: no resend-verification-email path, and no way for a logged-in user to change their password. Scoped strictly to those two items — Google/Microsoft OAuth remains blocked purely on external dashboard config (nothing to code, see RESUME HERE below), and rate-limiting Supabase's own login/signup calls was explicitly not done: it would require proxying those calls through a new serverless route, which changes the preserved authentication flow (CLAUDE.md's Architecture Protection §PRESERVED) — flagged per the STOP condition rather than implemented silently.
+
+**Files changed:**
+- `frontend/src/hooks/useAuth.js` — added `resendVerificationEmail(email)`, wrapping `supabase.auth.resend({ type: 'signup', ... })` with the same `authRedirectUrl('/login')` pattern the rest of the hook already uses.
+- `frontend/src/pages/AuthPage.jsx` — shows a "Resend verification email" action in two cases: right after signup when Supabase returns no session (unconfirmed account), and when a login attempt fails with "email not confirmed." Tracks its own `needsVerification`/`resendState` so it doesn't interfere with the existing submit/OAuth state.
+- `frontend/src/pages/SettingsPage.jsx` — new "Security" card: current/new/confirm password fields (shared show/hide toggle, reuses `PasswordStrengthMeter`). Verifies the current password via `signIn(user.email, current)` before calling `updatePassword(next)`, so a change can't happen from an idle/hijacked session without knowing the current password. For Google/Microsoft-only accounts (no `email` identity on `user.identities`), the form is replaced with an explanatory note instead of a password form that would always fail.
+
+**Testing status:** `npm run build` green. Not yet confirmed on-device (same standing limitation every session — no headless browser/Android device available in this container): please verify the resend-email button against a real unconfirmed account, and the password-change flow on both an email/password account and an OAuth-only account.
 
 ---
 

@@ -1,4 +1,4 @@
-import { ExternalLink, Upload } from 'lucide-react';
+import { Eye, EyeOff, ExternalLink, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Avatar } from '../components/ui/Avatar.jsx';
 import { Button } from '../components/ui/Button.jsx';
@@ -6,6 +6,7 @@ import { Card, CardHeader } from '../components/ui/Card.jsx';
 import { Input, Textarea } from '../components/ui/Input.jsx';
 import { EmberSelect } from '../components/ui/EmberSelect.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
+import { PasswordStrengthMeter } from '../components/ui/PasswordStrengthMeter.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
 import { getProfile, upsertProfile } from '../services/api.js';
@@ -14,6 +15,7 @@ import { supabase } from '../services/supabase.js';
 import { CURRENCY_OPTIONS } from '../data/currencies.js';
 import { COUNTRY_OPTIONS } from '../data/countries.js';
 import { formatLimit, PLANS } from '../utils/plans.js';
+import { friendlyAuthError } from '../utils/auth.js';
 
 function UsageMeter({ label, used, limit }) {
   const unlimited = !Number.isFinite(limit);
@@ -39,8 +41,14 @@ function UsageMeter({ label, used, limit }) {
 }
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, signIn, updatePassword } = useAuth();
   const subscription = useSubscription();
+  const hasPasswordAuth = user?.identities?.some((identity) => identity.provider === 'email') ?? true;
+  const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' });
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [form, setForm] = useState({
     full_name: '',
     business_name: '',
@@ -133,6 +141,42 @@ export default function SettingsPage() {
     }
   }
 
+  function updatePasswordField(field, value) {
+    setPasswordForm((current) => ({ ...current, [field]: value }));
+  }
+
+  async function handlePasswordChange(event) {
+    event.preventDefault();
+    setPasswordError('');
+    setPasswordMessage('');
+
+    if (passwordForm.next.length < 8) {
+      setPasswordError('New password must be at least 8 characters.');
+      return;
+    }
+    if (passwordForm.next !== passwordForm.confirm) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+
+    setPasswordSaving(true);
+    try {
+      const { error: verifyError } = await signIn(user.email, passwordForm.current);
+      if (verifyError) {
+        setPasswordError('Current password is incorrect.');
+        return;
+      }
+      const { error: updateError } = await updatePassword(passwordForm.next);
+      if (updateError) throw updateError;
+      setPasswordMessage('Password updated.');
+      setPasswordForm({ current: '', next: '', confirm: '' });
+    } catch (err) {
+      setPasswordError(friendlyAuthError(err));
+    } finally {
+      setPasswordSaving(false);
+    }
+  }
+
   async function checkout(plan) {
     setBillingAction(plan);
     setError('');
@@ -216,6 +260,65 @@ export default function SettingsPage() {
           </Button>
         </div>
       </form>
+
+      <Card variant="default">
+        <CardHeader title="Security" subtitle="Change your account password." />
+        {hasPasswordAuth ? (
+          <form className="form-grid" onSubmit={handlePasswordChange}>
+            <Input
+              className="span-2"
+              label="Current password"
+              type={passwordVisible ? 'text' : 'password'}
+              required
+              autoComplete="current-password"
+              value={passwordForm.current}
+              onChange={(e) => updatePasswordField('current', e.target.value)}
+              rightAddon={
+                <button
+                  type="button"
+                  className="input-addon-btn"
+                  onClick={() => setPasswordVisible((v) => !v)}
+                  aria-label={passwordVisible ? 'Hide passwords' : 'Show passwords'}
+                >
+                  {passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              }
+            />
+            <Input
+              label="New password"
+              type={passwordVisible ? 'text' : 'password'}
+              required
+              minLength={8}
+              autoComplete="new-password"
+              value={passwordForm.next}
+              onChange={(e) => updatePasswordField('next', e.target.value)}
+            />
+            <Input
+              label="Confirm new password"
+              type={passwordVisible ? 'text' : 'password'}
+              required
+              minLength={8}
+              autoComplete="new-password"
+              value={passwordForm.confirm}
+              onChange={(e) => updatePasswordField('confirm', e.target.value)}
+            />
+            <div className="span-2">
+              <PasswordStrengthMeter password={passwordForm.next} />
+            </div>
+            {passwordError ? <p className="form-error span-2">{passwordError}</p> : null}
+            {passwordMessage ? <p className="form-success span-2">{passwordMessage}</p> : null}
+            <div className="span-2">
+              <Button variant="secondary" disabled={passwordSaving} type="submit">
+                {passwordSaving ? 'Updating...' : 'Update password'}
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <p className="muted">
+            You sign in with Google or Microsoft, so there&apos;s no EmberFlow password to manage here.
+          </p>
+        )}
+      </Card>
 
       <Card variant="default">
         <div className="panel__header">
