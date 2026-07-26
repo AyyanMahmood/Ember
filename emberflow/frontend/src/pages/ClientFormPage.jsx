@@ -26,6 +26,7 @@ export default function ClientFormPage() {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(editing);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export default function ClientFormPage() {
 
   function updateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
+    setFieldErrors((current) => (current[field] ? { ...current, [field]: undefined } : current));
   }
 
   function updatePhone(value) {
@@ -60,8 +62,28 @@ export default function ClientFormPage() {
     updateField('phone', value.replace(/[^\d+\-\s()]/g, ''));
   }
 
+  function validate() {
+    const errors = {};
+    if (!form.name.trim()) {
+      errors.name = 'Name is required.';
+    }
+    if (!form.email.trim()) {
+      errors.email = 'Email is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      errors.email = 'Enter a valid email address.';
+    }
+    return errors;
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
+
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     setSaving(true);
     setError('');
     try {
@@ -100,10 +122,10 @@ export default function ClientFormPage() {
         </div>
       </div>
       <Card variant="default">
-        <form className="form-grid" onSubmit={handleSubmit}>
+        <form className="form-grid" onSubmit={handleSubmit} noValidate>
           {error ? <p className="form-error span-2">{error}</p> : null}
-          <Input label="Name" required autoFocus value={form.name} onChange={(e) => updateField('name', e.target.value)} />
-          <Input label="Email" type="email" required value={form.email} onChange={(e) => updateField('email', e.target.value)} />
+          <Input label="Name" required autoFocus value={form.name} onChange={(e) => updateField('name', e.target.value)} error={fieldErrors.name} />
+          <Input label="Email" type="email" required value={form.email} onChange={(e) => updateField('email', e.target.value)} error={fieldErrors.email} />
           <Input label="Company" value={form.company} onChange={(e) => updateField('company', e.target.value)} />
           <Input
             label="Phone"
