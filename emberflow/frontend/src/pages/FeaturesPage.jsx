@@ -22,6 +22,7 @@ export default function FeaturesPage() {
         <p className="eyebrow">Features</p>
         <h1>Everything freelancers need to operate professionally.</h1>
       </div>
+      <h2 className="sr-only">All features</h2>
       <div className="feature-grid">
         {groups.map(([title, description, Icon]) => (
           <Card variant="default" key={title}>
