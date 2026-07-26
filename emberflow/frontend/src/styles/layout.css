@@ -310,6 +310,10 @@
   justify-items: start;
 }
 
+.upgrade-panel__badge {
+  gap: var(--space-1);
+}
+
 .payment-form {
   display: grid;
   gap: var(--space-4);
