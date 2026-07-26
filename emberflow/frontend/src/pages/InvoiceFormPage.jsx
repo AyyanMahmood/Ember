@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, IconButton } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
-import { Input, Select, Textarea } from '../components/ui/Input.jsx';
+import { Input, Textarea } from '../components/ui/Input.jsx';
 import { EmberSelect } from '../components/ui/EmberSelect.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import UpgradeModal from '../components/UpgradeModal.jsx';
@@ -163,6 +163,12 @@ export default function InvoiceFormPage() {
     setSaving(true);
     setError('');
 
+    if (!form.client_id) {
+      setError('Select a client before saving.');
+      setSaving(false);
+      return;
+    }
+
     const hasExcludedRow = items.some((item) => {
       const counted = Boolean(item.description.trim()) && Number(item.quantity || 0) > 0;
       const hasData = Boolean(item.description.trim()) || Number(item.price || 0) > 0;
@@ -251,14 +257,19 @@ export default function InvoiceFormPage() {
             <Card variant="default">
               <div className="form-grid">
                 <Input label="Invoice number" required value={form.invoice_number} onChange={(e) => updateField('invoice_number', e.target.value)} />
-                <Select label="Client" required value={form.client_id} onChange={(e) => updateField('client_id', e.target.value)} options={[
-                  { value: '', label: 'Select client' },
-                  ...clients.map((client) => ({ value: client.id, label: client.company || client.name })),
-                ]} />
+                <EmberSelect
+                  label="Client"
+                  required
+                  searchable
+                  placeholder="Select client"
+                  value={form.client_id}
+                  onChange={(value) => updateField('client_id', value)}
+                  options={clients.map((client) => ({ value: client.id, label: client.company || client.name }))}
+                />
                 <Input label="Invoice date" type="date" required value={form.invoice_date} onChange={(e) => updateField('invoice_date', e.target.value)} />
                 <Input label="Due date" type="date" required value={form.due_date} onChange={(e) => updateField('due_date', e.target.value)} />
                 <EmberSelect label="Currency" searchable value={form.currency} onChange={(value) => updateField('currency', value)} options={CURRENCY_OPTIONS} />
-                <Select label="Status" value={form.status} onChange={(e) => updateField('status', e.target.value)} options={INVOICE_STATUSES.map((s) => ({ value: s, label: s }))} />
+                <EmberSelect label="Status" value={form.status} onChange={(value) => updateField('status', value)} options={INVOICE_STATUSES.map((s) => ({ value: s, label: s }))} />
                 <Input label="Discount" type="number" min="0" step="0.01" value={form.discount_total} onChange={(e) => updateField('discount_total', e.target.value)} />
                 <Textarea label="Notes" rows={4} className="span-2" value={form.notes} onChange={(e) => updateField('notes', e.target.value)} />
               </div>

@@ -3,7 +3,7 @@ import { useMemo, useRef, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, IconButton } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
-import { Input, Select, Textarea } from '../components/ui/Input.jsx';
+import { Input, Textarea } from '../components/ui/Input.jsx';
 import { EmberSelect } from '../components/ui/EmberSelect.jsx';
 import { ConfirmDialog } from '../components/ui/Modal.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
@@ -271,7 +271,7 @@ export default function ProposalFormPage() {
             <div className="studio-editor">
               <Card variant="default">
                 <div className="form-grid">
-                  <Select label="Starter" value={starterKey} onChange={(e) => handleStarterChange(e.target.value)} options={Object.keys(starters).map((name) => ({ value: name, label: name }))} />
+                  <EmberSelect label="Starter" value={starterKey} onChange={handleStarterChange} options={Object.keys(starters).map((name) => ({ value: name, label: name }))} />
                   <Input label="Client name" required autoFocus value={form.client_name} onChange={(e) => updateField('client_name', e.target.value)} />
                   <Input label="Proposal title" required className="span-2" value={form.title} onChange={(e) => updateField('title', e.target.value)} />
                   <Textarea label="Project details" required rows={4} className="span-2" value={form.project_summary} onChange={(e) => updateField('project_summary', e.target.value)} />
