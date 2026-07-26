@@ -1,5 +1,7 @@
 # EmberFlow Project Status
 
+> **2026-07-27 — Payments deferred to V1.5.** Paddle/payment processing cannot go live until November (external, non-technical — not a code blocker) and is no longer on the V1 critical path. The Paddle integration code is untouched and will keep working once it's usable; V1 launch readiness is now being judged independently of it. See CLAUDE.md → "V1 Polish Sprint" for the current active work and the "Paddle Status" section below for what that means concretely.
+
 ## Project Overview
 
 EmberFlow is a production-ready freelance finance workspace SaaS. It enables freelancers to manage clients, create/send/track invoices, build proposals, analyze revenue, and handle subscriptions via Paddle. Built with React + Vite frontend, Supabase (PostgreSQL, Auth, Storage) backend, and Paddle for billing. Deployed on Vercel with serverless API routes.
@@ -288,6 +290,7 @@ A full-codebase audit and a 10-phase implementation roadmap were produced before
 
 - **None for core functionality** — Paddle integration is production-ready
 - **Optional**: Add `PADDLE_ENV=sandbox` for development testing against sandbox
+- **Business/external, 2026-07-27**: real payment processing cannot go live until November regardless of code state — deferred to V1.5 and removed from the V1 critical path. Code, webhook handling, and DB schema are unaffected and untouched; the Pricing page, Settings billing card, and upgrade flow remain in the app and still get the same QA/polish attention as every other screen (see "V1 Polish Sprint" in CLAUDE.md) — they're just no longer a condition for calling V1 launch-ready.
 
 ---
 
