@@ -3,17 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="EmberFlow helps freelancers manage clients, invoices, proposals, and payments."
-    />
+    <!--
+      No static <meta name="description">, canonical <link>, or og:*/twitter:*
+      tags here on purpose: every route renders its own via the <Seo>
+      component (react-helmet-async). Duplicating the same tags statically
+      would create two conflicting copies in the DOM once React mounts —
+      react-helmet-async only ever cleans up tags it previously rendered
+      itself (tracked via its own data-rh attribute), so it can't remove or
+      merge with tags that were already in this file. <title> is the one
+      exception: Helmet updates document.title directly rather than
+      appending a second <title> element, so a static default here is safe.
+    -->
     <meta name="theme-color" content="#0A0C0E" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#F7F8FA" media="(prefers-color-scheme: light)" />
     <!-- Tells Chromium's Auto Dark Theme the page already implements both
          schemes correctly, so it stops force-inverting light mode (the cause
          of light mode rendering as a washed blue-grey on Android Chrome/Arc). -->
     <meta name="color-scheme" content="light dark" />
-    <title>EmberFlow</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>EmberFlow — Finance OS for Freelancers</title>
     <script>
       (function () {
         try {

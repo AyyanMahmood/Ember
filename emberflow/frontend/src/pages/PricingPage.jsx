@@ -1,11 +1,17 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button.jsx';
 import { PricingCard } from '../components/ui/Card.jsx';
+import { Seo } from '../components/Seo.jsx';
 import { PLANS } from '../utils/plans.js';
 
 export default function PricingPage() {
   return (
     <main className="section-band">
+      <Seo
+        title="Pricing"
+        description="Simple, transparent pricing for freelancers and small agencies — a generous free tier and Pro plans starting at $9/month."
+        path="/pricing"
+      />
       <div className="section-heading">
         <p className="eyebrow">Pricing</p>
         <h1>Simple plans for independent businesses.</h1>

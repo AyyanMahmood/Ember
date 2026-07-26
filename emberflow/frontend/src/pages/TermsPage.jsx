@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Scale, ShieldCheck, AlertTriangle, Ban, FileText, CreditCard, ExternalLink } from 'lucide-react';
+import { Seo } from '../components/Seo.jsx';
 
 const sections = [
   {
@@ -140,12 +140,13 @@ const sections = [
 ];
 
 export default function TermsPage() {
-  useEffect(() => {
-    document.title = 'Terms of Service | EmberFlow';
-  }, []);
-
   return (
     <main className="legal-page">
+      <Seo
+        title="Terms of Service"
+        description="The terms governing your use of EmberFlow, including subscriptions, billing, and acceptable use."
+        path="/terms"
+      />
       <p className="eyebrow"><Scale size={14} /> Terms</p>
       <h1>Terms of Service</h1>
       <p className="legal-updated">Last updated: July 2026</p>

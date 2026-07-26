@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '../components/ui/Button.jsx';
 import { StatusBadge } from '../components/ui/Badge.jsx';
 import { PricingCard } from '../components/ui/Card.jsx';
+import { Seo } from '../components/Seo.jsx';
 import { FEATURES } from '../data/features.js';
 import { PLANS } from '../utils/plans.js';
 import { scrollToId } from '../utils/scroll.js';
@@ -76,6 +77,10 @@ export default function LandingPage() {
 
   return (
     <>
+      <Seo
+        description="EmberFlow is the finance operating system for freelancers — clients, invoices, proposals, and payments in one workspace."
+        path="/"
+      />
       <section className="lp-hero">
         <div className="lp-hero__grid">
           <div>

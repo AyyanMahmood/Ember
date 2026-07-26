@@ -6,6 +6,7 @@ import { useProfile } from '../hooks/useProfile.js';
 import { Avatar } from './ui/Avatar.jsx';
 import { Button } from './ui/Button.jsx';
 import { ThemeToggle } from './ui/ThemeToggle.jsx';
+import { Seo } from './Seo.jsx';
 
 const navItems = [
   { to: '/app', label: 'Dashboard', icon: Home, end: true },
@@ -68,6 +69,7 @@ export default function AppLayout() {
 
   return (
     <div className={`app-shell ${collapsed ? 'app-shell--collapsed' : ''}`}>
+      <Seo title={pageTitle} noindex path={location.pathname} />
       <a className="skip-link" href="#main-content">Skip to main content</a>
       {open && <div className="sidebar-overlay" onClick={() => setOpen(false)} />}
       <aside className={`sidebar ${open ? 'sidebar--open' : ''} ${collapsed ? 'sidebar--collapsed' : ''}`}>

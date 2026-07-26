@@ -1,15 +1,16 @@
-import { useEffect } from 'react';
 import { Mail, MapPin, Clock, MessageSquare, ExternalLink } from 'lucide-react';
 import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
+import { Seo } from '../components/Seo.jsx';
 
 export default function ContactPage() {
-  useEffect(() => {
-    document.title = 'Contact | EmberFlow';
-  }, []);
-
   return (
     <main className="legal-page">
+      <Seo
+        title="Contact"
+        description="Get in touch with the EmberFlow team for support, billing, or general questions."
+        path="/contact"
+      />
       <p className="eyebrow"><MessageSquare size={14} /> Contact</p>
       <h1>Get in Touch</h1>
       <p className="legal-subtitle">

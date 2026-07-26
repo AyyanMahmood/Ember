@@ -1,5 +1,6 @@
 import { BarChart3, FileText, HandCoins, PanelsTopLeft, Users } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
+import { Seo } from '../components/Seo.jsx';
 
 const groups = [
   ['CRM', 'Client profiles, notes, contact data, and history.', Users],
@@ -12,6 +13,11 @@ const groups = [
 export default function FeaturesPage() {
   return (
     <main className="section-band">
+      <Seo
+        title="Features"
+        description="CRM, invoicing, payments, analytics, and proposals — everything freelancers need to operate professionally."
+        path="/features"
+      />
       <div className="section-heading">
         <p className="eyebrow">Features</p>
         <h1>Everything freelancers need to operate professionally.</h1>

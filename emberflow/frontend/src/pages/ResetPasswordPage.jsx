@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input } from '../components/ui/Input.jsx';
 import { PasswordStrengthMeter } from '../components/ui/PasswordStrengthMeter.jsx';
+import { Seo } from '../components/Seo.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { friendlyAuthError } from '../utils/auth.js';
 
@@ -31,6 +32,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="auth-page">
+      <Seo title="Set a new password" noindex path="/reset-password" />
       <Link className="brand-mark" to="/">
         EmberFlow
       </Link>

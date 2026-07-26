@@ -1,14 +1,15 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RotateCcw, CreditCard, CalendarX, HelpCircle } from 'lucide-react';
+import { Seo } from '../components/Seo.jsx';
 
 export default function RefundPolicyPage() {
-  useEffect(() => {
-    document.title = 'Refund Policy | EmberFlow';
-  }, []);
-
   return (
     <main className="legal-page">
+      <Seo
+        title="Refund Policy"
+        description="EmberFlow's refund policy for Pro subscriptions and billing disputes."
+        path="/refund"
+      />
       <p className="eyebrow"><RotateCcw size={14} /> Refunds</p>
       <h1>Refund Policy</h1>
       <p className="legal-updated">Last updated: July 2026</p>

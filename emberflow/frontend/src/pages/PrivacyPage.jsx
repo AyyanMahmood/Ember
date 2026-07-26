@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, Database, CreditCard, Cookie, BarChart3, FileText, ExternalLink } from 'lucide-react';
+import { Seo } from '../components/Seo.jsx';
 
 const sections = [
   {
@@ -146,12 +146,13 @@ const sections = [
 ];
 
 export default function PrivacyPage() {
-  useEffect(() => {
-    document.title = 'Privacy Policy | EmberFlow';
-  }, []);
-
   return (
     <main className="legal-page">
+      <Seo
+        title="Privacy Policy"
+        description="How EmberFlow collects, stores, and protects your account, business, and client data."
+        path="/privacy"
+      />
       <p className="eyebrow"><Shield size={14} /> Privacy</p>
       <h1>Privacy Policy</h1>
       <p className="legal-updated">Last updated: July 2026</p>

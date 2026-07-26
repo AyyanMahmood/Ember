@@ -9,6 +9,7 @@ import '@fontsource/jetbrains-mono/latin-500.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App.jsx';
 import { AuthProvider } from './hooks/useAuth.js';
 import { ThemeProvider } from './hooks/useTheme.js';
@@ -16,12 +17,14 @@ import './styles/index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <ThemeProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   </React.StrictMode>
 );

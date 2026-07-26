@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input } from '../components/ui/Input.jsx';
 import { PasswordStrengthMeter } from '../components/ui/PasswordStrengthMeter.jsx';
+import { Seo } from '../components/Seo.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { friendlyAuthError, isDisposableEmail } from '../utils/auth.js';
 
@@ -110,6 +111,11 @@ export default function AuthPage({ mode }) {
 
   return (
     <div className="auth-page">
+      <Seo
+        title={isSignup ? 'Create your account' : 'Sign in'}
+        description={isSignup ? 'Create your free EmberFlow account and start managing clients, invoices, and proposals.' : 'Sign in to your EmberFlow workspace.'}
+        path={isSignup ? '/register' : '/login'}
+      />
       <Link className="brand-mark" to="/">
         EmberFlow
       </Link>

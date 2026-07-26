@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input } from '../components/ui/Input.jsx';
+import { Seo } from '../components/Seo.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { friendlyAuthError } from '../utils/auth.js';
 
@@ -29,6 +30,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="auth-page">
+      <Seo title="Reset your password" description="Request a password reset link for your EmberFlow account." path="/forgot-password" />
       <Link className="brand-mark" to="/">
         EmberFlow
       </Link>
