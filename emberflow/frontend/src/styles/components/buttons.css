@@ -113,7 +113,7 @@
 
 .button--danger:hover:not(:disabled) {
   background: var(--color-danger);
-  color: #FFFFFF;
+  color: var(--color-bg);
 }
 
 .button--success {
@@ -124,7 +124,7 @@
 
 .button--success:hover:not(:disabled) {
   background: var(--color-success);
-  color: #FFFFFF;
+  color: var(--color-bg);
 }
 
 .button--warning {
@@ -135,7 +135,7 @@
 
 .button--warning:hover:not(:disabled) {
   background: var(--color-warning);
-  color: #FFFFFF;
+  color: var(--color-bg);
 }
 
 .icon-button {
