@@ -492,14 +492,16 @@ Marketing navbar (`PublicLayout.jsx`) theme toggle moved from between Pricing/Lo
 
 **Current mode: craftsmanship polish sprint, no new features.** Full-app QA audit (5 parallel research passes covering every screen: marketing/auth, dashboard/clients, invoices/proposals, settings/brand-studio/templates/analytics, and a cross-cutting design-system/accessibility/performance pass) produced the prioritized backlog below. Working through **Critical** items now, one at a time, build green after each, committed individually. High/Medium/Low are logged for a follow-up pass — do not fix them opportunistically while doing something else; pull them deliberately.
 
-### CRITICAL
+### CRITICAL — all 4 fixed (2026-07-27), build green after each
 
-| # | Issue | Where |
-|---|---|---|
-| 1 | `.button--danger`/`--success`/`--warning` switch to white text on hover against light backgrounds — contrast ≈2.77:1 / 1.92:1 / 1.65:1, all fail WCAG AA. Hits every destructive/confirm action app-wide, including `ConfirmDialog`'s default `variant="danger"`. | `styles/components/buttons.css:114-139` |
-| 2 | Password show/hide toggle button is wrapped in `aria-hidden="true"` by `Input`'s `rightAddon` — focusable but invisible to assistive tech, app-wide (every password field with a toggle: login, signup, reset-password, Settings' password-change). | `components/ui/Input.jsx:60-62`, used in `AuthPage.jsx`, `ResetPasswordPage.jsx`, `SettingsPage.jsx` |
-| 3 | Invoice/proposal line items with a blank description or `quantity<=0` are silently excluded from the live totals preview *and* from what's actually saved, with zero indication to the user that a row was dropped — a real money/trust bug in a financial document, not just polish. | `document-studio` item normalization used by `InvoiceFormPage.jsx`, `ProposalFormPage.jsx`, `utils/invoice.js` |
-| 4 | `MobilePreviewSheet` (mobile invoice/proposal preview) behaves like a modal (backdrop, fixed position, focus-on-open) but has no `role="dialog"`/`aria-modal` and no focus trap — a keyboard user can tab out of it into the editor behind the backdrop. `TemplateSelector.jsx` does this correctly for comparison. | `document-studio/MobilePreviewSheet.jsx` |
+| # | Issue | Where | Fix |
+|---|---|---|---|
+| 1 | ✅ `.button--danger`/`--success`/`--warning` switch to white text on hover against light backgrounds — contrast ≈2.77:1 / 1.92:1 / 1.65:1, all fail WCAG AA. Hit every destructive/confirm action app-wide, including `ConfirmDialog`'s default `variant="danger"`. | `styles/components/buttons.css:114-139` | `91eb040` — hover text now `var(--color-bg)` instead of hardcoded white; computed ≈6.2-11.9:1 in both themes. |
+| 2 | ✅ Password show/hide toggle button was wrapped in `aria-hidden="true"` by `Input`'s `rightAddon` — focusable but invisible to assistive tech, app-wide (every password field with a toggle: login, signup, reset-password, Settings' password-change). | `components/ui/Input.jsx:60-62`, used in `AuthPage.jsx`, `ResetPasswordPage.jsx`, `SettingsPage.jsx` | `dc56d02` — dropped `aria-hidden` from the `rightAddon` wrapper (`leftAddon` unaffected, has no current callers). |
+| 3 | ✅ Invoice/proposal line items with a blank description/title or `quantity<=0` were silently excluded from the live totals preview *and* from what's actually saved, with zero indication to the user that a row was dropped — a real money/trust bug, not just polish. | `InvoiceFormPage.jsx`, `ProposalFormPage.jsx`, `utils/invoice.js` | `93ade7d` — the row itself now shows "Excluded — needs a quantity" next to any total that wouldn't count; `handleSubmit` on both forms blocks saving with a specific error if a row has real data but would be silently dropped. |
+| 4 | ✅ `MobilePreviewSheet` (mobile invoice/proposal preview) behaved like a modal (backdrop, fixed position, focus-on-open) but had no `role="dialog"`/`aria-modal` and no focus trap — a keyboard user could tab out of it into the editor behind the backdrop. `TemplateSelector.jsx` did this correctly for comparison. | `document-studio/MobilePreviewSheet.jsx` | `9d7eb82` — added a `sheetRef`-based Tab-trap mirroring `Modal.jsx`'s existing `trapFocus`, plus `role="dialog"`/`aria-modal`/`aria-label` on the sheet element, scoped to only when actually open. |
+
+Not yet tested on-device (same standing limitation — no headless browser/Android device available in this container). All four verified by `npm run build` + code/contrast-math reasoning only.
 
 ### HIGH
 
