@@ -19,23 +19,26 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [clientRows, invoiceRows, recentRows] = await Promise.all([
-          listClients(),
-          listInvoices(),
-          listRecentInvoices(),
-        ]);
-        setClients(clientRows);
-        setInvoices(invoiceRows);
-        setRecent(recentRows);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+  async function load() {
+    setLoading(true);
+    setError('');
+    try {
+      const [clientRows, invoiceRows, recentRows] = await Promise.all([
+        listClients(),
+        listInvoices(),
+        listRecentInvoices(),
+      ]);
+      setClients(clientRows);
+      setInvoices(invoiceRows);
+      setRecent(recentRows);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     load();
   }, []);
 
@@ -90,6 +93,9 @@ export default function DashboardPage() {
       <div className="page-stack">
         <Card variant="default">
           <div className="error-panel" role="alert">{error}</div>
+          <div className="form-actions">
+            <Button variant="secondary" onClick={load}>Try again</Button>
+          </div>
         </Card>
       </div>
     );

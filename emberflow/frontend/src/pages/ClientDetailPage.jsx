@@ -21,18 +21,21 @@ export default function ClientDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [clientRow, invoiceRows] = await Promise.all([getClient(id), listInvoices()]);
-        setClient(clientRow);
-        setInvoices(invoiceRows.filter((invoice) => invoice.client_id === id));
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+  async function load() {
+    setLoading(true);
+    setError('');
+    try {
+      const [clientRow, invoiceRows] = await Promise.all([getClient(id), listInvoices()]);
+      setClient(clientRow);
+      setInvoices(invoiceRows.filter((invoice) => invoice.client_id === id));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     load();
   }, [id]);
 
@@ -97,7 +100,25 @@ export default function ClientDetailPage() {
       </div>
     );
   }
-  if (error) return <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>;
+  if (error) {
+    return (
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">Client</p>
+            <h2 className="heading-xl">Something went wrong.</h2>
+          </div>
+          <Button as={Link} variant="ghost" to="/app/clients">Back to clients</Button>
+        </div>
+        <Card variant="default">
+          <div className="error-panel" role="alert">{error}</div>
+          <div className="form-actions">
+            <Button variant="secondary" onClick={load}>Try again</Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="page-stack">

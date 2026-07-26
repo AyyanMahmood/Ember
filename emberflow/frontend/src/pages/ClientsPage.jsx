@@ -154,6 +154,9 @@ export default function ClientsPage() {
           <div className="error-panel" role="alert">
             {error}
           </div>
+          <div className="form-actions">
+            <Button variant="secondary" onClick={load}>Try again</Button>
+          </div>
         </Card>
       )}
 
