@@ -7,7 +7,6 @@ import { EmberSelect } from "../components/ui/EmberSelect.jsx";
 import { Card } from "../components/ui/Card.jsx";
 import { Table } from "../components/ui/Table.jsx";
 import { EmptyState } from "../components/ui/EmptyState.jsx";
-import { LoadingSpinner } from "../components/ui/Loading.jsx";
 import { ConfirmDialog } from "../components/ui/Modal.jsx";
 import { deleteClient, listClients } from "../services/api.js";
 import { formatDate } from "../utils/format.js";
@@ -133,14 +132,6 @@ export default function ClientsPage() {
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="page-stack" role="status" aria-live="polite">
-        <LoadingSpinner size="lg" label="Loading clients..." />
-      </div>
-    );
-  }
-
   return (
     <div className="page-stack">
       <div className="page-header">
@@ -187,6 +178,7 @@ export default function ClientsPage() {
         <Table
           columns={columns}
           data={filteredClients}
+          loading={loading}
           keyExtractor={(row) => row.id}
           sortable
           pagination

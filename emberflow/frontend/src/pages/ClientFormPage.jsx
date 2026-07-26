@@ -4,7 +4,7 @@ import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input, Textarea } from '../components/ui/Input.jsx';
 import { EmberSelect } from '../components/ui/EmberSelect.jsx';
-import { LoadingSpinner } from '../components/ui/Loading.jsx';
+import { SkeletonCard } from '../components/ui/Loading.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { createClient, getClient, updateClient } from '../services/api.js';
 import { COUNTRY_OPTIONS } from '../data/countries.js';
@@ -77,8 +77,16 @@ export default function ClientFormPage() {
 
   if (loading) {
     return (
-      <div className="page-stack" role="status" aria-live="polite">
-        <LoadingSpinner size="lg" label="Loading client..." />
+      <div className="page-stack page-stack--narrow">
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">Edit client</p>
+            <h2 className="heading-xl">Update client details.</h2>
+          </div>
+        </div>
+        <Card variant="default">
+          <SkeletonCard lines={5} action />
+        </Card>
       </div>
     );
   }

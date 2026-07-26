@@ -5,7 +5,7 @@ import { StatusBadge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Card, CardHeader, StatCard } from '../components/ui/Card.jsx';
 import { Table } from '../components/ui/Table.jsx';
-import { LoadingSpinner } from '../components/ui/Loading.jsx';
+import { Skeleton, SkeletonCard } from '../components/ui/Loading.jsx';
 import { ConfirmDialog } from '../components/ui/Modal.jsx';
 import { deleteClient, getClient, listInvoices } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
@@ -59,15 +59,6 @@ export default function ClientDetailPage() {
     };
   }, [invoices]);
 
-  if (loading) {
-    return (
-      <div className="page-stack" role="status" aria-live="polite">
-        <LoadingSpinner size="lg" label="Loading client..." />
-      </div>
-    );
-  }
-  if (error) return <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>;
-
   const columns = [
     { key: 'invoice_number', label: 'Invoice', render: (row) => (
       <Link to={`/app/invoices/${row.id}`} className="table__link">{row.invoice_number}</Link>
@@ -76,6 +67,37 @@ export default function ClientDetailPage() {
     { key: 'status', label: 'Status', render: (row) => <StatusBadge status={effectiveStatus(row)} size="sm" /> },
     { key: 'total', label: 'Total', align: 'right', render: (row) => formatMoney(row.total, row.currency) },
   ];
+
+  if (loading) {
+    return (
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">Client</p>
+            <Skeleton variant="heading" width="12rem" />
+          </div>
+        </div>
+        <section className="stats-grid" aria-label="Client billing summary" aria-busy="true">
+          {[...Array(3)].map((_, index) => (
+            <article className="stat-card" key={index} aria-hidden="true">
+              <Skeleton variant="textSm" width="50%" />
+              <Skeleton variant="heading" width="70%" />
+              <Skeleton variant="textSm" width="60%" />
+            </article>
+          ))}
+        </section>
+        <section className="detail-grid">
+          <Card variant="default"><SkeletonCard lines={4} /></Card>
+          <Card variant="default"><SkeletonCard lines={2} /></Card>
+        </section>
+        <Card variant="default">
+          <CardHeader title="Invoices" />
+          <Table columns={columns} data={[]} loading keyExtractor={(row) => row.id} />
+        </Card>
+      </div>
+    );
+  }
+  if (error) return <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>;
 
   return (
     <div className="page-stack">

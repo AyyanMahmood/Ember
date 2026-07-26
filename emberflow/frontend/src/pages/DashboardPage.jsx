@@ -5,7 +5,7 @@ import { Card, StatCard } from '../components/ui/Card.jsx';
 import { StatusBadge } from '../components/ui/Badge.jsx';
 import { Table } from '../components/ui/Table.jsx';
 import { EmptyState, EmptyStateIllustration } from '../components/ui/EmptyState.jsx';
-import { LoadingSpinner } from '../components/ui/Loading.jsx';
+import { Skeleton } from '../components/ui/Loading.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { listClients, listInvoices, listRecentInvoices } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
@@ -85,14 +85,6 @@ export default function DashboardPage() {
     },
   ], [stats]);
 
-  if (loading) {
-    return (
-      <div className="page-stack" role="status" aria-live="polite">
-        <LoadingSpinner size="lg" label="Loading dashboard..." />
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="page-stack">
@@ -136,20 +128,28 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      <section className="stats-grid" aria-label="Key metrics">
-        {statCards.map((stat, index) => (
-          <Link key={index} to={stat.to} className="stat-card-link">
-            <StatCard
-              label={stat.label}
-              value={stat.value}
-              note={stat.note}
-              trend={stat.trend}
-              trendLabel={stat.trendLabel}
-            >
-              {stat.icon && <span className="stat-card__icon" aria-hidden="true">{stat.icon}</span>}
-            </StatCard>
-          </Link>
-        ))}
+      <section className="stats-grid" aria-label="Key metrics" aria-busy={loading || undefined}>
+        {loading
+          ? [...Array(4)].map((_, index) => (
+              <article className="stat-card" key={index} aria-hidden="true">
+                <Skeleton variant="textSm" width="50%" />
+                <Skeleton variant="heading" width="70%" />
+                <Skeleton variant="textSm" width="60%" />
+              </article>
+            ))
+          : statCards.map((stat, index) => (
+              <Link key={index} to={stat.to} className="stat-card-link">
+                <StatCard
+                  label={stat.label}
+                  value={stat.value}
+                  note={stat.note}
+                  trend={stat.trend}
+                  trendLabel={stat.trendLabel}
+                >
+                  {stat.icon && <span className="stat-card__icon" aria-hidden="true">{stat.icon}</span>}
+                </StatCard>
+              </Link>
+            ))}
       </section>
 
       <Card variant="default">
@@ -162,6 +162,7 @@ export default function DashboardPage() {
         <Table
           columns={columns}
           data={tableData}
+          loading={loading}
           keyExtractor={(row) => row.id}
           onRowClick={(row) => navigate(`/app/invoices/${row.id}`)}
           emptyTitle="No invoices yet"
