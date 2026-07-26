@@ -1,5 +1,13 @@
 function corsOrigin() {
-  return process.env.APP_URL ? process.env.APP_URL.replace(/\/$/, '') : '*';
+  if (process.env.APP_URL) return process.env.APP_URL.replace(/\/$/, '');
+  if (process.env.NODE_ENV === 'production') {
+    // Fail closed, not open: an unset APP_URL in production must not fall
+    // back to a wildcard origin. Omitting the header (returning null) makes
+    // the browser block cross-origin reads by default instead.
+    console.error('APP_URL is not set in production — refusing to allow cross-origin requests.');
+    return null;
+  }
+  return '*';
 }
 
 function sendJson(res, statusCode, payload) {
@@ -10,7 +18,8 @@ function sendJson(res, statusCode, payload) {
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "no-referrer");
   res.setHeader("Cache-Control", "no-store");
-  res.setHeader("Access-Control-Allow-Origin", corsOrigin());
+  const origin = corsOrigin();
+  if (origin) res.setHeader("Access-Control-Allow-Origin", origin);
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
@@ -19,7 +28,8 @@ function sendJson(res, statusCode, payload) {
 
 function optionsHandler(res) {
   res.statusCode = 204;
-  res.setHeader("Access-Control-Allow-Origin", corsOrigin());
+  const origin = corsOrigin();
+  if (origin) res.setHeader("Access-Control-Allow-Origin", origin);
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Max-Age", "86400");
