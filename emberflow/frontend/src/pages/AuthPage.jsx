@@ -168,8 +168,8 @@ export default function AuthPage({ mode }) {
             }
           />
           {isSignup ? <PasswordStrengthMeter password={form.password} /> : null}
-          {error ? <p className="form-error">{error}</p> : null}
-          {success ? <p className="form-success">{success}</p> : null}
+          {error ? <p className="form-error" role="alert">{error}</p> : null}
+          {success ? <p className="form-success" role="status">{success}</p> : null}
           {needsVerification ? (
             <Button
               type="button"

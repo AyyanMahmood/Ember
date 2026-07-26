@@ -41,8 +41,8 @@ export default function ForgotPasswordPage() {
             <h1 className="heading-xl">Reset your password</h1>
           </div>
           <Input label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-          {error ? <p className="form-error">{error}</p> : null}
-          {message ? <p className="form-success">{message}</p> : null}
+          {error ? <p className="form-error" role="alert">{error}</p> : null}
+          {message ? <p className="form-success" role="status">{message}</p> : null}
           <Button variant="primary" fullWidth disabled={submitting} type="submit">
             {submitting ? 'Sending...' : 'Send reset link'}
           </Button>

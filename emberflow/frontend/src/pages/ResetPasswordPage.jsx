@@ -57,7 +57,7 @@ export default function ResetPasswordPage() {
             }
           />
           <PasswordStrengthMeter password={password} />
-          {error ? <p className="form-error">{error}</p> : null}
+          {error ? <p className="form-error" role="alert">{error}</p> : null}
           <Button variant="primary" fullWidth disabled={submitting} type="submit">
             {submitting ? 'Saving...' : 'Update password'}
           </Button>
