@@ -518,7 +518,7 @@ Not yet tested on-device (same standing limitation — no headless browser/Andro
 
 Not yet tested on-device (same standing limitation — no headless browser/Android device available in this container). All ten verified by `npm run build` + code reasoning only.
 
-### MEDIUM — in progress (2026-07-27), fixing in strict priority order, one commit per item, build green after each
+### MEDIUM — 13 of 13 fixed (2026-07-27), one commit per item, build green after each. Not yet tested on-device (same standing limitation — no headless browser/Android device available in this container).
 
 - ✅ **M1** Landing hero's left column had no entrance animation while the right column's product-glimpse card did (`LandingPage.jsx:86-148`); `.lp-pricing__grid` compressed in the 680-728px band before collapsing to one column (`landing.css:374-379`). — `9e81e26`. Wrapped the left column in the existing `Reveal` component; moved the pricing-grid 1-column breakpoint from 680px to 768px so it collapses before the compressed band instead of passing through it.
 - ✅ **M2** `FeaturesPage` icons rendered bare with no background treatment — a third, different icon presentation vs. the landing page's accent-tinted circles and the app's `stat-card__icon` badges (`FeaturesPage.jsx:28`). — `2ef79fb`. Added a matching `.feature-grid__icon` accent-soft badge (2.75rem, same treatment as `.lp-feature-card__icon`/`.stat-card__icon`) to `layout.css`.
@@ -532,7 +532,7 @@ Not yet tested on-device (same standing limitation — no headless browser/Andro
 - ✅ **M10** Settings: Subscription card header was hand-rolled instead of using `CardHeader` like its sibling cards; three different primary-action placement patterns (sticky bar / inline button / flex row) for the page's three save actions; only the "Current password" field showed the eye toggle though the same state governs all three password fields; save success/error text had no `aria-live`. — `0c56d9e`. Subscription card now uses `CardHeader` (title/subtitle/action); password-change and billing actions both moved to the shared `.form-actions` class (non-sticky, appropriate for their shorter forms — the sticky bar stays only on the long profile/business form), and the now-unused `.billing-actions` rule was removed; New/Confirm password fields got the same eye-toggle as Current password (all three already share one `passwordVisible` state); profile-save success and password-change success/error messages got `role="status"`/`"alert"`, matching the convention from H8.
 - ✅ **M11** `Modal`/`Drawer` each hand-rolled nearly identical focus-trap/scroll-lock logic instead of sharing one hook — a drift risk, not a live bug (`components/ui/Modal.jsx:19-59,166-206`). — `60d2ae9`. Extracted both into a new `hooks/useFocusTrap.js`; Modal and Drawer both call it with their own ref, no behavior change. (`MobilePreviewSheet.jsx`'s own Tab-trap, added separately for the Critical #4 fix, wasn't touched — out of scope for this item as cited.)
 - ✅ **M12** App page titles were marked up as `h2` (`.heading-xl`) while the real (small, separate) `h1` lived in the topbar — semantically backwards even though a single `h1` did exist. (`AppLayout.jsx:160` vs. every `/app/*` page header) — `13c8578`. Promoted each of the 13 `/app/*` pages' own title to `h1` (`.heading-xl` class unchanged, so no visual change — `reset.css` styles h1-h6 identically) and changed the topbar label to a plain `<p>` (it's nav chrome, not page content), so each page now has exactly one, correctly-positioned `h1`.
-- Brand Studio's "Checking plan…" preview swap isn't wrapped in the app's own crossfade convention used everywhere else in that panel (`BrandStudioPage.jsx:446-452`).
+- ✅ **M13** Brand Studio's "Checking plan…" preview swap wasn't wrapped in the app's own crossfade convention used everywhere else in that panel (`BrandStudioPage.jsx:446-452`). — `93f80d6`. Wrapped the loading spinner in the same `.brand-studio__preview-fade` class already used for the doc-kind tab and default/brand compare-toggle swaps.
 
 ### LOW
 
@@ -547,4 +547,4 @@ Not yet tested on-device (same standing limitation — no headless browser/Andro
 - `ClientFormPage`'s phone field strips invalid characters but gives no format/length feedback.
 - Minor animation-consistency nitpicks on Templates/Brand Studio/Analytics card grids.
 
-**Fixing order:** Criticals 1→4 above, each its own commit, `npm run build` green before moving to the next. High/Medium/Low are backlog, not being fixed in this pass unless asked.
+**Fixing order:** Criticals 1→4, then High 1→10, then Medium 1→13, each its own commit, `npm run build` green before moving to the next — all complete. Only Low-priority backlog remains, not being fixed unless asked.
