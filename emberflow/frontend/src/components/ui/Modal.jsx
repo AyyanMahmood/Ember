@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { X } from 'lucide-react';
 import { Button } from './Button.jsx';
+import { useFocusTrap } from '../../hooks/useFocusTrap.js';
 
 export function Modal({
   isOpen,
@@ -14,49 +15,8 @@ export function Modal({
   className = '',
 }) {
   const modalRef = useRef(null);
-  const previousActiveElement = useRef(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      previousActiveElement.current = document.activeElement;
-      document.body.style.overflow = 'hidden';
-      modalRef.current?.focus();
-
-      const handleKeyDown = (event) => {
-        if (event.key === 'Escape' && closeOnEscape) {
-          onClose();
-        }
-        if (event.key === 'Tab') {
-          trapFocus(event);
-        }
-      };
-
-      document.addEventListener('keydown', handleKeyDown);
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-        document.body.style.overflow = '';
-        previousActiveElement.current?.focus();
-      };
-    }
-  }, [isOpen, onClose, closeOnEscape]);
-
-  const trapFocus = (event) => {
-    const focusableElements = modalRef.current?.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    if (!focusableElements?.length) return;
-
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-
-    if (event.shiftKey && document.activeElement === firstElement) {
-      event.preventDefault();
-      lastElement.focus();
-    } else if (!event.shiftKey && document.activeElement === lastElement) {
-      event.preventDefault();
-      firstElement.focus();
-    }
-  };
+  useFocusTrap(modalRef, { isOpen, onClose, closeOnEscape });
 
   if (!isOpen) return null;
 
@@ -161,49 +121,8 @@ export function Drawer({
   className = '',
 }) {
   const drawerRef = useRef(null);
-  const previousActiveElement = useRef(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      previousActiveElement.current = document.activeElement;
-      document.body.style.overflow = 'hidden';
-      drawerRef.current?.focus();
-
-      const handleKeyDown = (event) => {
-        if (event.key === 'Escape' && closeOnEscape) {
-          onClose();
-        }
-        if (event.key === 'Tab') {
-          trapFocus(event);
-        }
-      };
-
-      document.addEventListener('keydown', handleKeyDown);
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-        document.body.style.overflow = '';
-        previousActiveElement.current?.focus();
-      };
-    }
-  }, [isOpen, onClose, closeOnEscape]);
-
-  const trapFocus = (event) => {
-    const focusableElements = drawerRef.current?.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    if (!focusableElements?.length) return;
-
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-
-    if (event.shiftKey && document.activeElement === firstElement) {
-      event.preventDefault();
-      lastElement.focus();
-    } else if (!event.shiftKey && document.activeElement === lastElement) {
-      event.preventDefault();
-      firstElement.focus();
-    }
-  };
+  useFocusTrap(drawerRef, { isOpen, onClose, closeOnEscape });
 
   if (!isOpen) return null;
 
