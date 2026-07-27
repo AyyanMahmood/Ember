@@ -10,7 +10,7 @@ EmberFlow is a premium freelancer finance operating system for independent profe
 - **Payment tracking** — Manual payment records, balance reconciliation, overdue monitoring
 - **Analytics** — Revenue totals, monthly collections, overdue tracking, top-client rankings
 - **Dashboard** — At-a-glance metrics, recent activity, status summaries
-- **Authentication** — Email/password auth with password reset flow, Google/Microsoft OAuth (pending provider config — see RESUME HERE)
+- **Authentication** — Email/password auth with password reset flow, Google OAuth (✅ production verified), Microsoft OAuth (pending provider config — see "Google OAuth callback bug fix" section)
 - **Settings** — Profile, business info, invoice branding, subscription management
 
 ---
@@ -312,7 +312,7 @@ Question every screen, spacing decision, interaction, hierarchy, and animation. 
 | Micro-interactions and animation | Basic transitions in place |
 | Premium redesign (OpenClaude-level polish) | Remaining work |
 | Trust/correctness fixes (fake metrics, blank status badge, checkout PII log, CORS) | Complete (roadmap Phase 0) |
-| Bundle 1: Authentication (Google/Microsoft OAuth, password strength meter, disposable email detection) | Code complete; **blocked on external dashboard config** — see RESUME HERE |
+| Bundle 1: Authentication (Google/Microsoft OAuth, password strength meter, disposable email detection) | Google OAuth **✅ production verified**; Microsoft OAuth still blocked on external provider config — see "Google OAuth callback bug fix" section |
 | Bundle 2: Brand Studio (Pro-only logo/color/font branding) | Superseded by Bundle 3 below (critical bugs fixed, free tier added, first-class nav) |
 | Bundle 3: Brand Studio Polish & Premium Positioning | Code complete, all approved migrations applied to production, build green. Live device/account testing still not done this session — see below |
 | V1 Audit (2026-07-27) | Complete — full feature-by-feature status report produced across all 15 areas (auth, pages, invoices, proposals, brand studio, subscriptions, security, SEO, performance, prod readiness). Findings drove the two bundles below. |
@@ -556,14 +556,18 @@ Not yet tested on-device. All ten verified by `npm run build` + code reasoning o
 
 ---
 
-## Google OAuth callback bug fix (2026-07-27)
+## Google OAuth callback bug fix (2026-07-27) — ✅ Production verified
 
-**Symptom:** after a successful Google sign-in, the browser landed on `http://localhost:5173/#access_token=...` instead of `/app`.
+**Status: Google OAuth is production verified** — tested successfully 7 separate times in a fresh Incognito window against `https://embersys.vercel.app`. Confirmed: redirect reaches `/auth/callback?code=...`, PKCE code exchange completes, user lands on `/app`, session persists across a refresh, and logout/login cycles correctly. **Microsoft OAuth is unaffected by this bug fix's code but remains pending external provider config** (Azure/Entra dashboard setup) — not yet verified, treat as pending until someone completes that config and tests it.
 
-**Root cause (confirmed by reading the installed `@supabase/auth-js` source, not assumed):** `services/supabase.js`'s `createClient()` never set `flowType`, so it silently used the library's default of `'implicit'` (`DEFAULT_OPTIONS.flowType = 'implicit'` in `GoTrueClient.js`). Implicit flow returns tokens as a URL hash fragment instead of Supabase's current recommended PKCE `?code=` exchange. Separately, there was no dedicated OAuth callback route — `redirectTo` pointed straight at `/app`, and only `AuthPage.jsx` had "if authenticated, go to `/app`" logic, so a redirect landing anywhere else left the session established silently with nothing to navigate the user onward.
+**Symptom (original):** after a successful Google sign-in, the browser landed on `http://localhost:5173/#access_token=...` instead of `/app`.
 
-**Fixed (`9f608b5`):** `flowType: 'pkce'` set explicitly; new dedicated `/auth/callback` route (`pages/AuthCallbackPage.jsx`) is now the `redirectTo` target for both Google and Microsoft, waits for `getSession()` to resolve, then navigates to `/app` on success or back to `/login` with a friendly error on failure. Email/password auth untouched (doesn't go through `signInWithOAuth`).
+**Root cause #1 (confirmed by reading the installed `@supabase/auth-js` source, not assumed):** `services/supabase.js`'s `createClient()` never set `flowType`, so it silently used the library's default of `'implicit'` (`DEFAULT_OPTIONS.flowType = 'implicit'` in `GoTrueClient.js`). Fixed by setting `flowType: 'pkce'` explicitly, plus a new dedicated `/auth/callback` route (`pages/AuthCallbackPage.jsx`) as the `redirectTo` target instead of `/app` directly (`9f608b5`).
 
-**⏸️ Not fixed by code — needs your action in the Supabase Dashboard:** Authentication → URL Configuration → Redirect URLs must include the app's callback URL for both environments — `http://localhost:5173/auth/callback` (or a `http://localhost:5173/**` wildcard) for local dev, and the equivalent `https://<production-domain>/auth/callback` (or wildcard) for Vercel. Without this, Supabase falls back to the Site URL regardless of the code fix above — this was the likely reason the redirect landed on root `/` instead of `/app` in the first place. Recommend the wildcard form so future redirect-path changes never need another Dashboard edit.
+**Root cause #2, found after the PKCE fix (the callback reached `/auth/callback?code=...` but never completed sign-in):** traced through `GoTrueClient.js` in detail — the library's *automatic* URL-session detection only attempts the PKCE code exchange if it finds a matching `<storageKey>-code-verifier` entry in `localStorage` (`_isPKCECallback()`, `GoTrueClient.js:1316-1318`). That verifier is written to storage on whatever **origin** `signInWithOAuth()` was called from. `redirectTo` was built via `authRedirectUrl()`, which prefers `VITE_APP_URL` (set in Vercel Production) over `window.location.origin` — since `localStorage` is strictly origin-scoped, any mismatch between the origin the flow started on and `VITE_APP_URL`'s configured domain meant the callback page could never see the verifier, so the automatic exchange path was silently skipped (no error thrown or returned) and the `?code=` sat unused in the URL.
 
-**Not verified on a real device/browser** (same standing limitation — no headless browser available in this container). Added to `MANUAL_QA_CHECKLIST.md`'s Authentication sections.
+**Fixed (`5791496`):** `signInWithGoogle`/`signInWithMicrosoft` now build `redirectTo` directly from `window.location.origin` instead of `authRedirectUrl()`/`VITE_APP_URL` — OAuth is a synchronous same-browser round trip, so it should always target the origin the flow actually started on. `AuthCallbackPage.jsx` now explicitly calls `exchangeCodeForSession(code)` itself (extracting the raw code from `location.search` — this installed API takes a code string, not a URL) instead of passively trusting the automatic path, then confirms via `getSession()` before navigating to `/app` or back to `/login` with a friendly error. Email/password auth, and `emailRedirectTo`/`resetPasswordForEmail` (which legitimately need a stable cross-device domain), are untouched.
+
+**Temporary debug logging** (added mid-investigation to confirm the origin-mismatch hypothesis against the live deployment, and to surface the exact Supabase error if the exchange failed) **was removed after verification succeeded** (`6d1adce`) — the PKCE flow, origin-based `redirectTo`, and explicit `exchangeCodeForSession()` call all remain in place; only the `console.log`/`console.error` calls and their "TEMPORARY DEBUG" comments were stripped.
+
+**Deployment:** pushed to `opclaude-redesign`, merged (fast-forward) into `main`, both pushed to origin; Vercel production redeployed from `main` and the deployed bundle was verified byte-for-byte (fetched directly from `embersys.vercel.app`) to contain the fix before live testing began.

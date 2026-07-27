@@ -20,11 +20,11 @@ Where a flow is identical on both, it's listed once per device section anyway so
 - [ ] Log in with correct email/password → lands on Dashboard
 - [ ] Log in with wrong password → friendly error message (not a raw Supabase error string)
 - [ ] Log in with an unconfirmed account → "email not confirmed" state shows the resend-verification option
-- [ ] Continue with Google → URL bar never shows a raw `#access_token=...` fragment at any point, redirect goes through `/auth/callback` briefly then lands on `/app` — **this requires Supabase Dashboard → Authentication → URL Configuration → Redirect URLs to include `http://localhost:5173/auth/callback` (or a `http://localhost:5173/**` wildcard) first**, see CLAUDE.md's "Google OAuth callback bug fix" section
-- [ ] Continue with Microsoft → same check as Google above
-- [ ] Cancel/deny the Google consent screen partway through → lands back on `/login` with a visible "Sign-in was cancelled or failed" message, not stuck on a blank/loading page
-- [ ] After a successful Google/Microsoft login, refresh the page — session persists (not logged out)
-- [ ] Logout (from sidebar footer) → redirected to marketing/login, session actually cleared (reload doesn't restore it)
+- [x] Continue with Google → ✅ **Production verified (2026-07-27)** — tested successfully 7 separate times in a fresh Incognito window against `https://embersys.vercel.app`. URL bar never shows a raw `#access_token=...` fragment, redirect goes through `/auth/callback?code=...` then lands on `/app`. See CLAUDE.md's "Google OAuth callback bug fix" section for the full root-cause/fix history.
+- [ ] Continue with Microsoft → **pending** — blocked purely on external Azure/Entra provider configuration, not yet tested. Not affected by the Google fix's code changes, but unverified until that config is completed.
+- [ ] Cancel/deny the Google consent screen partway through → lands back on `/login` with a visible "Sign-in was cancelled or failed" message, not stuck on a blank/loading page (not explicitly exercised in the 7 verified runs — worth a dedicated pass)
+- [x] After a successful Google login, refresh `/app` → ✅ verified — session persists (not logged out)
+- [x] Logout (from sidebar footer) after a Google login → ✅ verified — redirected to marketing/login, session actually cleared, logging back in with Google works again
 - [ ] Forgot password → submit email → reset link email arrives → reset page accepts new password → can log in with new password
 - [ ] Settings → Security card → change password: current/new/confirm fields all show the eye-toggle and all three toggle together; wrong "current password" is rejected; success message appears
 
@@ -154,8 +154,8 @@ Where a flow is identical on both, it's listed once per device section anyway so
 - [ ] Log in with correct email/password → lands on Dashboard
 - [ ] Log in with wrong password → friendly error message
 - [ ] Log in with an unconfirmed account → resend-verification option shows
-- [ ] Continue with Google (icon-only OAuth button) → no raw `#access_token=...` fragment ever visible, lands on `/app` (requires the Supabase Dashboard Redirect URLs entry from the Arc section above to be set)
-- [ ] Continue with Microsoft (icon-only OAuth button) → same check as Google above
+- [ ] Continue with Google (icon-only OAuth button) → code fix is ✅ production verified on desktop (see Arc section above) but **not yet specifically re-tested on Android** — no raw `#access_token=...` fragment should ever be visible, should land on `/app`
+- [ ] Continue with Microsoft (icon-only OAuth button) → **pending** external Azure/Entra provider config, same as desktop
 - [ ] Logout from the sidebar (via the mobile drawer) actually clears the session
 - [ ] Forgot password → reset email → reset page → new password → log in with it
 - [ ] Settings → Security: change password, eye-toggle on all three fields, touch targets are large enough to tap reliably
