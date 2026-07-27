@@ -170,6 +170,8 @@ export default function ClientsPage() {
             className="filters-row__input"
           />
           <EmberSelect
+            label="Filter by country"
+            hideLabel
             value={country}
             onChange={(value) => setCountry(value)}
             options={[{ value: '', label: 'All countries' }, ...countries.map((c) => ({ value: c, label: c }))]}

@@ -33,6 +33,7 @@ export function EmberSelect({
   emptyMessage = 'No matches',
   leftIcon,
   className = '',
+  hideLabel = false,
 }) {
   const generatedId = useId();
   const id = providedId || generatedId;
@@ -154,7 +155,7 @@ export function EmberSelect({
   return (
     <div className={`input-wrapper ${className}`.trim()} ref={containerRef}>
       {label && (
-        <span className="label" id={labelId}>
+        <span className={`label${hideLabel ? ' sr-only' : ''}`} id={labelId}>
           {label}
           {required && <span aria-hidden="true" style={{ color: 'var(--color-danger)', marginLeft: 'var(--space-1)' }}>*</span>}
         </span>
