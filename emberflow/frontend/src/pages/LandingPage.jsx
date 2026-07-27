@@ -9,7 +9,7 @@ import { FEATURES } from '../data/features.js';
 import { PLANS } from '../utils/plans.js';
 import { scrollToId } from '../utils/scroll.js';
 
-function Reveal({ children, className = '', delay = 0, as: Tag = 'div' }) {
+function Reveal({ children, className = '', delay = 0, as: Tag = 'div', ...props }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
@@ -37,6 +37,7 @@ function Reveal({ children, className = '', delay = 0, as: Tag = 'div' }) {
       ref={ref}
       className={`lp-reveal ${visible ? 'lp-reveal--visible' : ''} ${className}`.trim()}
       style={{ transitionDelay: `${delay}ms` }}
+      {...props}
     >
       {children}
     </Tag>
@@ -239,7 +240,7 @@ export default function LandingPage() {
         </div>
       </Reveal>
 
-      <Reveal as="section" className="lp-section lp-section--tight">
+      <Reveal as="section" id="faq" className="lp-section lp-section--tight">
         <div className="lp-section__head">
           <p className="overline lp-section__eyebrow">FAQ</p>
           <h2 className="heading-xl lp-section__title">Built to launch without paid APIs.</h2>

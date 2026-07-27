@@ -1,16 +1,25 @@
 import { useEffect, useState } from 'react';
+import { Menu } from 'lucide-react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Button } from './ui/Button.jsx';
 import { ThemeToggle } from './ui/ThemeToggle.jsx';
+import { Drawer, DrawerFooter } from './ui/Modal.jsx';
 import { scrollToId } from '../utils/scroll.js';
 
 const year = new Date().getFullYear();
 const SECTION_IDS = ['features', 'pricing'];
+const MOBILE_DRAWER_ID = 'marketing-mobile-nav';
 
 export default function PublicLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === '/';
   const [activeSection, setActiveSection] = useState('');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!isHome || typeof IntersectionObserver === 'undefined') {
@@ -42,6 +51,18 @@ export default function PublicLayout() {
     };
   }
 
+  function handleMobileSectionNav(id) {
+    const sectionHandler = handleSectionNav(id);
+    return (event) => {
+      sectionHandler(event);
+      setMobileNavOpen(false);
+    };
+  }
+
+  function closeMobileNav() {
+    setMobileNavOpen(false);
+  }
+
   return (
     <div className="marketing-page">
       <header className="marketing-nav">
@@ -49,7 +70,7 @@ export default function PublicLayout() {
           <Link className="brand-mark" to="/">
             EmberFlow
           </Link>
-          <nav aria-label="Main">
+          <nav className="marketing-nav__links" aria-label="Main">
             <Link
               to="/#features"
               onClick={handleSectionNav('features')}
@@ -72,8 +93,41 @@ export default function PublicLayout() {
             </Link>
             <ThemeToggle className="marketing-nav__theme-toggle" />
           </nav>
+          <button
+            type="button"
+            className="marketing-nav__mobile-toggle"
+            aria-expanded={mobileNavOpen}
+            aria-controls={MOBILE_DRAWER_ID}
+            aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMobileNavOpen((open) => !open)}
+          >
+            <Menu size={22} aria-hidden="true" />
+          </button>
         </div>
       </header>
+
+      <Drawer
+        id={MOBILE_DRAWER_ID}
+        isOpen={mobileNavOpen}
+        onClose={closeMobileNav}
+        title="Menu"
+        side="right"
+        className="marketing-mobile-drawer"
+      >
+        <nav className="marketing-mobile-drawer__nav" aria-label="Mobile">
+          <Link to="/#features" onClick={handleMobileSectionNav('features')}>Features</Link>
+          <Link to="/#pricing" onClick={handleMobileSectionNav('pricing')}>Pricing</Link>
+          <Link to="/#faq" onClick={handleMobileSectionNav('faq')}>FAQ</Link>
+          <Link to="/contact" onClick={closeMobileNav}>Contact</Link>
+          <Link to="/login" onClick={closeMobileNav}>Log in</Link>
+        </nav>
+        <DrawerFooter className="marketing-mobile-drawer__footer">
+          <ThemeToggle />
+          <Button as={Link} to="/register" variant="primary" fullWidth onClick={closeMobileNav}>
+            Get Started
+          </Button>
+        </DrawerFooter>
+      </Drawer>
       <Outlet />
       <footer className="marketing-footer">
         <div className="marketing-footer__grid">

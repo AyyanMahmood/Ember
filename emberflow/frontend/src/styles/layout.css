@@ -787,6 +787,71 @@
   color: var(--color-ink);
 }
 
+.marketing-nav__mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.marketing-nav__mobile-toggle:hover {
+  background: var(--color-bg);
+}
+
+.marketing-nav__mobile-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+@media (max-width: 767px) {
+  .marketing-nav__links {
+    display: none;
+  }
+
+  .marketing-nav__mobile-toggle {
+    display: inline-flex;
+  }
+}
+
+.marketing-mobile-drawer__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.marketing-mobile-drawer__nav a {
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-weight: var(--weight-extrabold);
+  font-size: var(--text-heading-sm);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.marketing-mobile-drawer__nav a:hover,
+.marketing-mobile-drawer__nav a:focus-visible {
+  background: var(--color-bg);
+  text-decoration: none;
+}
+
+.marketing-mobile-drawer__footer {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.marketing-mobile-drawer__footer .icon-button {
+  align-self: center;
+}
+
 .actions,
 .form-actions {
   display: flex;
@@ -1206,21 +1271,6 @@
 }
 
 @media (max-width: 680px) {
-  /* The flex container is .marketing-nav__inner, not .marketing-nav (which is
-     a sticky block). Stack it so the brand sits above a cleanly-wrapping nav
-     row instead of cramming brand + 5 nav items into one un-wrapping row. */
-  .marketing-nav__inner {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-3);
-  }
-
-  .marketing-nav nav {
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: var(--space-3) var(--space-4);
-  }
-
   .content,
   .topbar {
     padding-left: var(--space-4);

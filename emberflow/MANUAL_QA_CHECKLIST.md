@@ -99,6 +99,17 @@ Where a flow is identical on both, it's listed once per device section anyway so
 - [ ] Sidebar collapse/expand toggle works and persists after reload
 - [ ] Landing page hero, features grid, pricing grid, FAQ grid all reflow sensibly at each breakpoint — specifically check the pricing grid goes straight from 2 columns to 1 column around 768px without a visibly squeezed middle state
 - [ ] Tables' desktop view (not the mobile card layout) has no cut-off columns down to ~1024px
+- [ ] At exactly 768px and above, the marketing navbar shows the full horizontal nav (Features, Pricing, Log in, Start free, theme toggle) with no hamburger icon — confirm it looks pixel-identical to before this change
+- [ ] Narrow the window to 767px and below — the horizontal nav links disappear and a hamburger icon appears in the top-right, logo stays top-left
+- [ ] Clicking the hamburger opens a full-height drawer sliding in smoothly from the right, containing Features, Pricing, FAQ, Contact, Log in, then a theme toggle + full-width "Get Started" button at the bottom
+- [ ] Clicking Features/Pricing/FAQ in the drawer scrolls to the right section on the landing page and closes the drawer
+- [ ] Clicking Contact/Log in/Get Started navigates correctly and closes the drawer
+- [ ] Clicking outside the drawer (on the dimmed backdrop) closes it
+- [ ] Pressing Escape while the drawer is open closes it
+- [ ] While the drawer is open, the page behind it does not scroll
+- [ ] Tab key cycles only through the drawer's own links/buttons while open (focus doesn't escape to the page behind it)
+- [ ] After closing the drawer (any method), keyboard focus returns to the hamburger button, not lost to the top of the page
+- [ ] Resize back above 768px while the drawer is open — confirm nothing looks broken (drawer should close/hide, full desktop nav should return)
 
 ### Loading states
 - [ ] Confirm there are **no shimmering skeleton placeholders anywhere** in the app (Dashboard, Clients, Client Detail, Client Form, any table) — this was intentionally removed; if you see shimmer bars anywhere, that's a regression
@@ -199,7 +210,12 @@ Where a flow is identical on both, it's listed once per device section anyway so
 - [ ] Test at real Android widths: ~360px (Galaxy A06 class), ~390-414px (typical mid/high-end), and once in landscape
 - [ ] No horizontal page scroll anywhere in the app or marketing site
 - [ ] Sidebar opens as a full mobile drawer via the hamburger button; closing it returns focus to the hamburger button
-- [ ] Marketing navbar doesn't crumple/overlap at narrow widths
+- [ ] Marketing navbar shows only the logo (left) and a hamburger icon (right) — no horizontal link row, no crumpling/overlap
+- [ ] Tapping the hamburger opens a full-height drawer sliding in from the right with Features, Pricing, FAQ, Contact, Log in, then a theme toggle + full-width "Get Started" button at the bottom — check it feels smooth, not janky, on a real device
+- [ ] Tapping Features/Pricing/FAQ scrolls to the right section and closes the drawer; tapping Contact/Log in/Get Started navigates and closes it
+- [ ] Tapping outside the drawer (on the dimmed backdrop) closes it
+- [ ] While the drawer is open, the page behind it does not scroll (test with a real swipe, not just a click)
+- [ ] Rotate to landscape with the drawer open — it should still behave correctly (full height, scrollable if content overflows)
 - [ ] EmberSelect dropdowns (Country, Currency, template filters) are comfortably tappable, text isn't flush against the edges
 
 ### Loading states

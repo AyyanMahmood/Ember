@@ -119,6 +119,7 @@ export function Drawer({
   size = 'md',
   closeOnEscape = true,
   className = '',
+  id,
 }) {
   const drawerRef = useRef(null);
 
@@ -143,6 +144,7 @@ export function Drawer({
       />
       <aside
         ref={drawerRef}
+        id={id}
         className={`drawer drawer--${side} ${sizeClasses[size]} ${className}`.trim()}
         role="dialog"
         aria-modal="true"
