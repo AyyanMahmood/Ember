@@ -80,7 +80,7 @@ export default function ClientDetailPage() {
             <Skeleton variant="heading" width="12rem" />
           </div>
         </div>
-        <section className="stats-grid" aria-label="Client billing summary" aria-busy="true">
+        <section className="stats-grid stats-grid--3" aria-label="Client billing summary" aria-busy="true">
           {[...Array(3)].map((_, index) => (
             <article className="stat-card" key={index} aria-hidden="true">
               <Skeleton variant="textSm" width="50%" />
@@ -133,13 +133,11 @@ export default function ClientDetailPage() {
         </div>
       </div>
 
-      {invoices.length > 0 && (
-        <section className="stats-grid" aria-label="Client billing summary">
-          <StatCard label="Total billed" value={formatMoney(summary.totalBilled, summary.currency)} note="All invoices" />
-          <StatCard label="Paid" value={formatMoney(summary.totalPaid, summary.currency)} note="Collected" />
-          <StatCard label="Outstanding" value={formatMoney(summary.totalOutstanding, summary.currency)} note="Sent or overdue" />
-        </section>
-      )}
+      <section className="stats-grid stats-grid--3" aria-label="Client billing summary">
+        <StatCard label="Total billed" value={formatMoney(summary.totalBilled, summary.currency)} note="All invoices" />
+        <StatCard label="Paid" value={formatMoney(summary.totalPaid, summary.currency)} note="Collected" />
+        <StatCard label="Outstanding" value={formatMoney(summary.totalOutstanding, summary.currency)} note="Sent or overdue" />
+      </section>
 
       <section className="detail-grid">
         <Card variant="default">
