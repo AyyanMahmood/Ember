@@ -18,34 +18,15 @@ export default function AuthCallbackPage() {
       const oauthError = params.get('error_description') || params.get('error');
 
       if (oauthError) {
-        // TEMPORARY DEBUG — remove once the OAuth callback is confirmed working end to end.
-        console.error('[auth/callback] provider returned an error before code exchange:', oauthError);
         setStatus('failed');
         return;
       }
 
       if (code) {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        // TEMPORARY DEBUG — remove once the OAuth callback is confirmed working end to end.
-        // Deliberately not logging `data` itself: it contains the live access/refresh tokens.
-        console.log('[auth/callback] exchangeCodeForSession result:', {
-          hasSession: Boolean(data?.session),
-          error: error ? { name: error.name, status: error.status, message: error.message } : null,
-        });
-        if (error) {
-          console.error('[auth/callback] exchangeCodeForSession failed:', error.message);
-        }
-      } else {
-        console.log('[auth/callback] no ?code= param present on load — either already consumed or not an OAuth redirect');
+        await supabase.auth.exchangeCodeForSession(code);
       }
 
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      // TEMPORARY DEBUG — remove once the OAuth callback is confirmed working end to end.
-      console.log('[auth/callback] getSession result:', {
-        hasSession: Boolean(sessionData?.session),
-        error: sessionError ? { name: sessionError.name, message: sessionError.message } : null,
-      });
-
+      const { data: sessionData } = await supabase.auth.getSession();
       setStatus(sessionData?.session ? 'success' : 'failed');
     }
 

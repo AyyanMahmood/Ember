@@ -48,32 +48,16 @@ export function AuthProvider({ children }) {
           },
         }),
       signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
-      signInWithGoogle: () => {
-        const redirectTo = new URL('/auth/callback', window.location.origin).toString();
-        // TEMPORARY DEBUG — remove once the OAuth callback is confirmed working end to end.
-        console.log('[OAuth debug] signInWithGoogle', {
-          redirectTo,
-          'window.location.origin': window.location.origin,
-          'authRedirectUrl(/auth/callback) would have been': authRedirectUrl('/auth/callback'),
-        });
-        return supabase.auth.signInWithOAuth({
+      signInWithGoogle: () =>
+        supabase.auth.signInWithOAuth({
           provider: 'google',
-          options: { redirectTo },
-        });
-      },
-      signInWithMicrosoft: () => {
-        const redirectTo = new URL('/auth/callback', window.location.origin).toString();
-        // TEMPORARY DEBUG — remove once the OAuth callback is confirmed working end to end.
-        console.log('[OAuth debug] signInWithMicrosoft', {
-          redirectTo,
-          'window.location.origin': window.location.origin,
-          'authRedirectUrl(/auth/callback) would have been': authRedirectUrl('/auth/callback'),
-        });
-        return supabase.auth.signInWithOAuth({
+          options: { redirectTo: new URL('/auth/callback', window.location.origin).toString() },
+        }),
+      signInWithMicrosoft: () =>
+        supabase.auth.signInWithOAuth({
           provider: 'azure',
-          options: { redirectTo, scopes: 'email' },
-        });
-      },
+          options: { redirectTo: new URL('/auth/callback', window.location.origin).toString(), scopes: 'email' },
+        }),
       resetPassword: (email) =>
         supabase.auth.resetPasswordForEmail(email, {
           redirectTo: authRedirectUrl('/reset-password'),
