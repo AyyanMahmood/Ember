@@ -444,7 +444,9 @@ export default function BrandStudioPage() {
             </div>
 
             {subscription.loading ? (
-              <LoadingSpinner size="md" label="Checking plan..." />
+              <div className="brand-studio__preview-fade">
+                <LoadingSpinner size="md" label="Checking plan..." />
+              </div>
             ) : (
               <div key={`${docKind}-${showDefault}`} className="brand-studio__preview-fade">
                 <ScaledPreview>{docPreview}</ScaledPreview>
