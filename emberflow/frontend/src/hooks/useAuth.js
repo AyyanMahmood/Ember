@@ -51,12 +51,12 @@ export function AuthProvider({ children }) {
       signInWithGoogle: () =>
         supabase.auth.signInWithOAuth({
           provider: 'google',
-          options: { redirectTo: authRedirectUrl('/app') },
+          options: { redirectTo: authRedirectUrl('/auth/callback') },
         }),
       signInWithMicrosoft: () =>
         supabase.auth.signInWithOAuth({
           provider: 'azure',
-          options: { redirectTo: authRedirectUrl('/app'), scopes: 'email' },
+          options: { redirectTo: authRedirectUrl('/auth/callback'), scopes: 'email' },
         }),
       resetPassword: (email) =>
         supabase.auth.resetPasswordForEmail(email, {

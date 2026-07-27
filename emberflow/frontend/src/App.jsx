@@ -7,6 +7,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { PageLoader } from './components/ui/Loading.jsx';
 
 const AuthPage = lazy(() => import('./pages/AuthPage.jsx'));
+const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage.jsx'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage.jsx'));
 const BrandStudioPage = lazy(() => import('./pages/BrandStudioPage.jsx'));
 const ClientDetailPage = lazy(() => import('./pages/ClientDetailPage.jsx'));
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/register" element={<AuthPage mode="signup" />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/dashboard" element={<Navigate to="/app" replace />} />
         <Route
           path="/app"

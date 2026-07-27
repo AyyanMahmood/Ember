@@ -37,7 +37,7 @@ export default function AuthPage({ mode }) {
   const location = useLocation();
   const { signIn, signUp, signInWithGoogle, signInWithMicrosoft, resendVerificationEmail, user, loading } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+  const [error, setError] = useState(location.state?.authError || '');
   const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [oauthSubmitting, setOauthSubmitting] = useState('');
