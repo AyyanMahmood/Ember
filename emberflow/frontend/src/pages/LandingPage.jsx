@@ -83,7 +83,7 @@ export default function LandingPage() {
       />
       <section className="lp-hero">
         <div className="lp-hero__grid">
-          <div>
+          <Reveal>
             <p className="overline lp-hero__eyebrow">For independent professionals &amp; small agencies</p>
             <h1 className="display-lg lp-hero__title">Run your freelance business like a company.</h1>
             <p className="lp-hero__subtitle">
@@ -99,7 +99,7 @@ export default function LandingPage() {
               </Button>
             </div>
             <p className="lp-hero__note">Free forever for 5 invoices a month. No card required.</p>
-          </div>
+          </Reveal>
 
           <Reveal delay={120}>
             <div className="lp-glimpse" aria-hidden="true">

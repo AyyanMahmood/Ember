@@ -476,6 +476,12 @@
   }
 }
 
+@media (max-width: 768px) {
+  .lp-pricing__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 680px) {
   .lp-features__grid,
   .lp-trust__grid,
@@ -485,10 +491,6 @@
 
   .lp-workflow-step::after {
     display: none;
-  }
-
-  .lp-pricing__grid {
-    grid-template-columns: 1fr;
   }
 
   .lp-hero__title {
