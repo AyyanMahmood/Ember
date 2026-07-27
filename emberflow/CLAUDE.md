@@ -518,9 +518,9 @@ Not yet tested on-device (same standing limitation — no headless browser/Andro
 
 Not yet tested on-device (same standing limitation — no headless browser/Android device available in this container). All ten verified by `npm run build` + code reasoning only.
 
-### MEDIUM
+### MEDIUM — in progress (2026-07-27), fixing in strict priority order, one commit per item, build green after each
 
-- Landing hero's left column has no entrance animation while the right column's product-glimpse card does (`LandingPage.jsx:86-148`); `.lp-pricing__grid` compresses in the 680-728px band before collapsing to one column (`landing.css:374-379`).
+- ✅ **M1** Landing hero's left column had no entrance animation while the right column's product-glimpse card did (`LandingPage.jsx:86-148`); `.lp-pricing__grid` compressed in the 680-728px band before collapsing to one column (`landing.css:374-379`). — `9e81e26`. Wrapped the left column in the existing `Reveal` component; moved the pricing-grid 1-column breakpoint from 680px to 768px so it collapses before the compressed band instead of passing through it.
 - `FeaturesPage` icons render bare with no background treatment — a third, different icon presentation vs. the landing page's accent-tinted circles and the app's `stat-card__icon` badges (`FeaturesPage.jsx:28`).
 - Default `Card` (`variant="default"`) has no hover/gap treatment, feels inert next to `.lp-feature-card`'s hover-lift used for the same content on the landing page (`Card.jsx`, `cards.css:1-11`).
 - `ContactPage` icon sits cramped directly against its heading with no gap, unlike Terms/Privacy/Refund's spaced icon-in-heading pattern (`ContactPage.jsx:22-41` vs `layout.css:1066-1073`).
