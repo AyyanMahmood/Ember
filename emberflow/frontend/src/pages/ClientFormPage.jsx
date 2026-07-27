@@ -103,7 +103,7 @@ export default function ClientFormPage() {
         <div className="page-header">
           <div>
             <p className="eyebrow">Edit client</p>
-            <h2 className="heading-xl">Update client details.</h2>
+            <h1 className="heading-xl">Update client details.</h1>
           </div>
         </div>
         <Card variant="default">
@@ -118,7 +118,7 @@ export default function ClientFormPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">{editing ? 'Edit client' : 'New client'}</p>
-          <h2 className="heading-xl">{editing ? 'Update client details.' : 'Add a client to your workspace.'}</h2>
+          <h1 className="heading-xl">{editing ? 'Update client details.' : 'Add a client to your workspace.'}</h1>
         </div>
       </div>
       <Card variant="default">

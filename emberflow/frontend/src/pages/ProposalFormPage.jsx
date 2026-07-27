@@ -241,7 +241,7 @@ export default function ProposalFormPage() {
         <div className="page-header">
           <div>
             <p className="eyebrow">{duplicateFrom ? 'Duplicate proposal' : 'New proposal'}</p>
-            <h2 className="heading-xl">{duplicateFrom ? 'Review and adjust the copied proposal.' : 'Start from a template and tailor the scope.'}</h2>
+            <h1 className="heading-xl">{duplicateFrom ? 'Review and adjust the copied proposal.' : 'Start from a template and tailor the scope.'}</h1>
           </div>
         </div>
 

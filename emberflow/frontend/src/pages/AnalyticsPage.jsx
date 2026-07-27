@@ -126,7 +126,7 @@ export default function AnalyticsPage() {
         <div className="page-header">
           <div>
             <p className="eyebrow">Analytics</p>
-            <h2 className="heading-xl">Revenue and client performance.</h2>
+            <h1 className="heading-xl">Revenue and client performance.</h1>
           </div>
         </div>
 

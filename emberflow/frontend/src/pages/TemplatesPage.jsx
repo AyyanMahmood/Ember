@@ -37,7 +37,7 @@ export default function TemplatesPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Templates</p>
-          <h2 className="heading-xl">Pick a look, then start your invoice.</h2>
+          <h1 className="heading-xl">Pick a look, then start your invoice.</h1>
         </div>
       </div>
 

@@ -157,7 +157,7 @@ export default function AppLayout() {
             <Menu size={20} />
           </button>
           <div className="topbar__left">
-            <h1 className="topbar__title">{pageTitle}</h1>
+            <p className="topbar__title">{pageTitle}</p>
           </div>
           <div className="topbar__right">
             <ThemeToggle />

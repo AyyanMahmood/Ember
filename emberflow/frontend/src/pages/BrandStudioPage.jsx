@@ -385,7 +385,7 @@ export default function BrandStudioPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow brand-studio__eyebrow"><Sparkles size={13} /> Brand Studio</p>
-          <h2 className="heading-xl">Make every invoice and proposal look like you.</h2>
+          <h1 className="heading-xl">Make every invoice and proposal look like you.</h1>
         </div>
       </div>
 

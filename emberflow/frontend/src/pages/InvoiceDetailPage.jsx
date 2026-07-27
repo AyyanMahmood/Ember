@@ -202,7 +202,7 @@ export default function InvoiceDetailPage() {
         <div className="page-header">
           <div>
             <p className="eyebrow">Invoice</p>
-            <h2 className="heading-xl">Something went wrong.</h2>
+            <h1 className="heading-xl">Something went wrong.</h1>
           </div>
           <Button as={Link} variant="ghost" to="/app/invoices">Back to invoices</Button>
         </div>
@@ -248,7 +248,7 @@ export default function InvoiceDetailPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Invoice</p>
-          <h2 className="heading-xl">{invoice.invoice_number}</h2>
+          <h1 className="heading-xl">{invoice.invoice_number}</h1>
         </div>
         <div className="actions">
           {canMarkSent && (

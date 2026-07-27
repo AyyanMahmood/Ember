@@ -217,7 +217,7 @@ export default function SettingsPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Settings</p>
-          <h2 className="heading-xl">Profile, business, invoices, and billing.</h2>
+          <h1 className="heading-xl">Profile, business, invoices, and billing.</h1>
         </div>
       </div>
 

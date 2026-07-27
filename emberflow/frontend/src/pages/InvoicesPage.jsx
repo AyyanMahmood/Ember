@@ -244,7 +244,7 @@ export default function InvoicesPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Invoices</p>
-          <h2 className="heading-xl">Create, send, and track client invoices.</h2>
+          <h1 className="heading-xl">Create, send, and track client invoices.</h1>
         </div>
         <Button as={Link} variant="primary" to="/app/invoices/new" leftIcon={<Plus size={16} />}>
           New invoice

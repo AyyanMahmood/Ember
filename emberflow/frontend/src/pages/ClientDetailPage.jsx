@@ -106,7 +106,7 @@ export default function ClientDetailPage() {
         <div className="page-header">
           <div>
             <p className="eyebrow">Client</p>
-            <h2 className="heading-xl">Something went wrong.</h2>
+            <h1 className="heading-xl">Something went wrong.</h1>
           </div>
           <Button as={Link} variant="ghost" to="/app/clients">Back to clients</Button>
         </div>
@@ -125,7 +125,7 @@ export default function ClientDetailPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Client</p>
-          <h2 className="heading-xl">{client.name}</h2>
+          <h1 className="heading-xl">{client.name}</h1>
         </div>
         <div className="actions">
           <Button as={Link} variant="ghost" to={`/app/clients/${id}/edit`}>Edit</Button>

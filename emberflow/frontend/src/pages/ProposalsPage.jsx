@@ -128,7 +128,7 @@ export default function ProposalsPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Proposals</p>
-          <h2 className="heading-xl">Reusable project proposals for new work.</h2>
+          <h1 className="heading-xl">Reusable project proposals for new work.</h1>
         </div>
         <Button as={Link} variant="primary" to="/app/proposals/new" leftIcon={<Plus size={16} />}>
           New proposal

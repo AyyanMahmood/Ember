@@ -127,7 +127,7 @@ export default function DashboardPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Dashboard</p>
-          <h2 className="heading-xl">Your freelance finances at a glance.</h2>
+          <h1 className="heading-xl">Your freelance finances at a glance.</h1>
         </div>
         <Button as={Link} variant="primary" to="/app/invoices/new">
           New invoice

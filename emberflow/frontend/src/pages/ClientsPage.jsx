@@ -137,7 +137,7 @@ export default function ClientsPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Clients</p>
-          <h2 className="heading-xl">People and companies you bill.</h2>
+          <h1 className="heading-xl">People and companies you bill.</h1>
         </div>
         <Button
           as={Link}

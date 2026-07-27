@@ -226,7 +226,7 @@ export default function InvoiceFormPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">{editing ? 'Edit invoice' : 'New invoice'}</p>
-          <h2 className="heading-xl">{editing ? 'Update invoice details.' : 'Create a professional itemized invoice.'}</h2>
+          <h1 className="heading-xl">{editing ? 'Update invoice details.' : 'Create a professional itemized invoice.'}</h1>
         </div>
       </div>
 
