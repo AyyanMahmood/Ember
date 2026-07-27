@@ -224,7 +224,7 @@ export default function SettingsPage() {
       {error ? <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card> : null}
 
       <form className="page-stack" onSubmit={handleSubmit}>
-        {message ? <p className="form-success">{message}</p> : null}
+        {message ? <p className="form-success" role="status">{message}</p> : null}
 
         <Card variant="default">
           <CardHeader title="Profile" subtitle="Your name and how clients see you." />
@@ -293,6 +293,16 @@ export default function SettingsPage() {
               autoComplete="new-password"
               value={passwordForm.next}
               onChange={(e) => updatePasswordField('next', e.target.value)}
+              rightAddon={
+                <button
+                  type="button"
+                  className="input-addon-btn"
+                  onClick={() => setPasswordVisible((v) => !v)}
+                  aria-label={passwordVisible ? 'Hide passwords' : 'Show passwords'}
+                >
+                  {passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              }
             />
             <Input
               label="Confirm new password"
@@ -302,13 +312,23 @@ export default function SettingsPage() {
               autoComplete="new-password"
               value={passwordForm.confirm}
               onChange={(e) => updatePasswordField('confirm', e.target.value)}
+              rightAddon={
+                <button
+                  type="button"
+                  className="input-addon-btn"
+                  onClick={() => setPasswordVisible((v) => !v)}
+                  aria-label={passwordVisible ? 'Hide passwords' : 'Show passwords'}
+                >
+                  {passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              }
             />
             <div className="span-2">
               <PasswordStrengthMeter password={passwordForm.next} />
             </div>
-            {passwordError ? <p className="form-error span-2">{passwordError}</p> : null}
-            {passwordMessage ? <p className="form-success span-2">{passwordMessage}</p> : null}
-            <div className="span-2">
+            {passwordError ? <p className="form-error span-2" role="alert">{passwordError}</p> : null}
+            {passwordMessage ? <p className="form-success span-2" role="status">{passwordMessage}</p> : null}
+            <div className="span-2 form-actions">
               <Button variant="secondary" disabled={passwordSaving} type="submit">
                 {passwordSaving ? 'Updating...' : 'Update password'}
               </Button>
@@ -322,17 +342,15 @@ export default function SettingsPage() {
       </Card>
 
       <Card variant="default">
-        <div className="panel__header">
-          <div>
-            <p className="eyebrow">Subscription</p>
-            <h3>{subscription.plan?.name || PLANS.free.name}</h3>
-          </div>
-          {subscription.subscription?.paddle_customer_id ? (
+        <CardHeader
+          title={subscription.plan?.name || PLANS.free.name}
+          subtitle="Current plan"
+          action={subscription.subscription?.paddle_customer_id ? (
             <Button variant="ghost" type="button" onClick={manageBilling} disabled={billingAction === 'portal'} leftIcon={<ExternalLink size={16} />}>
               {billingAction === 'portal' ? 'Opening...' : 'Manage billing'}
             </Button>
           ) : null}
-        </div>
+        />
         <div className="subscription-grid">
           <UsageMeter label="Invoice usage" used={subscription.usage.invoicesThisMonth} limit={subscription.invoiceLimit} />
           <UsageMeter label="Client usage" used={subscription.usage.clients} limit={subscription.clientLimit} />
@@ -343,7 +361,7 @@ export default function SettingsPage() {
         </div>
         {billingError ? <p className="form-error" role="alert">{billingError}</p> : null}
         {!subscription.isPro ? (
-          <div className="billing-actions">
+          <div className="form-actions">
             <Button variant="primary" type="button" onClick={() => checkout('pro_monthly')} disabled={Boolean(billingAction)}>
               {billingAction === 'pro_monthly' ? 'Opening...' : 'Upgrade monthly'}
             </Button>

@@ -361,13 +361,6 @@
   gap: var(--space-3);
 }
 
-.billing-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
-
 .eyebrow {
   color: var(--color-accent);
   font-size: var(--text-overline);
