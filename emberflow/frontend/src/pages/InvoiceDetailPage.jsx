@@ -196,7 +196,25 @@ export default function InvoiceDetailPage() {
       </div>
     );
   }
-  if (error) return <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>;
+  if (error) {
+    return (
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">Invoice</p>
+            <h2 className="heading-xl">Something went wrong.</h2>
+          </div>
+          <Button as={Link} variant="ghost" to="/app/invoices">Back to invoices</Button>
+        </div>
+        <Card variant="default">
+          <div className="error-panel" role="alert">{error}</div>
+          <div className="form-actions">
+            <Button variant="secondary" onClick={load}>Try again</Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const paidAmount = (invoice.payments || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
   const balanceDue = Math.max(Number(invoice.total || 0) - paidAmount, 0);
