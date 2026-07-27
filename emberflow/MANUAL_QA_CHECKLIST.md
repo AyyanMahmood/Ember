@@ -20,8 +20,10 @@ Where a flow is identical on both, it's listed once per device section anyway so
 - [ ] Log in with correct email/password → lands on Dashboard
 - [ ] Log in with wrong password → friendly error message (not a raw Supabase error string)
 - [ ] Log in with an unconfirmed account → "email not confirmed" state shows the resend-verification option
-- [ ] Continue with Google → OAuth redirect completes → lands in app
-- [ ] Continue with Microsoft → OAuth redirect completes → lands in app
+- [ ] Continue with Google → URL bar never shows a raw `#access_token=...` fragment at any point, redirect goes through `/auth/callback` briefly then lands on `/app` — **this requires Supabase Dashboard → Authentication → URL Configuration → Redirect URLs to include `http://localhost:5173/auth/callback` (or a `http://localhost:5173/**` wildcard) first**, see CLAUDE.md's "Google OAuth callback bug fix" section
+- [ ] Continue with Microsoft → same check as Google above
+- [ ] Cancel/deny the Google consent screen partway through → lands back on `/login` with a visible "Sign-in was cancelled or failed" message, not stuck on a blank/loading page
+- [ ] After a successful Google/Microsoft login, refresh the page — session persists (not logged out)
 - [ ] Logout (from sidebar footer) → redirected to marketing/login, session actually cleared (reload doesn't restore it)
 - [ ] Forgot password → submit email → reset link email arrives → reset page accepts new password → can log in with new password
 - [ ] Settings → Security card → change password: current/new/confirm fields all show the eye-toggle and all three toggle together; wrong "current password" is rejected; success message appears
@@ -152,8 +154,8 @@ Where a flow is identical on both, it's listed once per device section anyway so
 - [ ] Log in with correct email/password → lands on Dashboard
 - [ ] Log in with wrong password → friendly error message
 - [ ] Log in with an unconfirmed account → resend-verification option shows
-- [ ] Continue with Google (icon-only OAuth button) → redirect completes → lands in app
-- [ ] Continue with Microsoft (icon-only OAuth button) → redirect completes → lands in app
+- [ ] Continue with Google (icon-only OAuth button) → no raw `#access_token=...` fragment ever visible, lands on `/app` (requires the Supabase Dashboard Redirect URLs entry from the Arc section above to be set)
+- [ ] Continue with Microsoft (icon-only OAuth button) → same check as Google above
 - [ ] Logout from the sidebar (via the mobile drawer) actually clears the session
 - [ ] Forgot password → reset email → reset page → new password → log in with it
 - [ ] Settings → Security: change password, eye-toggle on all three fields, touch targets are large enough to tap reliably

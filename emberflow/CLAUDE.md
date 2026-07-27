@@ -553,3 +553,17 @@ Not yet tested on-device. All ten verified by `npm run build` + code reasoning o
 **Fixing order:** Criticals 1→4, then High 1→10, then Medium 1→13, each its own commit, `npm run build` green before moving to the next — all complete. Only Low-priority backlog remains, not being fixed unless asked.
 
 **Manual QA:** all code-side fixes above are unverified on a real device/browser. `MANUAL_QA_CHECKLIST.md` (repo root) is the tracked manual QA pass — Arc (desktop) and Android (Chrome), organized by feature area (auth, dashboard, clients, items, invoices, proposals, brand studio, templates, analytics, responsive layouts, loading/empty/error states, PDF export, Free vs Pro gating). This replaces the old per-fix "please confirm on Arc/Android" prompts — don't re-ask the user to confirm individual fixes; point them at that file instead, and don't mark anything here as on-device-verified unless they've actually reported back.
+
+---
+
+## Google OAuth callback bug fix (2026-07-27)
+
+**Symptom:** after a successful Google sign-in, the browser landed on `http://localhost:5173/#access_token=...` instead of `/app`.
+
+**Root cause (confirmed by reading the installed `@supabase/auth-js` source, not assumed):** `services/supabase.js`'s `createClient()` never set `flowType`, so it silently used the library's default of `'implicit'` (`DEFAULT_OPTIONS.flowType = 'implicit'` in `GoTrueClient.js`). Implicit flow returns tokens as a URL hash fragment instead of Supabase's current recommended PKCE `?code=` exchange. Separately, there was no dedicated OAuth callback route — `redirectTo` pointed straight at `/app`, and only `AuthPage.jsx` had "if authenticated, go to `/app`" logic, so a redirect landing anywhere else left the session established silently with nothing to navigate the user onward.
+
+**Fixed (`9f608b5`):** `flowType: 'pkce'` set explicitly; new dedicated `/auth/callback` route (`pages/AuthCallbackPage.jsx`) is now the `redirectTo` target for both Google and Microsoft, waits for `getSession()` to resolve, then navigates to `/app` on success or back to `/login` with a friendly error on failure. Email/password auth untouched (doesn't go through `signInWithOAuth`).
+
+**⏸️ Not fixed by code — needs your action in the Supabase Dashboard:** Authentication → URL Configuration → Redirect URLs must include the app's callback URL for both environments — `http://localhost:5173/auth/callback` (or a `http://localhost:5173/**` wildcard) for local dev, and the equivalent `https://<production-domain>/auth/callback` (or wildcard) for Vercel. Without this, Supabase falls back to the Site URL regardless of the code fix above — this was the likely reason the redirect landed on root `/` instead of `/app` in the first place. Recommend the wildcard form so future redirect-path changes never need another Dashboard edit.
+
+**Not verified on a real device/browser** (same standing limitation — no headless browser available in this container). Added to `MANUAL_QA_CHECKLIST.md`'s Authentication sections.
