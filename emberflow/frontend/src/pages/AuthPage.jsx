@@ -175,14 +175,15 @@ export default function AuthPage({ mode }) {
               type="button"
               variant="ghost"
               fullWidth
-              disabled={resendState !== 'idle'}
+              loading={resendState === 'sending'}
+              disabled={resendState === 'sent'}
               onClick={handleResend}
             >
-              {resendState === 'sending' ? 'Sending...' : resendState === 'sent' ? 'Email sent' : 'Resend verification email'}
+              {resendState === 'sent' ? 'Email sent' : 'Resend verification email'}
             </Button>
           ) : null}
-          <Button variant="primary" fullWidth disabled={submitting || Boolean(oauthSubmitting)} type="submit">
-            {submitting ? 'Working...' : isSignup ? 'Create account' : 'Login'}
+          <Button variant="primary" fullWidth loading={submitting} disabled={Boolean(oauthSubmitting)} type="submit">
+            {isSignup ? 'Create account' : 'Login'}
           </Button>
           {isSignup ? (
             <p className="center muted small">
