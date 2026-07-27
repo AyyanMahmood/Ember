@@ -832,14 +832,15 @@
   }
 }
 
-.feature-grid article {
-  background: var(--color-surface-glass);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
+.feature-grid .panel {
   display: grid;
   gap: var(--space-2);
-  padding: var(--space-5);
+}
+
+.feature-grid .panel:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-elevated), 0 0 0 1px var(--color-highlight-border);
 }
 
 .feature-grid p {
