@@ -41,6 +41,10 @@
   background: var(--color-surface);
 }
 
+.table--stack tbody tr {
+  animation: fade-in var(--duration-base) var(--ease-out);
+}
+
 .table__actions {
   display: inline-flex;
   gap: var(--space-2);
