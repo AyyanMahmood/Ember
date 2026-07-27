@@ -20,8 +20,7 @@ export default function ContactPage() {
 
       <div className="contact-methods">
         <Card variant="default">
-          <Mail size={24} />
-          <h2>Email</h2>
+          <h2><Mail size={18} aria-hidden="true" /> Email</h2>
           <p>Send us a message any time.</p>
           <Button as="a" variant="primary" href="mailto:support@emberflow.com">
             support@emberflow.com
@@ -29,14 +28,12 @@ export default function ContactPage() {
         </Card>
 
         <Card variant="default">
-          <MapPin size={24} />
-          <h2>Location</h2>
+          <h2><MapPin size={18} aria-hidden="true" /> Location</h2>
           <p>EmberFlow Inc.<br />New York, NY</p>
         </Card>
 
         <Card variant="default">
-          <Clock size={24} />
-          <h2>Response Time</h2>
+          <h2><Clock size={18} aria-hidden="true" /> Response Time</h2>
           <p>We aim to respond to all inquiries within <strong>48 hours</strong> during regular business days.</p>
         </Card>
       </div>
