@@ -26,7 +26,7 @@ export default function FeaturesPage() {
       <div className="feature-grid">
         {groups.map(([title, description, Icon]) => (
           <Card variant="default" key={title}>
-            <Icon size={24} />
+            <span className="feature-grid__icon" aria-hidden="true"><Icon size={22} /></span>
             <h3>{title}</h3>
             <p>{description}</p>
           </Card>
