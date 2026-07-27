@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Shield, Database, CreditCard, Cookie, BarChart3, FileText, ExternalLink } from 'lucide-react';
 import { Seo } from '../components/Seo.jsx';
+import { COMPANY } from '../data/company.js';
 
 const sections = [
   {
@@ -167,7 +168,7 @@ export default function PrivacyPage() {
       <div className="legal-contact-cta">
         <p>
           Questions about this policy? <Link to="/contact">Contact us</Link> or email{' '}
-          <a href="mailto:support@emberflow.com">support@emberflow.com</a>.
+          <a href={`mailto:${COMPANY.supportEmail}`}>{COMPANY.supportEmail}</a>.
         </p>
       </div>
     </main>

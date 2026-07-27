@@ -2,6 +2,7 @@ import { Mail, MapPin, Clock, MessageSquare, ExternalLink } from 'lucide-react';
 import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Seo } from '../components/Seo.jsx';
+import { COMPANY } from '../data/company.js';
 
 export default function ContactPage() {
   return (
@@ -22,14 +23,14 @@ export default function ContactPage() {
         <Card variant="default">
           <h2><Mail size={18} aria-hidden="true" /> Email</h2>
           <p>Send us a message any time.</p>
-          <Button as="a" variant="primary" href="mailto:support@emberflow.com">
-            support@emberflow.com
+          <Button as="a" variant="primary" href={`mailto:${COMPANY.supportEmail}`}>
+            {COMPANY.supportEmail}
           </Button>
         </Card>
 
         <Card variant="default">
           <h2><MapPin size={18} aria-hidden="true" /> Location</h2>
-          <p>EmberFlow Inc.<br />New York, NY</p>
+          <p>{COMPANY.name}<br />{COMPANY.address}</p>
         </Card>
 
         <Card variant="default">

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { RotateCcw, CreditCard, CalendarX, HelpCircle } from 'lucide-react';
 import { Seo } from '../components/Seo.jsx';
+import { COMPANY } from '../data/company.js';
 
 export default function RefundPolicyPage() {
   return (
@@ -73,7 +74,7 @@ export default function RefundPolicyPage() {
         <h2>How to Request a Refund</h2>
         <p>
           To request a refund under the exceptional circumstances described above,
-          email <a href="mailto:support@emberflow.com">support@emberflow.com</a> from
+          email <a href={`mailto:${COMPANY.supportEmail}`}>{COMPANY.supportEmail}</a> from
           the email address associated with your account. Include your account details
           and a description of the issue. We will respond within 48 hours.
         </p>
