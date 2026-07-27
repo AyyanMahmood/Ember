@@ -5,7 +5,7 @@ import { StatusBadge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Card, CardHeader, StatCard } from '../components/ui/Card.jsx';
 import { Table } from '../components/ui/Table.jsx';
-import { Skeleton, SkeletonCard } from '../components/ui/Loading.jsx';
+import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import { ConfirmDialog } from '../components/ui/Modal.jsx';
 import { deleteClient, getClient, listInvoices } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
@@ -77,21 +77,25 @@ export default function ClientDetailPage() {
         <div className="page-header">
           <div>
             <p className="eyebrow">Client</p>
-            <Skeleton variant="heading" width="12rem" />
+            <h1 className="heading-xl">Loading…</h1>
           </div>
         </div>
         <section className="stats-grid stats-grid--3" aria-label="Client billing summary" aria-busy="true">
           {[...Array(3)].map((_, index) => (
-            <article className="stat-card" key={index} aria-hidden="true">
-              <Skeleton variant="textSm" width="50%" />
-              <Skeleton variant="heading" width="70%" />
-              <Skeleton variant="textSm" width="60%" />
+            <article className="stat-card stat-card--loading" key={index} aria-hidden="true">
+              <LoadingSpinner size="sm" />
             </article>
           ))}
         </section>
         <section className="detail-grid">
-          <Card variant="default"><SkeletonCard lines={4} /></Card>
-          <Card variant="default"><SkeletonCard lines={2} /></Card>
+          <Card variant="default">
+            <CardHeader title="Contact" />
+            <LoadingSpinner size="sm" label="Loading contact details..." />
+          </Card>
+          <Card variant="default">
+            <CardHeader title="Notes" />
+            <LoadingSpinner size="sm" label="Loading notes..." />
+          </Card>
         </section>
         <Card variant="default">
           <CardHeader title="Invoices" />

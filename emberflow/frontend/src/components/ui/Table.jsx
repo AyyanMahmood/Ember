@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Check, Minus } from 'lucide-react';
 import { Button } from './Button.jsx';
 import { Checkbox } from './Input.jsx';
+import { LoadingSpinner } from './Loading.jsx';
 
 export function Table({
   columns = [],
@@ -80,44 +81,23 @@ export function Table({
   if (loading) {
     return (
       <div className="table-wrap" role="status" aria-live="polite" aria-busy="true">
-        <table className="table table--loading">
+        <table className="table">
           <thead>
             <tr>
-              {selectable && <th className="table__expand"><Checkbox indeterminate={isIndeterminate} checked={isAllSelected} onChange={toggleSelectAll} aria-label="Select all rows" /> </th>}
+              {selectable && <th className="table__expand" />}
               {columns.map((column) => (
                 <th key={column.key} className={column.align} style={{ width: column.width }}>
-                  {column.sortable ? (
-                    <button
-                      type="button"
-                      className="table__sort-btn"
-                      onClick={() => handleSort(column.key)}
-                      aria-sort={sortConfig.key === column.key ? (sortConfig.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
-                    >
-                      {column.label}
-                      <span className="table__sort-icon" aria-hidden="true">
-                        {sortConfig.key === column.key
-                          ? (sortConfig.direction === 'asc' ? ' ▲' : ' ▼')
-                          : ' ⇅'}
-                      </span>
-                    </button>
-                  ) : (
-                    column.label
-                  )}
+                  {column.label}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {[...Array(5)].map((_, i) => (
-              <tr key={i} className="table__skeleton-row">
-                {selectable && <td className="table__expand" />}
-                {columns.map((column) => (
-                  <td key={column.key} className={column.align}>
-                    <div className="skeleton skeleton--text" style={{ width: '60%' }} />
-                  </td>
-                ))}
-              </tr>
-            ))}
+            <tr>
+              <td colSpan={columns.length + (selectable ? 1 : 0)} className="table__empty">
+                <LoadingSpinner size="md" label="Loading..." />
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -369,35 +349,6 @@ function TablePagination({
           <ChevronsRight size={16} />
         </button>
       </div>
-    </div>
-  );
-}
-
-export function TableSkeleton({ columns = 4, rows = 5 }) {
-  return (
-    <div className="table-wrap" role="status" aria-live="polite" aria-busy="true">
-      <table className="table table--loading">
-        <thead>
-          <tr>
-            {[...Array(columns)].map((_, i) => (
-              <th key={i}>
-                <div className="skeleton skeleton--text" style={{ width: '80%' }} />
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {[...Array(rows)].map((_, i) => (
-            <tr key={i} className="table__skeleton-row">
-              {[...Array(columns)].map((_, j) => (
-                <td key={j}>
-                  <div className="skeleton skeleton--text" style={{ width: '60%' }} />
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 }

@@ -66,14 +66,6 @@
   border-left: 3px solid var(--color-accent);
 }
 
-.table--loading tbody {
-  min-height: 200px;
-}
-
-.table__skeleton {
-  height: 3rem;
-}
-
 .table__empty {
   padding: var(--space-12) var(--space-4);
   text-align: center;

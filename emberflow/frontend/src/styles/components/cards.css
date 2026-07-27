@@ -45,6 +45,13 @@
   animation: fade-in var(--duration-base) var(--ease-out);
 }
 
+.stat-card--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.5rem;
+}
+
 .stat-card__label {
   color: var(--color-muted);
   font-weight: var(--weight-extrabold);

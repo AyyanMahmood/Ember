@@ -5,7 +5,7 @@ import { Card, StatCard } from '../components/ui/Card.jsx';
 import { StatusBadge } from '../components/ui/Badge.jsx';
 import { Table } from '../components/ui/Table.jsx';
 import { EmptyState, EmptyStateIllustration } from '../components/ui/EmptyState.jsx';
-import { Skeleton } from '../components/ui/Loading.jsx';
+import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { listClients, listInvoices, listRecentInvoices } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
@@ -137,10 +137,8 @@ export default function DashboardPage() {
       <section className="stats-grid" aria-label="Key metrics" aria-busy={loading || undefined}>
         {loading
           ? [...Array(4)].map((_, index) => (
-              <article className="stat-card" key={index} aria-hidden="true">
-                <Skeleton variant="textSm" width="50%" />
-                <Skeleton variant="heading" width="70%" />
-                <Skeleton variant="textSm" width="60%" />
+              <article className="stat-card stat-card--loading" key={index} aria-hidden="true">
+                <LoadingSpinner size="sm" />
               </article>
             ))
           : statCards.map((stat, index) => (
