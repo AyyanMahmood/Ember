@@ -503,7 +503,7 @@ Marketing navbar (`PublicLayout.jsx`) theme toggle moved from between Pricing/Lo
 
 Not yet tested on-device (same standing limitation — no headless browser/Android device available in this container). All four verified by `npm run build` + code/contrast-math reasoning only.
 
-### HIGH — 8 of 10 fixed (2026-07-27), build green after each; ⏸️ RESUME HERE for the remaining 2
+### HIGH — 10 of 10 fixed (2026-07-27), build green after each
 
 - ✅ **H1** Dashboard, Clients, Client Detail, and Client Form all swap to a bare full-page spinner on load instead of a layout-preserving skeleton — `Table`'s own built-in skeleton-row loading state exists and is unused everywhere. (`DashboardPage.jsx`, `ClientsPage.jsx`, `ClientDetailPage.jsx`, `ClientFormPage.jsx`, `components/ui/Table.jsx:80-125`) — `2100dc3`.
 - ✅ **H2** Dashboard/Clients/Client Detail error states are dead ends: no retry action, and Client Detail's drops the page header/nav entirely instead of an inline banner. (`DashboardPage.jsx:96-104`, `ClientsPage.jsx:161-167`, `ClientDetailPage.jsx:69`) — `e50b6cb`.
@@ -513,10 +513,10 @@ Not yet tested on-device (same standing limitation — no headless browser/Andro
 - ✅ **H6** `InvoiceFormPage`/`ProposalFormPage` mix a native browser `<Select>` (Client/Status/Starter) and the themed `EmberSelect` (Currency) on the same form. (`InvoiceFormPage.jsx:243,249,250`, `ProposalFormPage.jsx:264,270`) — `8d7d653`. Note: `EmberSelect` renders a button, not a real `<select>`, so switching Client off native `required` removed real enforcement — added an explicit `client_id` check to `handleSubmit` to preserve the original blocking behavior (Status/Starter always have a valid default, no equivalent gap there).
 - ✅ **H7** Features/Pricing pages skip heading hierarchy — `h1` straight to `h3` (card titles), no `h2` anywhere on either page. (`FeaturesPage.jsx`, `PricingPage.jsx`) — `bee877c`, added a `sr-only` (visually hidden) `h2` on each page rather than changing the shared `Card`/`PricingCard` heading level (which is also used elsewhere, e.g. `PricingCard` on the landing page, with a different nesting that would've broken if changed).
 - ✅ **H8** Auth pages' top-level `.form-error`/`.form-success` messages have no `role="alert"`/`aria-live`, unlike `Input`'s own field-level errors which do. (`AuthPage.jsx`, `ForgotPasswordPage.jsx`, `ResetPasswordPage.jsx`) — `a54007e`.
-- ⏳ **H9 — not started.** `InvoiceDetailPage`'s error state collapses the entire page (no header, no back link) — a dead end. (`InvoiceDetailPage.jsx:199`) Same shape as the H2 fix already applied to Dashboard/Clients/Client Detail — reuse that pattern (hoist `load` out of its `useEffect` if not already standalone, keep header + add a "Try again" button).
-- ⏳ **H10 — not started.** `ClientDetailPage`'s 3-card stat grid orphans the third card alone in a row at 680-1200px (2-column breakpoint tuned for Dashboard's 4 cards), and the billing-summary stats only render once the client has invoices instead of always showing (even zeroed). (`ClientDetailPage.jsx:93-99`, `styles/layout.css:137-153`)
+- ✅ **H9** `InvoiceDetailPage`'s error state collapsed the entire page (no header, no back link) — a dead end. (`InvoiceDetailPage.jsx:199`) — `f947a2a`. Reused the H2 pattern (header + "Try again" calling the existing standalone `load()`).
+- ✅ **H10** `ClientDetailPage`'s 3-card stat grid orphaned the third card alone in a row between the 920-1200px breakpoint tuned for Dashboard/Analytics' 4-card grids, and the billing-summary stats only rendered once the client had invoices instead of always showing (even zeroed). (`ClientDetailPage.jsx:93-99,136-142`, `styles/layout.css:137-153`) — `8527e61`. Added a scoped `.stats-grid--3` modifier (3 columns above 1200px, straight to a full-width stack at/below it — no intermediate 2-column stage) and removed the `invoices.length > 0` guard around the summary section; Dashboard/Analytics' `.stats-grid` usage is untouched since neither carries the new modifier class.
 
-Not yet tested on-device (same standing limitation — no headless browser/Android device available in this container). All eight verified by `npm run build` + code reasoning only.
+Not yet tested on-device (same standing limitation — no headless browser/Android device available in this container). All ten verified by `npm run build` + code reasoning only.
 
 ### MEDIUM
 
