@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, DollarSign, CheckCircle2, Users } from 'lucide-react';
 import { Card, StatCard } from '../components/ui/Card.jsx';
 import { StatusBadge } from '../components/ui/Badge.jsx';
 import { Table } from '../components/ui/Table.jsx';
@@ -60,7 +60,7 @@ export default function DashboardPage() {
       label: 'Total revenue',
       value: formatMoney(stats.totalRevenue, stats.currency),
       note: 'Paid invoices',
-      icon: <ArrowUpRight size={18} />,
+      icon: <DollarSign size={18} />,
       to: '/app/invoices?status=paid',
     },
     {
@@ -76,14 +76,14 @@ export default function DashboardPage() {
       label: 'Paid invoices',
       value: stats.paidCount,
       note: 'Completed payments',
-      icon: <ArrowUpRight size={18} />,
+      icon: <CheckCircle2 size={18} />,
       to: '/app/invoices?status=paid',
     },
     {
       label: 'Clients',
       value: stats.clientCount,
       note: 'Active records',
-      icon: <Minus size={18} />,
+      icon: <Users size={18} />,
       to: '/app/clients',
     },
   ], [stats]);
