@@ -320,6 +320,8 @@ Question every screen, spacing decision, interaction, hierarchy, and animation. 
 | V1 Audit (2026-07-27) | Complete — full feature-by-feature status report produced across all 15 areas (auth, pages, invoices, proposals, brand studio, subscriptions, security, SEO, performance, prod readiness). Findings drove the two bundles below. |
 | Production Authentication bundle (2026-07-27): resend verification email, in-app password change | Code complete, build green — see "Production Authentication" section below |
 | V1 Launch Prep bundle (2026-07-27): SEO, production hardening, performance verification | Complete — see "V1 Launch Prep" section below |
+| Paddle → Polar billing migration (2026-07-28) | Code complete across all 7 phases + logic-verified (`npm run verify:polar` 31/31), build green. **Not yet live-sandbox-tested** (no Polar account/public webhook URL available in this environment) — that's the merge gate. On `polar-migration` branch, not merged to `main`. See "Paddle → Polar Billing Migration" section below. |
+| Microsoft OAuth removal (2026-07-28) | Complete — button, provider logic, Azure references, and docs all removed from V1; build green. Also on `polar-migration`, not yet merged. See "Microsoft OAuth Removal" section below. |
 
 A full audit and a 10-phase implementation roadmap toward a dark-first, white-label-ready premium redesign is in progress on `opclaude-redesign`. See `PROJECT_STATUS.md` → "Redesign Roadmap Progress" for phase-by-phase status.
 
@@ -493,7 +495,9 @@ Marketing navbar (`PublicLayout.jsx`) theme toggle moved from between Pricing/Lo
 
 ## ⏸️ RESUME HERE — V1 Polish Sprint (active mode, 2026-07-27)
 
-**Payments deferred to V1.5** (business/external — can't go live until November, not a code issue). Removed from the V1 critical path; see PROJECT_STATUS.md → "Paddle Status". Paddle code/UI is untouched and still gets normal QA.
+**Payments deferred to V1.5** (business/external — can't go live until November, not a code issue). Removed from the V1 critical path; see PROJECT_STATUS.md → "Polar Status" (formerly "Paddle Status"). The billing provider itself was later migrated Paddle → Polar (2026-07-28) — see "Paddle → Polar Billing Migration" at the end of this file — but that migration is scoped strictly to the payment provider and doesn't reopen this sprint's Critical/High/Medium work, all of which stayed complete.
+
+**Session note (2026-07-28):** two unrelated, fully-completed efforts landed after this sprint's Critical/High/Medium work — the Paddle → Polar billing migration and the removal of Microsoft OAuth from V1. Both are on the `polar-migration` branch (branched off `opclaude-redesign`), not yet merged to `main`. See the two dedicated sections at the end of this file for full detail.
 
 **Current mode: craftsmanship polish sprint, no new features.** Full-app QA audit (5 parallel research passes covering every screen: marketing/auth, dashboard/clients, invoices/proposals, settings/brand-studio/templates/analytics, and a cross-cutting design-system/accessibility/performance pass) produced the prioritized backlog below. Working through **Critical** items now, one at a time, build green after each, committed individually. High/Medium/Low are logged for a follow-up pass — do not fix them opportunistically while doing something else; pull them deliberately.
 
@@ -573,3 +577,52 @@ Not yet tested on-device. All ten verified by `npm run build` + code reasoning o
 **Temporary debug logging** (added mid-investigation to confirm the origin-mismatch hypothesis against the live deployment, and to surface the exact Supabase error if the exchange failed) **was removed after verification succeeded** (`6d1adce`) — the PKCE flow, origin-based `redirectTo`, and explicit `exchangeCodeForSession()` call all remain in place; only the `console.log`/`console.error` calls and their "TEMPORARY DEBUG" comments were stripped.
 
 **Deployment:** pushed to `opclaude-redesign`, merged (fast-forward) into `main`, both pushed to origin; Vercel production redeployed from `main` and the deployed bundle was verified byte-for-byte (fetched directly from `embersys.vercel.app`) to contain the fix before live testing began.
+
+---
+
+## Paddle → Polar Billing Migration (2026-07-28) — code complete, not yet merged
+
+**Branch:** `polar-migration`, created off `opclaude-redesign`. **Not merged to `main`** — awaiting a live sandbox test (the one thing this environment can't run: no Polar account/public webhook URL available here) plus explicit approval. `main` still has Paddle intact.
+
+**Safety taken before any code changed:** tag `pre-polar-migration-20260728-1140` pushed to origin (full rollback point), then the `polar-migration` branch. Also created the permanent `~/Desktop/Ember UI/` component-library folder per the user's standing instruction that every polished, reusable piece of work gets extracted there going forward.
+
+**Audit-first:** `POLAR_MIGRATION_PLAN.md` was written and committed *before* any code changed — current Paddle architecture, every DB/env/route dependency, and the phased plan. Polar's actual API surface (REST base URLs, `POST /v1/checkouts/`, `POST /v1/customer-sessions/`, Standard Webhooks signing with a base64-encoded secret and `webhook-id`/`webhook-timestamp`/`webhook-signature` headers) was verified directly against `polarsource/polar-js@main` docs/source, not recalled from memory.
+
+**Architecture decision:** matched the existing house style instead of adopting Polar's full SDK — raw `fetch` via a new `polarFetch()` (mirrors `paddleFetch()`), CommonJS throughout (Vercel functions), zero heavy SDK dependency. The one new dependency is the official **`standardwebhooks`** package (CJS-safe, the same primitive Polar's own SDK wraps) used only for webhook signature verification.
+
+**Seven phases, one commit each, build green after every one:**
+1. **Infra** — `.env.example` `POLAR_*` vars (`POLAR_SERVER`, `POLAR_ACCESS_TOKEN`, `POLAR_WEBHOOK_SECRET`, `POLAR_PRODUCT_PRO_MONTHLY/YEARLY`), added `standardwebhooks` dep, `supabase/migrations/007_polar_billing.sql` (additive `polar_customer_id`/`polar_subscription_id`/`polar_product_id` + indexes on `subscriptions`; legacy `paddle_*` columns deliberately retained).
+2. **Backend** — `api/_utils/polar.js` (plan↔product mapping with a server-side allow-list, `verifyPolarWebhook`, and `normalizeSubscription` with **status-aware plan derivation**: a revoked/unpaid subscription collapses to `plan:'free'` so both the frontend entitlement check and the DB-level free-limit triggers agree), `api/polar/checkout.js`, `api/polar/portal.js`.
+3. **Frontend** — `services/subscriptions.js` repointed at `/api/polar/*`; `SettingsPage.jsx`'s "Manage billing" gate reads `polar_customer_id`; Landing/Privacy/Terms copy updated to Polar as merchant of record, legal links to `polar.sh/legal/*` (verified those pages exist before linking).
+4. **Webhook** — `api/polar/webhook.js`: Standard Webhooks signature verification (403 on failure), idempotency via the `webhook-id` header + the existing `webhook_events` table, `subscription.*` lifecycle upsert as the single source of truth. **Found and fixed a latent bug carried over from the Paddle version**: the old handler set `module.exports.config` *before* `module.exports = handler`, so Vercel's `bodyParser: false` was silently discarded — fixed by assigning the handler first, then attaching `.config` (verified by actually loading the module and asserting `config.api.bodyParser === false`).
+5. **Testing** — `scripts/verify-polar.js` + `npm run verify:polar`: a framework-free `node` harness (no test runner dependency) covering plan↔product mapping, status-aware normalization, and — most importantly — webhook signature verification: a valid round-trip plus rejection of a tampered signature, a tampered body, and a stale timestamp. **31/31 passing.**
+6. **Cleanup** — deleted `api/paddle/{checkout,portal,webhook}.js` and `api/_utils/paddle.js` entirely (superseded, not just deprecated); neutralized two "...like Paddle" comparison comments in `polar.js` so the code reads standalone once Paddle is gone.
+7. **Documentation** — new `POLAR_SETUP.md` (account/product/token/webhook setup, sandbox testing guide, troubleshooting, and a deliberately-deferred "Decommissioning Paddle" section covering the destructive `paddle_*` column drop + Vercel var cleanup, gated on live verification); `README.md`/`SECURITY.md`/`SPECIFICATION.md`/`PROJECT_STATUS.md` updated to Polar with migration banners, historical dated entries left untouched; reusable `polar-billing` module extracted to `~/Desktop/Ember UI/polar-billing/` (source, SQL, `.env.example`, usage docs, dependencies, the verify harness, and a ready-to-use AI recreation prompt).
+
+**What's deliberately still Paddle (retained on purpose, not an oversight):** `subscriptions.paddle_*` columns (nullable, unused) and the `PADDLE_*` Vercel env vars — dropping/removing them is destructive and is documented as a separate, explicitly-gated manual step in `POLAR_SETUP.md` → "Decommissioning Paddle", to run only after a real production purchase through Polar succeeds. This keeps rollback free (no data restore needed) if the migration needs to be reverted before merge.
+
+**Testing status:** `npm run verify:polar` 31/31 (incl. the security-critical webhook-signature paths). `npm run build` green after every phase. Static sweep confirmed zero remaining active references to the removed Paddle code. **Not yet done:** a live Polar sandbox end-to-end test (upgrade → hosted checkout → webhook sync → Pro unlock → portal → cancel-at-period-end → revoke → Free) — this requires a real Polar account and a publicly reachable webhook URL, neither available in this container. This is the condition for merging to `main`.
+
+**Remaining manual steps (outside this repo, enumerated in `POLAR_SETUP.md`):** create a Polar org + two recurring products (sandbox first), create an organization access token, register the webhook endpoint (Raw format, `subscription.*` events), set the five `POLAR_*` vars in Vercel, apply migration `007`, run the live sandbox test, then flip `POLAR_SERVER=production` with production credentials.
+
+---
+
+## Microsoft OAuth Removal (2026-07-28)
+
+User decision: drop Microsoft OAuth from EmberFlow V1 entirely (button, provider logic, Azure references, docs). Done on the same `polar-migration` branch, as two commits — a checkpoint, then the removal itself.
+
+**Checkpoint deviation (noted deliberately, not a shortcut):** the requested checkpoint commands were a literal `git add -A` + commit, but the working tree at the time had one stray **untracked** `frontend/` folder at the repo root (left over from an earlier session, already deliberately excluded from every commit since) sitting alongside the real project at `emberflow/frontend/`. A blind `git add -A` from the repo root would have swept that stray folder into the checkpoint. Used `git commit --allow-empty` for the checkpoint instead (nothing else was pending — the tree was otherwise fully committed), and later scoped the actual removal commit to `git add emberflow/` rather than `-A`, so the stray folder is still correctly untracked. Flagging this so a future session doesn't assume `-A` is always safe here without checking `git status` first.
+
+**Code removed:**
+- `frontend/src/hooks/useAuth.js` — removed `signInWithMicrosoft` (the `provider: 'azure'` OAuth call). `signInWithGoogle`, email/password, reset, resend, and the `/auth/callback` flow are untouched.
+- `frontend/src/pages/AuthPage.jsx` — removed the `MicrosoftIcon` inline-SVG component and the Microsoft button; renamed `handleOAuth(provider)` → `handleGoogleSignIn()`; **collapsed the 2-up OAuth button grid into a single, intentional full-width "Continue with Google" button** (now labeled, not a lone icon square — so the UI reads as designed, not as something deleted).
+- `frontend/src/styles/layout.css` — `.auth-oauth` grid `repeat(2, 1fr)` → `1fr` to match the single remaining button.
+- `frontend/src/pages/SettingsPage.jsx` — OAuth-only-account note now reads "You sign in with Google" (was "Google or Microsoft"); the underlying `user.identities`-based detection is provider-agnostic and unchanged.
+
+**No dependencies became unused** — both provider icons were inline SVGs (no icon package involved), so there was nothing to uninstall. `npm install` reported "up to date."
+
+**Docs updated:** `OAUTH_SETUP.md` retitled "Google OAuth Setup," the entire Azure/Microsoft section removed, remaining sections renumbered and cross-references fixed; `README.md` — every Microsoft/Azure mention removed (features list, requirements, DB-setup note, OAuth section heading, troubleshooting, FAQ); `MANUAL_QA_CHECKLIST.md` — both "Continue with Microsoft" checklist items dropped, the Google item's description corrected (no longer "icon-only" now that it's a labeled full-width button); `CLAUDE.md` — the two normative status lines (feature list, status table) updated to reflect the removal; **dated historical session logs elsewhere in this file that mention Microsoft/Azure were deliberately left as-is** — they're an accurate record of what was true when they were written, per the instruction that only historical changelog entries should remain.
+
+**Verification:** repo-wide case-insensitive search for `microsoft`/`azure` confirmed zero references in `frontend/src` or `api/`; the only remaining hits anywhere in the repo are the historical CLAUDE.md session logs described above. `npm install` clean, `npm run build` green.
+
+**Commits:** `131db3c` (checkpoint), `18a9010` (removal) — both on `polar-migration`, not yet merged to `main`.
