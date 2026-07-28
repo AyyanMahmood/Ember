@@ -1,7 +1,7 @@
 const { Webhook, WebhookVerificationError } = require('standardwebhooks');
 
 // Map each internal plan id to the env var holding its Polar product id.
-// Polar checkout is created from PRODUCT ids (not price ids like Paddle).
+// Polar checkout is created from PRODUCT ids, not price ids.
 const PLAN_TO_PRODUCT_ENV = {
   pro_monthly: 'POLAR_PRODUCT_PRO_MONTHLY',
   pro_yearly: 'POLAR_PRODUCT_PRO_YEARLY',
@@ -54,7 +54,7 @@ async function polarFetch(path, options = {}) {
   });
 
   // Polar returns the resource object directly (not wrapped in a { data }
-  // envelope like Paddle), so callers use the returned payload as-is.
+  // envelope), so callers use the returned payload as-is.
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
