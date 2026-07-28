@@ -10,7 +10,7 @@ EmberFlow is a premium freelancer finance operating system for independent profe
 - **Payment tracking** — Manual payment records, balance reconciliation, overdue monitoring
 - **Analytics** — Revenue totals, monthly collections, overdue tracking, top-client rankings
 - **Dashboard** — At-a-glance metrics, recent activity, status summaries
-- **Authentication** — Email/password auth with password reset flow, Google OAuth (✅ production verified), Microsoft OAuth (pending provider config — see "Google OAuth callback bug fix" section)
+- **Authentication** — Email/password auth with password reset flow, Google OAuth (✅ production verified). *(Microsoft OAuth was removed from V1 on 2026-07-28; dated session logs below that mention it are historical.)*
 - **Settings** — Profile, business info, invoice branding, subscription management
 
 ---
@@ -314,7 +314,7 @@ Question every screen, spacing decision, interaction, hierarchy, and animation. 
 | Micro-interactions and animation | Basic transitions in place |
 | Premium redesign (OpenClaude-level polish) | Remaining work |
 | Trust/correctness fixes (fake metrics, blank status badge, checkout PII log, CORS) | Complete (roadmap Phase 0) |
-| Bundle 1: Authentication (Google/Microsoft OAuth, password strength meter, disposable email detection) | Google OAuth **✅ production verified**; Microsoft OAuth still blocked on external provider config — see "Google OAuth callback bug fix" section |
+| Bundle 1: Authentication (Google OAuth, password strength meter, disposable email detection) | Google OAuth **✅ production verified**. Microsoft OAuth **removed from V1** (2026-07-28) — button, `signInWithMicrosoft`, Azure provider, and docs all removed. |
 | Bundle 2: Brand Studio (Pro-only logo/color/font branding) | Superseded by Bundle 3 below (critical bugs fixed, free tier added, first-class nav) |
 | Bundle 3: Brand Studio Polish & Premium Positioning | Code complete, all approved migrations applied to production, build green. Live device/account testing still not done this session — see below |
 | V1 Audit (2026-07-27) | Complete — full feature-by-feature status report produced across all 15 areas (auth, pages, invoices, proposals, brand studio, subscriptions, security, SEO, performance, prod readiness). Findings drove the two bundles below. |

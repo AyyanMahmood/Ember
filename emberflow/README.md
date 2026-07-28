@@ -2,7 +2,7 @@
 
 EmberFlow is a finance operating system for freelancers and small agencies — clients, invoices, proposals, payments, and analytics in one workspace, built with React, Vite, Supabase (Postgres + Auth + Storage), and Polar for subscription billing.
 
-This README covers everything needed to install, configure, and deploy EmberFlow from a clean checkout. For the full Google/Microsoft OAuth walkthrough, see [`OAUTH_SETUP.md`](./OAUTH_SETUP.md); for Pro subscription billing, see [`POLAR_SETUP.md`](./POLAR_SETUP.md).
+This README covers everything needed to install, configure, and deploy EmberFlow from a clean checkout. For the full Google OAuth walkthrough, see [`OAUTH_SETUP.md`](./OAUTH_SETUP.md); for Pro subscription billing, see [`POLAR_SETUP.md`](./POLAR_SETUP.md).
 
 ## Features
 
@@ -13,7 +13,7 @@ This README covers everything needed to install, configure, and deploy EmberFlow
 - **Analytics** — revenue totals, monthly collections, overdue tracking, top-client rankings (Pro)
 - **Templates** — 17 invoice/proposal document designs (3 free, 14 Pro)
 - **Brand Studio** — Pro-only logo, color, and font branding applied consistently across generated documents
-- **Authentication** — email/password with password reset and email verification; Google OAuth (production-verified); Microsoft OAuth (code complete, requires your own Azure app registration — see `OAUTH_SETUP.md`)
+- **Authentication** — email/password with password reset and email verification; Google OAuth (production-verified — see `OAUTH_SETUP.md`)
 - **Settings** — profile, business info, invoice branding, in-app password change, subscription management
 - **Subscriptions** — Free and Pro tiers via Polar checkout, customer portal, and webhook-driven entitlements
 - Row-level security on every table — all data access is scoped to the authenticated user in Postgres itself, not just in application code
@@ -25,7 +25,7 @@ This README covers everything needed to install, configure, and deploy EmberFlow
 - A [Supabase](https://supabase.com) project (the free tier is sufficient)
 - A [Polar](https://polar.sh) account — only required if you want to enable Pro subscription billing; the rest of the app works without it. See [`POLAR_SETUP.md`](./POLAR_SETUP.md)
 - An [Upstash](https://upstash.com) Redis database — recommended for rate-limiting the `/api/polar/*` routes in production; the app still functions without it (the rate limiter fails open if Redis is unreachable)
-- A Google Cloud project (for Google OAuth) and/or an Azure app registration (for Microsoft OAuth) — see `OAUTH_SETUP.md`
+- A Google Cloud project — only required if you want the "Continue with Google" button to work; see `OAUTH_SETUP.md`
 
 ## Project Structure
 
@@ -97,7 +97,7 @@ In the Supabase Dashboard, open **SQL Editor** and run these files **in this exa
    - `006` — allows Free-tier users to set a brand color (only logo/font/accent stay Pro-only)
    - `007` — adds the `polar_customer_id`/`polar_subscription_id`/`polar_product_id` columns the Polar billing integration writes (see [`POLAR_SETUP.md`](./POLAR_SETUP.md))
 
-In **Authentication > Providers**, keep **Email** enabled. If you want Google and/or Microsoft sign-in, follow `OAUTH_SETUP.md` before testing those buttons.
+In **Authentication > Providers**, keep **Email** enabled. If you want Google sign-in, follow `OAUTH_SETUP.md` before testing that button.
 
 ## Storage Buckets
 
@@ -119,9 +119,9 @@ Not created by any SQL file — `policies.sql`'s RLS policies assume it already 
 
 Both buckets' RLS policies require uploaded files to be stored under a path beginning with the uploading user's own ID (e.g. `<user-id>/filename.png`) — this is handled automatically by the app's upload code; you don't need to do anything extra for it.
 
-## Google & Microsoft OAuth
+## Google OAuth
 
-See [`OAUTH_SETUP.md`](./OAUTH_SETUP.md) for the complete walkthrough — Google Cloud Console / Azure app registration, Supabase provider configuration, redirect URLs for local development vs. production vs. custom domains, how the PKCE flow works in this app, and common mistakes.
+See [`OAUTH_SETUP.md`](./OAUTH_SETUP.md) for the complete walkthrough — Google Cloud Console, Supabase provider configuration, redirect URLs for local development vs. production vs. custom domains, how the PKCE flow works in this app, and common mistakes.
 
 Email/password authentication works with zero additional configuration.
 
@@ -165,7 +165,7 @@ The `logos`/`avatars` bucket doesn't exist yet in your Supabase project. See **S
 **Invoice template selection doesn't persist / Brand Studio fields don't save**
 You're likely missing migrations. Re-check **Database Setup** — `002` adds the `invoices.template` column, `003` adds Brand Studio's columns. Migrations are additive and safe to re-run if you're not sure which ones already applied.
 
-**Google/Microsoft sign-in redirects to an error page, or back to the login page with "Sign-in was cancelled or failed"**
+**Google sign-in redirects to an error page, or back to the login page with "Sign-in was cancelled or failed"**
 Almost always a redirect URL mismatch between what the app requests and what's allow-listed in your Supabase Dashboard (Authentication > URL Configuration > Redirect URLs). See `OAUTH_SETUP.md`'s **Common Mistakes** and **Troubleshooting** sections — this is the single most common OAuth setup issue.
 
 **OAuth works locally but not on your deployed Vercel URL (or vice versa)**
@@ -185,8 +185,8 @@ Confirm you're running Node >= 18.13.0 and that you ran `npm install` in both th
 **Do I need Polar to run EmberFlow?**
 No. Client management, invoices, proposals, and PDF export all work without it. Polar is only needed if you want to sell Pro subscriptions; without it configured, every account simply stays on the Free tier's limits.
 
-**Do I need to configure Google/Microsoft OAuth?**
-No — email/password authentication works out of the box. OAuth buttons are visible in the UI regardless, so if you don't plan to configure a provider, be aware clicking that button will fail until you either configure it (`OAUTH_SETUP.md`) or remove the button.
+**Do I need to configure Google OAuth?**
+No — email/password authentication works out of the box. The "Continue with Google" button is visible in the UI regardless, so if you don't plan to configure it, be aware clicking that button will fail until you either configure it (`OAUTH_SETUP.md`) or remove the button.
 
 **Why do I need to run both `schema.sql` and a `migrations/` folder — why isn't there just one file?**
 `schema.sql`/`policies.sql` are a point-in-time dump from early in the project; `migrations/` contains everything added afterward. Both are required for a fully working, current database — see **Database Setup**.

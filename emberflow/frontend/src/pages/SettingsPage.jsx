@@ -336,7 +336,7 @@ export default function SettingsPage() {
           </form>
         ) : (
           <p className="muted">
-            You sign in with Google or Microsoft, so there&apos;s no EmberFlow password to manage here.
+            You sign in with Google, so there&apos;s no EmberFlow password to manage here.
           </p>
         )}
       </Card>

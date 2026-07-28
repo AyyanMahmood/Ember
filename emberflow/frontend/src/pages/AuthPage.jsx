@@ -20,22 +20,11 @@ function GoogleIcon() {
   );
 }
 
-function MicrosoftIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-      <rect x="0" y="0" width="8.5" height="8.5" fill="#F25022" />
-      <rect x="9.5" y="0" width="8.5" height="8.5" fill="#7FBA00" />
-      <rect x="0" y="9.5" width="8.5" height="8.5" fill="#00A4EF" />
-      <rect x="9.5" y="9.5" width="8.5" height="8.5" fill="#FFB900" />
-    </svg>
-  );
-}
-
 export default function AuthPage({ mode }) {
   const isSignup = mode === 'signup';
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUp, signInWithGoogle, signInWithMicrosoft, resendVerificationEmail, user, loading } = useAuth();
+  const { signIn, signUp, signInWithGoogle, resendVerificationEmail, user, loading } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState(location.state?.authError || '');
   const [success, setSuccess] = useState('');
@@ -48,10 +37,10 @@ export default function AuthPage({ mode }) {
   if (loading) return <div className="screen-loader">Checking session...</div>;
   if (user) return <Navigate to="/app" replace />;
 
-  async function handleOAuth(provider) {
+  async function handleGoogleSignIn() {
     setError('');
-    setOauthSubmitting(provider);
-    const result = provider === 'google' ? await signInWithGoogle() : await signInWithMicrosoft();
+    setOauthSubmitting('google');
+    const result = await signInWithGoogle();
     if (result.error) {
       setOauthSubmitting('');
       setError(friendlyAuthError(result.error));
@@ -133,21 +122,10 @@ export default function AuthPage({ mode }) {
               leftIcon={<GoogleIcon />}
               loading={oauthSubmitting === 'google'}
               disabled={Boolean(oauthSubmitting) || submitting}
-              onClick={() => handleOAuth('google')}
-              aria-label="Continue with Google"
-              title="Continue with Google"
-            />
-            <Button
-              type="button"
-              variant="secondary"
-              fullWidth
-              leftIcon={<MicrosoftIcon />}
-              loading={oauthSubmitting === 'microsoft'}
-              disabled={Boolean(oauthSubmitting) || submitting}
-              onClick={() => handleOAuth('microsoft')}
-              aria-label="Continue with Microsoft"
-              title="Continue with Microsoft"
-            />
+              onClick={handleGoogleSignIn}
+            >
+              Continue with Google
+            </Button>
           </div>
           <div className="auth-divider">
             <span>or</span>

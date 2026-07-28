@@ -1,8 +1,8 @@
-# Google & Microsoft OAuth Setup
+# Google OAuth Setup
 
-EmberFlow ships with working Google and Microsoft ("Continue with Google" / "Continue with Microsoft") sign-in on the login and signup pages. Email/password authentication works with no configuration at all — this guide is only needed if you want those two buttons to actually work.
+EmberFlow ships with working Google ("Continue with Google") sign-in on the login and signup pages. Email/password authentication works with no configuration at all — this guide is only needed if you want that button to actually work.
 
-Google OAuth has been tested and confirmed working end-to-end in production following these exact steps. Microsoft OAuth uses the identical code path (same `signInWithOAuth` call, same callback handling) but requires its own Azure app registration, which has not been separately verified — the steps below for Azure are given by direct analogy to the Google flow's Supabase-side configuration, since both providers are wired up identically in the app.
+Google OAuth has been tested and confirmed working end-to-end in production following these exact steps.
 
 ## How EmberFlow's OAuth flow works (read this first)
 
@@ -13,7 +13,7 @@ Understanding this makes every step below make sense, and is the fastest way to 
 3. Supabase's server completes the token exchange with Google, then redirects the browser to the `redirectTo` URL from step 1 — but **only if that exact URL (or a matching pattern) is in your Supabase project's Redirect URLs allow-list**. If it isn't, Supabase silently redirects to your project's configured Site URL instead, which will not be `/auth/callback` and will break the flow with no error message.
 4. EmberFlow uses the **PKCE flow** (`flowType: 'pkce'` in `frontend/src/services/supabase.js`), so this redirect lands on `/auth/callback?code=...` — a one-time authorization code, not a token. The app's `AuthCallbackPage` explicitly exchanges that code for a session via `supabase.auth.exchangeCodeForSession(code)`, then navigates to `/app` on success.
 
-The two things that actually need configuring are: **(a)** Google/Azure needs to know to redirect to Supabase's callback URL, and **(b)** Supabase needs to know it's allowed to redirect back to *your* app's `/auth/callback` URL, for every origin (local, production, any custom domain) you actually use.
+The two things that actually need configuring are: **(a)** Google needs to know to redirect to Supabase's callback URL, and **(b)** Supabase needs to know it's allowed to redirect back to *your* app's `/auth/callback` URL, for every origin (local, production, any custom domain) you actually use.
 
 ## 1. Google Cloud Console
 
@@ -65,27 +65,14 @@ Same steps 1–3, adding your real production URL to Supabase's Redirect URLs. N
 
 If you later move from a `*.vercel.app` URL to your own domain (or add one alongside it), add the new domain's `/auth/callback` (or wildcard) entry to Supabase's Redirect URLs **before** testing sign-in on that domain — this is the same requirement as step 3, just easy to forget when a domain changes after the initial setup.
 
-## 7. Microsoft (Azure)
+## 7. Common mistakes
 
-The Supabase-side configuration mirrors Google exactly (same Redirect URLs list serves both providers — you don't need separate entries per provider, only per origin):
-
-1. [Azure Portal](https://portal.azure.com) > **App registrations > New registration**.
-2. Redirect URI (Web platform):
-   ```
-   https://<your-project-ref>.supabase.co/auth/v1/callback
-   ```
-3. **Certificates & secrets** > create a new client secret.
-4. Supabase Dashboard > **Authentication > Providers > Azure** — enable it, paste in the Application (client) ID and the client secret value, and set the Azure Tenant URL/ID per Supabase's field.
-5. The Redirect URLs list from step 3 above already covers Microsoft too — no additional entries needed.
-
-## 8. Common mistakes
-
-- **Adding the app's `/auth/callback` URL to Google/Azure's redirect URI settings.** Don't — Google/Azure only ever redirect to Supabase's `/auth/v1/callback`. Your app's callback URL only goes in *Supabase's* Redirect URLs list.
+- **Adding the app's `/auth/callback` URL to Google's redirect URI settings.** Don't — Google only ever redirects to Supabase's `/auth/v1/callback`. Your app's callback URL only goes in *Supabase's* Redirect URLs list.
 - **Forgetting a wildcard/path suffix.** `https://your-domain.com` alone will not match `https://your-domain.com/auth/callback` unless you use the `/**` wildcard form or list the exact path.
 - **Testing from a domain that was never added.** A stale browser tab or a URL you forgot to add to the Redirect URLs list will silently fall back to the Site URL instead of erroring clearly.
 - **Assuming `VITE_APP_URL`/`APP_URL` control the OAuth redirect.** They don't — those affect email links (signup confirmation, password reset) and CORS, not the OAuth `redirectTo`, which is always the actual browser origin.
 
-## 9. Troubleshooting
+## 8. Troubleshooting
 
 **Redirect lands on `/app#access_token=...` (a `#`, not `?code=`)**
 This would mean the app is using implicit flow instead of PKCE — check `frontend/src/services/supabase.js` still has `flowType: 'pkce'` in the `createClient()` auth options. This should not happen in an unmodified copy of the app.
@@ -100,4 +87,4 @@ The code exchange itself failed. Open the browser console and check for errors f
 Usually a stale tab that loaded the app before a Redirect URLs change took effect, or before a deploy went live. Hard-refresh or open a fresh incognito window before retesting.
 
 **Provider consent screen itself shows an error (not an EmberFlow page)**
-That's a Google/Azure-side configuration issue, not a Supabase/app issue — double check the OAuth consent screen and redirect URI from steps 1/7.
+That's a Google-side configuration issue, not a Supabase/app issue — double check the OAuth consent screen and redirect URI from step 1.

@@ -53,11 +53,6 @@ export function AuthProvider({ children }) {
           provider: 'google',
           options: { redirectTo: new URL('/auth/callback', window.location.origin).toString() },
         }),
-      signInWithMicrosoft: () =>
-        supabase.auth.signInWithOAuth({
-          provider: 'azure',
-          options: { redirectTo: new URL('/auth/callback', window.location.origin).toString(), scopes: 'email' },
-        }),
       resetPassword: (email) =>
         supabase.auth.resetPasswordForEmail(email, {
           redirectTo: authRedirectUrl('/reset-password'),
