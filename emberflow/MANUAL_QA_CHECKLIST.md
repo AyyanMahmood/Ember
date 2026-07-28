@@ -140,7 +140,10 @@ Where a flow is identical on both, it's listed once per device section anyway so
 - [ ] Brand Studio logo/font/accent are locked for Free, fully usable for Pro
 - [ ] Templates: Pro-only templates are locked for Free, usable for Pro
 - [ ] Analytics is fully gated for Free, fully usable for Pro
-- [ ] "Upgrade monthly" / "Upgrade yearly" buttons open Paddle checkout (note if you can't complete a real purchase — that's expected outside a Paddle sandbox)
+- [ ] "Upgrade monthly" / "Upgrade yearly" buttons open Polar checkout (use a Polar **sandbox** to complete a test purchase; see POLAR_SETUP.md → Testing guide)
+- [ ] After a sandbox purchase, the webhook syncs `subscriptions` (Pro features unlock; "Manage billing" appears)
+- [ ] "Manage billing" opens the Polar customer portal
+- [ ] Cancelling in the portal keeps Pro until period end (`cancel_at_period_end`), then drops to Free after revoke
 
 ---
 
@@ -242,7 +245,7 @@ Where a flow is identical on both, it's listed once per device section anyway so
 - [ ] Free plan limits + upgrade prompts trigger correctly on mobile
 - [ ] Payment tracking upsell shows on Invoice Detail for Free
 - [ ] Brand Studio / Templates / Analytics gating all match desktop behavior
-- [ ] Upgrade buttons open Paddle checkout correctly in the mobile browser
+- [ ] Upgrade buttons open Polar checkout correctly in the mobile browser
 
 ---
 
