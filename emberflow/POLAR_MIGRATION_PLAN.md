@@ -96,7 +96,7 @@ The existing api layer is **100% CommonJS** (`require`/`module.exports`) with **
 
 **Decision:** mirror the existing house style.
 - **Checkout + portal** → raw `fetch` via a new `polarFetch()` helper (identical shape to `paddleFetch()`).
-- **Webhook signature verification** → the official **`standardwebhooks`** package (`v1.0.1`, `"type":"commonjs"`, `require`-safe, deps `@stablelib/base64` + `fast-sha256`). This is exactly what Polar's own SDK uses internally, so we don't hand-roll security-critical crypto, and we stay CJS with zero ESM risk. It returns raw snake_case JSON, which is simpler to map than the SDK's transformed objects.
+- **Webhook signature verification** → the official **`standardwebhooks`** package (`^1.0.0`, `"type":"commonjs"`, `require`-safe, deps `@stablelib/base64` + `fast-sha256`). This is exactly what Polar's own SDK uses internally, so we don't hand-roll security-critical crypto, and we stay CJS with zero ESM risk. Its `Webhook.verify()` enforces the required headers, a 5-minute timestamp tolerance (replay protection), and a constant-time compare, then returns raw snake_case JSON — simpler to map than the full SDK's camelCase/Date-transformed objects. The secret is passed base64-encoded exactly as Polar's SDK does (`Buffer.from(secret,'utf-8').toString('base64')`).
 
 Net new dependencies: **one** (`standardwebhooks`, + 2 tiny transitive). No SDK, no ESM landmine.
 
