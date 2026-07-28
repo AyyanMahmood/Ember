@@ -54,13 +54,13 @@ const workflow = [
 const trustPoints = [
   [Lock, 'Row-level security by default', 'Every table is scoped to its owner in Postgres itself — not just enforced in application code.'],
   [SquareCode, 'PDFs render in your browser', 'Invoices and proposals are generated client-side. Nothing is sent to a third-party document service.'],
-  [ShieldCheck, 'Billing state you can trust', 'Subscription status comes from signed Paddle webhooks written to the database, never trusted from the client.'],
+  [ShieldCheck, 'Billing state you can trust', 'Subscription status comes from signed Polar webhooks written to the database, never trusted from the client.'],
 ];
 
 const faqs = [
-  ['Can I deploy this on free tiers?', 'Yes. The app is designed for Vercel and Supabase, with Paddle handling paid subscription checkout.'],
+  ['Can I deploy this on free tiers?', 'Yes. The app is designed for Vercel and Supabase, with Polar handling paid subscription checkout.'],
   ['Does invoice export depend on a third party?', 'No. PDFs are generated in the browser and never sent to an external document service.'],
-  ['Is subscription state trusted from the frontend?', 'No. Paddle webhooks update Supabase, and the app reads subscription status from the database.'],
+  ['Is subscription state trusted from the frontend?', 'No. Polar webhooks update Supabase, and the app reads subscription status from the database.'],
   ['What happens when I hit the free plan limits?', 'You keep everything you have already created — you just upgrade to Pro to add more invoices or clients.'],
 ];
 

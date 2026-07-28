@@ -16,7 +16,7 @@ const sections = [
           <li><strong>Client data</strong> &mdash; names, email addresses, phone numbers, company names, and notes you add while managing your client relationships.</li>
           <li><strong>Invoice and proposal data</strong> &mdash; itemized line items, amounts, tax rates, discount totals, invoice status, and proposal scope generated through the product.</li>
           <li><strong>Payment records</strong> &mdash; amounts, dates, methods, and references you record against invoices.</li>
-          <li><strong>Subscription and billing data</strong> &mdash; plan type, billing cycle, and subscription status (processed through Paddle).</li>
+          <li><strong>Subscription and billing data</strong> &mdash; plan type, billing cycle, and subscription status (processed through Polar).</li>
           <li><strong>Usage analytics</strong> &mdash; monthly invoice and client counts for entitlement enforcement.</li>
         </ul>
       </>
@@ -32,7 +32,7 @@ const sections = [
           <li>Operate your account, authenticate sessions, and enforce plan limits.</li>
           <li>Display your clients, invoices, proposals, payments, and analytics in the dashboard.</li>
           <li>Generate PDF exports of invoices and proposals you initiate.</li>
-          <li>Process subscription payments and manage billing through Paddle.</li>
+          <li>Process subscription payments and manage billing through Polar.</li>
           <li>Send account-related emails (password reset, billing updates).</li>
         </ul>
         <p>We do not sell, rent, or share your personal data with third parties for their own marketing purposes. We do not train AI models on your data.</p>
@@ -67,8 +67,8 @@ const sections = [
     icon: CreditCard,
     content: (
       <>
-        <p>Payment records you enter (amounts, dates, methods, references) are stored in your private database. EmberFlow does not process or handle credit card numbers. All subscription billing and payment transactions are processed by <strong>Paddle</strong>, our payment processor.</p>
-        <p>Paddle receives your email address, name, and billing details at checkout. Their use of your data is governed by the <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer">Paddle Privacy Policy <ExternalLink size={12} /></a>.</p>
+        <p>Payment records you enter (amounts, dates, methods, references) are stored in your private database. EmberFlow does not process or handle credit card numbers. All subscription billing and payment transactions are processed by <strong>Polar</strong>, our merchant of record.</p>
+        <p>Polar receives your email address, name, and billing details at checkout. Their use of your data is governed by the <a href="https://polar.sh/legal/privacy" target="_blank" rel="noopener noreferrer">Polar Privacy Policy <ExternalLink size={12} /></a>.</p>
       </>
     ),
   },
@@ -117,7 +117,7 @@ const sections = [
         <p>EmberFlow relies on the following third-party services. Each service processes data only as necessary to deliver its function:</p>
         <ul>
           <li><strong><a href="https://supabase.com/legal/privacy" target="_blank" rel="noopener noreferrer">Supabase <ExternalLink size={12} /></a></strong> &mdash; authentication, database, and file storage. Your account credentials, business data, and uploaded files reside in Supabase infrastructure.</li>
-          <li><strong><a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer">Paddle <ExternalLink size={12} /></a></strong> &mdash; subscription checkout, billing, invoicing, and payment processing. Paddle receives your email, name, and billing details when you purchase a subscription.</li>
+          <li><strong><a href="https://polar.sh/legal/privacy" target="_blank" rel="noopener noreferrer">Polar <ExternalLink size={12} /></a></strong> &mdash; subscription checkout, billing, invoicing, and payment processing as our merchant of record. Polar receives your email, name, and billing details when you purchase a subscription.</li>
           <li><strong><a href="https://vercel.com/legal/privacy" target="_blank" rel="noopener noreferrer">Vercel <ExternalLink size={12} /></a></strong> &mdash; hosting and serverless function execution. Vercel processes HTTP request data and may collect platform-level metrics.</li>
           <li><strong><a href="https://upstash.com/privacy" target="_blank" rel="noopener noreferrer">Upstash <ExternalLink size={12} /></a></strong> &mdash; Redis-based rate limiting. Ephemeral request counters are stored; no personal data is retained.</li>
         </ul>
@@ -130,7 +130,7 @@ const sections = [
     content: (
       <>
         <p>Your data is retained for as long as your account is active. If you cancel your subscription, your data remains accessible in read or export capacity until you choose to delete your account.</p>
-        <p>Account deletion removes your profile, clients, invoices, proposals, payments, and uploaded files from the active database. Backup copies may persist in Supabase snapshots for up to 30 days. Subscription records held by Paddle are subject to Paddle's retention policy.</p>
+        <p>Account deletion removes your profile, clients, invoices, proposals, payments, and uploaded files from the active database. Backup copies may persist in Supabase snapshots for up to 30 days. Subscription records held by Polar are subject to Polar's retention policy.</p>
         <p>To request account deletion, contact support from your account email.</p>
       </>
     ),

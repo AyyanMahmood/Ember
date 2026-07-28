@@ -22,14 +22,14 @@ async function authenticatedFetch(path, options = {}) {
 }
 
 export async function startCheckout(plan) {
-  return authenticatedFetch('/api/paddle/checkout', {
+  return authenticatedFetch('/api/polar/checkout', {
     method: 'POST',
     body: JSON.stringify({ plan }),
   });
 }
 
 export async function openBillingPortal() {
-  return authenticatedFetch('/api/paddle/portal', {
+  return authenticatedFetch('/api/polar/portal', {
     method: 'POST',
   });
 }

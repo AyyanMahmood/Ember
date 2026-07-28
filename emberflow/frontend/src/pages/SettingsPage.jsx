@@ -345,7 +345,7 @@ export default function SettingsPage() {
         <CardHeader
           title={subscription.plan?.name || PLANS.free.name}
           subtitle="Current plan"
-          action={subscription.subscription?.paddle_customer_id ? (
+          action={subscription.subscription?.polar_customer_id ? (
             <Button variant="ghost" type="button" onClick={manageBilling} disabled={billingAction === 'portal'} leftIcon={<ExternalLink size={16} />}>
               {billingAction === 'portal' ? 'Opening...' : 'Manage billing'}
             </Button>

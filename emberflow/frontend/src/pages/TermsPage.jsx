@@ -61,11 +61,11 @@ const sections = [
         <p>EmberFlow offers a Free plan and paid Pro plans (monthly or yearly). Billing terms:</p>
         <ul>
           <li><strong>Free plan:</strong> No payment is required. Usage is limited as described on the pricing page. EmberFlow reserves the right to modify free-tier limits at any time.</li>
-          <li><strong>Pro plans:</strong> Payment is processed by <strong>Paddle</strong>. By subscribing, you authorize Paddle to charge your payment method on a recurring basis (monthly or annually, depending on your selection).</li>
+          <li><strong>Pro plans:</strong> Payment is processed by <strong>Polar</strong>, our merchant of record. By subscribing, you authorize Polar to charge your payment method on a recurring basis (monthly or annually, depending on your selection).</li>
           <li><strong>Automatic renewal:</strong> Subscriptions renew automatically unless cancelled before the next billing date. You can cancel at any time from the billing settings page.</li>
           <li><strong>Price changes:</strong> EmberFlow may change subscription pricing with 30 days&rsquo; notice. Price changes take effect at the start of the next billing period.</li>
         </ul>
-        <p>All billing disputes and payment inquiries are handled by Paddle. Refunds are governed by the <Link to="/refund">Refund Policy</Link>.</p>
+        <p>All billing disputes and payment inquiries are handled by Polar. Refunds are governed by the <Link to="/refund">Refund Policy</Link>.</p>
       </>
     ),
   },
@@ -124,7 +124,7 @@ const sections = [
         <p>EmberFlow integrates with the following third-party services. Your use of these services is subject to their respective terms:</p>
         <ul>
           <li><a href="https://supabase.com/legal/terms" target="_blank" rel="noopener noreferrer">Supabase Terms of Service <ExternalLink size={12} /></a> &mdash; authentication and database infrastructure.</li>
-          <li><a href="https://www.paddle.com/legal/terms" target="_blank" rel="noopener noreferrer">Paddle Terms of Service <ExternalLink size={12} /></a> &mdash; payment processing and subscription management.</li>
+          <li><a href="https://polar.sh/legal/terms" target="_blank" rel="noopener noreferrer">Polar Terms of Service <ExternalLink size={12} /></a> &mdash; payment processing and subscription management.</li>
           <li><a href="https://vercel.com/legal/terms" target="_blank" rel="noopener noreferrer">Vercel Terms of Service <ExternalLink size={12} /></a> &mdash; hosting and serverless function execution.</li>
           <li><a href="https://upstash.com/terms" target="_blank" rel="noopener noreferrer">Upstash Terms of Service <ExternalLink size={12} /></a> &mdash; rate-limiting infrastructure.</li>
         </ul>
