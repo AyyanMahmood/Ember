@@ -1,10 +1,12 @@
 # EmberFlow Project Status
 
-> **2026-07-27 — Payments deferred to V1.5.** Paddle/payment processing cannot go live until November (external, non-technical — not a code blocker) and is no longer on the V1 critical path. The Paddle integration code is untouched and will keep working once it's usable; V1 launch readiness is now being judged independently of it. See CLAUDE.md → "V1 Polish Sprint" for the current active work and the "Paddle Status" section below for what that means concretely.
+> **2026-07-27 — Payments deferred to V1.5.** Payment processing cannot go live until November (external, non-technical — not a code blocker) and is no longer on the V1 critical path; V1 launch readiness is judged independently of it.
+>
+> **2026-07-28 — Billing migrated Paddle → Polar.** The integration was moved from Paddle to Polar (Merchant of Record). The Polar code is complete and verified at build + logic level (`npm run verify:polar`, 31/31); a live Polar **sandbox** end-to-end test is the remaining step before it's production-verified. See `POLAR_SETUP.md` and `POLAR_MIGRATION_PLAN.md`. The "Polar Status" section below supersedes the old "Paddle Status"; dated entries elsewhere that mention Paddle are historical.
 
 ## Project Overview
 
-EmberFlow is a production-ready freelance finance workspace SaaS. It enables freelancers to manage clients, create/send/track invoices, build proposals, analyze revenue, and handle subscriptions via Paddle. Built with React + Vite frontend, Supabase (PostgreSQL, Auth, Storage) backend, and Paddle for billing. Deployed on Vercel with serverless API routes.
+EmberFlow is a production-ready freelance finance workspace SaaS. It enables freelancers to manage clients, create/send/track invoices, build proposals, analyze revenue, and handle subscriptions via Polar. Built with React + Vite frontend, Supabase (PostgreSQL, Auth, Storage) backend, and Polar (Merchant of Record) for billing. Deployed on Vercel with serverless API routes.
 
 ---
 
@@ -47,7 +49,7 @@ A full-codebase audit and a 10-phase implementation roadmap were produced before
 | **Authentication** | 100% | Supabase email/password, sessions, password reset |
 | **Dashboard** | 95% | Stats, recent invoices table — migrated to new design system |
 | **UI (Design System)** | 85% | Tokens + 13 reusable components created; 3/5 app screens migrated |
-| **Paddle Integration** | 100% | Checkout, portal, webhooks — production ready |
+| **Polar Integration** | 100% code | Checkout, portal, webhooks complete + logic-verified; live sandbox test pending |
 | **Billing/Subscriptions** | 100% | Free/Pro gating, usage tracking, limits enforced in DB |
 | **Legal Pages** | 100% | Terms, Privacy, Refund, Contact — static pages |
 | **Pricing Page** | 100% | Free vs Pro comparison, checkout buttons |
@@ -124,10 +126,10 @@ A full-codebase audit and a 10-phase implementation roadmap were produced before
 - [x] Subscription: usage meters, upgrade buttons, billing portal
 - [x] Plan limits display
 
-### Paddle Billing
-- [x] Checkout API: creates Paddle customer, transaction, returns hosted checkout URL
-- [x] Customer Portal API: opens Paddle billing portal
-- [x] Webhook handler: verifies signature, deduplicates events, syncs subscription to DB
+### Polar Billing
+- [x] Checkout API: creates a Polar checkout (external_customer_id = user id), returns hosted checkout URL
+- [x] Customer Portal API: opens Polar billing portal (customer session)
+- [x] Webhook handler: verifies Standard Webhooks signature, deduplicates events, syncs subscription to DB
 - [x] Handles: subscription.created/updated/canceled, transaction.completed
 - [x] Free/Pro plan mapping (pro_monthly, pro_yearly)
 - [x] Frontend: startCheckout(), openBillingPortal() in useSubscription
@@ -253,44 +255,48 @@ A full-codebase audit and a 10-phase implementation roadmap were produced before
 |-----------|--------|---------|
 | **Vercel Project** | Configured | Root: `emberflow/`, Output: `frontend/dist/`, Build: `npm run build` |
 | **Frontend Build** | Passing | `npm run build` completes in ~25s, no errors |
-| **API Routes** | Deployed | `/api/paddle/checkout`, `/api/paddle/portal`, `/api/paddle/webhook` |
+| **API Routes** | Deployed | `/api/polar/checkout`, `/api/polar/portal`, `/api/polar/webhook` |
 | **Supabase** | Connected | Requires env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` |
-| **Paddle** | Configured | Requires: `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`, price IDs |
+| **Polar** | Pending setup | Requires: `POLAR_ACCESS_TOKEN`, `POLAR_WEBHOOK_SECRET`, `POLAR_PRODUCT_*`, `POLAR_SERVER` |
 | **Environment** | Documented | `.env.example` + README have all required vars |
 | **Custom Domain** | Not configured | Ready for production domain |
 | **SSL/HTTPS** | Auto | Vercel handles automatically |
 
 ---
 
-## Paddle Status
+## Polar Status
 
 ### Environment Variables Required
 
 | Variable | Purpose | Status |
 |----------|---------|--------|
-| `PADDLE_API_KEY` | Server-side API authentication | Required in Vercel |
-| `PADDLE_WEBHOOK_SECRET` | Webhook signature verification | Required in Vercel |
-| `PADDLE_PRO_MONTHLY_PRICE_ID` | Monthly Pro price ID (e.g., `pri_xxx`) | Required in Vercel |
-| `PADDLE_PRO_YEARLY_PRICE_ID` | Yearly Pro price ID | Required in Vercel |
-| `PADDLE_ENV` | `production` or `sandbox` | Optional (defaults to production) |
+| `POLAR_SERVER` | `sandbox` or `production` | Required in Vercel |
+| `POLAR_ACCESS_TOKEN` | Server-side API authentication (org access token) | Required in Vercel |
+| `POLAR_WEBHOOK_SECRET` | Webhook signature verification (Standard Webhooks) | Required in Vercel |
+| `POLAR_PRODUCT_PRO_MONTHLY` | Monthly Pro product ID | Required in Vercel |
+| `POLAR_PRODUCT_PRO_YEARLY` | Yearly Pro product ID | Required in Vercel |
 
 ### Verification Checklist
 
-- [x] Paddle sandbox products created for Pro Monthly/Yearly
-- [x] Price IDs added to Vercel environment
-- [x] API key and webhook secret configured in Vercel
-- [x] Webhook endpoint registered: `https://your-domain.com/api/paddle/webhook`
-- [x] Webhook events subscribed: `subscription.created`, `subscription.updated`, `subscription.canceled`, `transaction.completed`
-- [x] Checkout flow tested: user clicks upgrade → hosted checkout → payment → webhook syncs DB
-- [x] Customer portal tested: opens Paddle portal for subscription management
-- [x] Free → Pro upgrade flow works end-to-end
-- [x] Subscription cancellation handled (plan reverts to free)
+Code is complete; the remaining boxes are Polar dashboard configuration + a live sandbox test (see `POLAR_SETUP.md`).
+
+- [x] Polar integration code complete (`/api/polar/*`, `api/_utils/polar.js`)
+- [x] Logic verified: `npm run verify:polar` — 31/31 (mapping, normalization, Standard Webhooks verify + tamper + stale rejection)
+- [x] Frontend billing UI + legal copy pointed at Polar
+- [x] Migration `007_polar_billing.sql` written (adds `polar_*` columns)
+- [ ] Polar sandbox products created for Pro Monthly/Yearly
+- [ ] `POLAR_*` env vars set in Vercel (+ `emberflow/.env` for `vercel dev`)
+- [ ] Migration `007` applied to Supabase
+- [ ] Webhook endpoint registered (Raw format): `https://your-domain.com/api/polar/webhook`
+- [ ] Sandbox end-to-end tested: upgrade → hosted checkout → payment → webhook syncs DB
+- [ ] Customer portal tested: opens Polar portal for subscription management
+- [ ] Cancel-at-period-end → revoke → plan reverts to Free
+- [ ] Flipped to `POLAR_SERVER=production` with production credentials
 
 ### Remaining Blockers
 
-- **None for core functionality** — Paddle integration is production-ready
-- **Optional**: Add `PADDLE_ENV=sandbox` for development testing against sandbox
-- **Business/external, 2026-07-27**: real payment processing cannot go live until November regardless of code state — deferred to V1.5 and removed from the V1 critical path. Code, webhook handling, and DB schema are unaffected and untouched; the Pricing page, Settings billing card, and upgrade flow remain in the app and still get the same QA/polish attention as every other screen (see "V1 Polish Sprint" in CLAUDE.md) — they're just no longer a condition for calling V1 launch-ready.
+- **Setup pending** — the code is done; what's left is Polar dashboard configuration and a sandbox test. See `POLAR_SETUP.md`.
+- **Business/external, 2026-07-27**: real payment processing cannot go live until November regardless of code state — deferred to V1.5 and removed from the V1 critical path. The Pricing page, Settings billing card, and upgrade flow remain in the app and get the same QA/polish attention as every other screen — they're just no longer a condition for calling V1 launch-ready.
 
 ---
 
@@ -331,13 +337,13 @@ emberflow/
 ├── api/                          # Vercel serverless functions
 │   ├── _utils/
 │   │   ├── http.js              # Response helpers, rate limiting
-│   │   ├── paddle.js            # Paddle API client, signature verification
+│   │   ├── polar.js             # Polar API client, webhook verification
 │   │   ├── rateLimit.js         # Upstash Redis rate limiting
 │   │   └── supabaseAdmin.js     # Service role client for server
-│   └── paddle/
-│       ├── checkout.js          # POST /api/paddle/checkout
-│       ├── portal.js            # POST /api/paddle/portal
-│       └── webhook.js           # POST /api/paddle/webhook
+│   └── polar/
+│       ├── checkout.js          # POST /api/polar/checkout
+│       ├── portal.js            # POST /api/polar/portal
+│       └── webhook.js           # POST /api/polar/webhook
 ├── frontend/                     # React + Vite application
 │   ├── public/                   # Static assets
 │   ├── src/
@@ -366,7 +372,7 @@ emberflow/
 │   │   ├── pages/                # 24 page components
 │   │   ├── services/
 │   │   │   ├── api.js           # Supabase CRUD + RPC
-│   │   │   ├── subscriptions.js # Paddle checkout/portal
+│   │   │   ├── subscriptions.js # Polar checkout/portal
 │   │   │   └── supabase.js      # Client, auth, storage
 │   │   ├── styles/               # NEW: Design system styles (13 files)
 │   │   │   ├── components/
@@ -443,7 +449,7 @@ git push origin ui-redesign-lab    # Push to remote
 **Everything a fresh AI session needs to understand:**
 
 ### Project Type
-Freelance finance SaaS — React frontend, Supabase backend, Paddle billing, Vercel deployment.
+Freelance finance SaaS — React frontend, Supabase backend, Polar billing, Vercel deployment.
 
 ### Current Work
 **UI redesign laboratory branch** (`ui-redesign-lab`). Only frontend visual changes. No backend/API/database modifications permitted.
@@ -488,7 +494,7 @@ import { Button } from '../components/ui/Button.jsx';
 | `.status-badge.status-paid` | `.badge.badge--success` or `<StatusBadge status="paid" />` |
 
 ### Rules for This Branch
-1. **Never touch**: `api/`, `supabase/`, backend logic, database schema, authentication flow, Paddle integration
+1. **Never touch**: `api/`, `supabase/`, backend logic, database schema, authentication flow, Polar integration
 2. **Only modify**: `frontend/src/components/ui/`, `frontend/src/styles/`, `frontend/src/pages/*.jsx`, `frontend/src/components/AppLayout.jsx`
 3. **Use design tokens**: Never hardcode colors, spacing, radii — use CSS custom properties from `tokens.css`
 4. **Screen-by-screen**: Complete one page fully before starting the next

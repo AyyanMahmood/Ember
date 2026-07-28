@@ -2,9 +2,11 @@
 
 ## Project Overview
 
-**EmberFlow** is a freelance finance workspace — a SaaS dashboard for freelancers to manage clients, invoices, proposals, and analytics. Built as a full-stack application with Supabase (PostgreSQL + Auth + Storage) and Paddle for billing.
+> **Billing provider migrated Paddle → Polar (2026-07-28).** This spec reflects the Polar integration; see `POLAR_SETUP.md` and `POLAR_MIGRATION_PLAN.md`. Any dated notes below that still mention Paddle are historical.
 
-**Stack**: React 18 + Vite, Supabase (PostgreSQL, Auth, Storage, Realtime), Paddle Billing, Vercel deployment.
+**EmberFlow** is a freelance finance workspace — a SaaS dashboard for freelancers to manage clients, invoices, proposals, and analytics. Built as a full-stack application with Supabase (PostgreSQL + Auth + Storage) and Polar (Merchant of Record) for billing.
+
+**Stack**: React 18 + Vite, Supabase (PostgreSQL, Auth, Storage, Realtime), Polar (Merchant of Record billing), Vercel deployment.
 
 ---
 
@@ -15,14 +17,14 @@
 │                        VERCEL (Frontend + API)                  │
 ├─────────────────────────────────────────────────────────────────┤
 │  Frontend (React + Vite)          │  API Routes (Serverless)    │
-│  /app/* (Protected Dashboard)     │  /api/paddle/checkout       │
-│  / (Landing, Pricing, Auth)       │  /api/paddle/portal         │
-│                                   │  /api/paddle/webhook        │
+│  /app/* (Protected Dashboard)     │  /api/polar/checkout       │
+│  / (Landing, Pricing, Auth)       │  /api/polar/portal         │
+│                                   │  /api/polar/webhook        │
 └───────────────────────────────────┴─────────────────────────────┘
                     │                              │
                     ▼                              ▼
 ┌─────────────────────────────────┐   ┌─────────────────────────────┐
-│         SUPABASE                │   │         PADDLE              │
+│         SUPABASE                │   │         POLAR (MoR)         │
 │  ┌─────────────────────────┐    │   │  • Subscription Management  │
 │  │ PostgreSQL (RLS)        │    │   │  • Checkout Sessions        │
 │  │ Auth (Email/Password)   │    │   │  • Customer Portal          │
@@ -46,10 +48,10 @@
 | `invoice_items` | Line items for invoices | `id`, `invoice_id`, `description`, `quantity`, `price`, `tax_rate`, `position` |
 | `proposals` | Project proposals (Pro feature) | `id`, `user_id`, `template`, `client_name`, `title`, `project_summary`, `scope`, `timeline`, `amount`, `currency` |
 | `proposal_items` | Proposal line items | `id`, `proposal_id`, `title`, `description`, `amount`, `position` |
-| `subscriptions` | Paddle subscription sync | `id`, `user_id`, `plan` (free/pro_monthly/pro_yearly), `status`, `paddle_customer_id`, `paddle_subscription_id`, `paddle_price_id`, `current_period_start/end` |
+| `subscriptions` | Polar subscription sync | `id`, `user_id`, `plan` (free/pro_monthly/pro_yearly), `status`, `polar_customer_id`, `polar_subscription_id`, `polar_product_id`, `current_period_start/end` (legacy `paddle_*` columns retained until cleanup) |
 | `invoice_usage` | Free plan limit tracking | `user_id`, `usage_month`, `invoice_count` |
 | `payments` | Payment records | `id`, `invoice_id`, `user_id`, `amount`, `currency`, `payment_date`, `method`, `status` |
-| `webhook_events` | Paddle webhook deduplication | `id`, `event_type`, `processed_at` |
+| `webhook_events` | Polar webhook deduplication (by `webhook-id`) | `id`, `event_type`, `processed_at` |
 
 ### Key Functions
 
@@ -176,21 +178,21 @@ index.css       → Imports all above
 
 ## API Endpoints (Vercel Serverless Functions)
 
-### Paddle Integration
+### Polar Integration
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/api/paddle/checkout` | POST | Create checkout session for Pro upgrade |
-| `/api/paddle/portal` | POST | Open Paddle customer portal |
-| `/api/paddle/webhook` | POST | Handle Paddle events (subscription.created/updated/canceled, transaction.completed) |
+| `/api/polar/checkout` | POST | Create checkout session for Pro upgrade |
+| `/api/polar/portal` | POST | Open Polar customer portal |
+| `/api/polar/webhook` | POST | Handle Polar events (subscription.created/active/updated/canceled/uncanceled/revoked) |
 
 **Checkout Flow:**
 1. User clicks "Upgrade" → `startCheckout('pro_monthly'|'pro_yearly')`
-2. API creates/finds Paddle customer
-3. Creates transaction with price ID
+2. API creates a Polar checkout with `external_customer_id = user.id` (no customer pre-create)
+3. Checkout is created from the plan's Polar product id
 4. Returns hosted checkout URL
-5. User completes payment on Paddle
-6. Webhook updates `subscriptions` table
+5. User completes payment on Polar
+6. subscription.* webhook updates the `subscriptions` table
 7. UI refreshes via `useSubscription` hook
 
 **Webhook Events Handled:**
@@ -264,10 +266,11 @@ draft → sent → paid
 |----------|-------------|
 | `VITE_SUPABASE_URL` | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
-| `PADDLE_API_KEY` | Paddle API key (server) |
-| `PADDLE_WEBHOOK_SECRET` | Paddle webhook signature secret |
-| `PADDLE_PRO_MONTHLY_PRICE_ID` | Price ID for monthly Pro |
-| `PADDLE_PRO_YEARLY_PRICE_ID` | Price ID for yearly Pro |
+| `POLAR_SERVER` | `sandbox` or `production` |
+| `POLAR_ACCESS_TOKEN` | Polar organization access token (server) |
+| `POLAR_WEBHOOK_SECRET` | Polar webhook signing secret |
+| `POLAR_PRODUCT_PRO_MONTHLY` | Product ID for monthly Pro |
+| `POLAR_PRODUCT_PRO_YEARLY` | Product ID for yearly Pro |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key (server) |
 
 ---
@@ -287,7 +290,7 @@ draft → sent → paid
 ### Services
 - `frontend/src/services/api.js` — Supabase CRUD + RPC
 - `frontend/src/services/supabase.js` — Client, auth, storage
-- `frontend/src/services/subscriptions.js` — Paddle checkout/portal
+- `frontend/src/services/subscriptions.js` — Polar checkout/portal
 
 ### Utilities
 - `frontend/src/utils/format.js` — `formatMoney`, `formatDate`
@@ -373,7 +376,7 @@ npm run preview
 ## Security Considerations
 
 - All DB access via RLS policies (no server-side bypass)
-- Paddle webhook signature verification
+- Polar webhook signature verification (Standard Webhooks HMAC)
 - Rate limiting on checkout/webhook endpoints
 - Supabase service role key only in serverless functions
 - File uploads scoped to user folder in Storage
@@ -392,4 +395,4 @@ npm run preview
 
 ---
 
-*This specification reflects the codebase as of the current UI experimentation branch. All backend logic, database schema, and Paddle integration are production-ready. The frontend has been upgraded with a comprehensive design system and reusable component library.*
+*This specification reflects the codebase as of the current UI experimentation branch. All backend logic, database schema, and the Polar billing integration are production-ready. The frontend has been upgraded with a comprehensive design system and reusable component library.*

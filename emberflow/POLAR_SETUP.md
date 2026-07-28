@@ -1,0 +1,162 @@
+# Polar Billing Setup
+
+EmberFlow bills Pro subscriptions through [**Polar**](https://polar.sh), a Merchant of Record (MoR). Polar hosts the checkout, charges the card, remits sales tax/VAT on your behalf, and runs the customer billing portal. EmberFlow never sees or stores card data — it only reads subscription **state** (plan + status), which is written to your database exclusively by Polar's signed webhook.
+
+This guide takes you from a fresh Polar account to a working Pro upgrade flow, in **sandbox first**, then production.
+
+> Billing is optional. With no `POLAR_*` variables set, every account stays on the Free tier and the rest of EmberFlow works normally.
+
+---
+
+## How it fits together
+
+```
+Settings "Upgrade"  ──POST /api/polar/checkout──▶  Polar  ──hosted checkout──▶  card charged
+        ▲                                                                            │
+        │                                                            subscription.* webhook
+        │                                                                            ▼
+   reads subscriptions row  ◀──── /api/polar/webhook  (verify signature → upsert subscriptions)
+```
+
+| Piece | File |
+|---|---|
+| Create checkout session | `api/polar/checkout.js` → `POST /v1/checkouts/` |
+| Open customer portal | `api/polar/portal.js` → `POST /v1/customer-sessions/` |
+| Receive lifecycle events | `api/polar/webhook.js` → verifies + upserts `subscriptions` |
+| Shared client + verification | `api/_utils/polar.js` |
+| Frontend calls | `frontend/src/services/subscriptions.js` |
+| Entitlements (provider-agnostic) | `frontend/src/utils/plans.js`, `hooks/useSubscription.js` |
+
+The Supabase `user.id` is passed to Polar as `external_customer_id` at checkout and comes back on every webhook as `customer.external_id`, which is how the webhook knows whose subscription changed — no customer pre-creation needed.
+
+---
+
+## Prerequisites
+
+- A deployed EmberFlow (Vercel) **or** `vercel dev` locally — webhooks need a publicly reachable URL, so `npm run dev` (Vite only, no API routes) is **not** enough to test billing end to end.
+- Supabase database with migrations applied through `007_polar_billing.sql` (adds the `polar_*` columns). See [README](./README.md) → Database Setup.
+- Upstash Redis configured (rate-limits the billing routes; optional but recommended).
+
+---
+
+## 1. Create a Polar account
+
+1. Sign up at **https://polar.sh** (production) and **https://sandbox.polar.sh** (sandbox — a fully separate environment with test payments). Do everything below in **sandbox** first.
+2. Create an **Organization**. Note its name/slug.
+
+## 2. Create the two Pro products (sandbox)
+
+In the sandbox dashboard → **Products** → **New Product**, create two **recurring** products:
+
+| Product | Billing | Price |
+|---|---|---|
+| EmberFlow Pro — Monthly | Monthly | $9.00 |
+| EmberFlow Pro — Yearly | Yearly | $90.00 |
+
+(Prices are illustrative — they must match what `frontend/src/utils/plans.js` advertises. Update both if you change pricing.)
+
+For each product, open the "**⋯**" menu → **Copy Product ID**. You'll set these as `POLAR_PRODUCT_PRO_MONTHLY` and `POLAR_PRODUCT_PRO_YEARLY`. Polar checkout is created from **product** ids (not price ids).
+
+## 3. Create an Organization Access Token
+
+Dashboard → **Settings → Developers → Organization Access Tokens** → **Create**.
+
+- Give it a name (e.g. `emberflow-server`).
+- Grant it the scopes the integration uses: **checkouts (write)**, **customer_sessions (write)**, and **customers / products (read)**. When in doubt, granting the full set is fine — this token is server-side only.
+- Copy the token (shown once) → `POLAR_ACCESS_TOKEN`.
+
+This token is read only by the `api/` serverless functions. **Never** put it in `frontend/.env.local` or any `VITE_*` variable — that would ship it to the browser.
+
+## 4. Configure the webhook endpoint
+
+Dashboard → **Settings → Webhooks → Add Endpoint**.
+
+- **URL:** `https://<your-domain>/api/polar/webhook` (e.g. `https://embersys.vercel.app/api/polar/webhook`).
+- **Format:** **Raw** (Polar's standard payload — *not* the Slack/Discord formatters).
+- **Events:** at minimum select all of:
+  - `subscription.created`
+  - `subscription.active`
+  - `subscription.updated`
+  - `subscription.canceled`
+  - `subscription.uncanceled`
+  - `subscription.revoked`
+- Save, then copy the endpoint's **Signing Secret** → `POLAR_WEBHOOK_SECRET`.
+
+The handler verifies this secret on every delivery (Standard Webhooks HMAC) and returns `403` if it doesn't match, so the secret must be exact.
+
+## 5. Set environment variables
+
+All five are **backend** variables (no `VITE_` prefix) read only by `api/`.
+
+| Variable | Value |
+|---|---|
+| `POLAR_SERVER` | `sandbox` now, `production` later |
+| `POLAR_ACCESS_TOKEN` | Organization access token from step 3 |
+| `POLAR_WEBHOOK_SECRET` | Webhook signing secret from step 4 |
+| `POLAR_PRODUCT_PRO_MONTHLY` | Monthly product id from step 2 |
+| `POLAR_PRODUCT_PRO_YEARLY` | Yearly product id from step 2 |
+
+- **On Vercel:** Project → **Settings → Environment Variables**. Add all five (plus the existing `APP_URL`, `SUPABASE_*`, `UPSTASH_*`). Redeploy so they take effect.
+- **Locally with `vercel dev`:** put them in `emberflow/.env` (git-ignored). `vercel dev` runs both the Vite app and the `api/` functions and reads that file. (`vercel env pull` can populate it from the linked project.)
+
+See `.env.example` for the annotated list.
+
+## 6. Apply the database migration
+
+Run `supabase/migrations/007_polar_billing.sql` in the Supabase SQL Editor (additive, `IF NOT EXISTS`, safe to re-run). It adds `polar_customer_id`, `polar_subscription_id`, `polar_product_id` and their lookup indexes to `subscriptions`.
+
+---
+
+## Testing guide (sandbox)
+
+1. **Logic checks (no account needed):** from `emberflow/`, run `npm run verify:polar`. This exercises plan↔product mapping, status-aware subscription normalization, and Standard Webhooks signature verification (valid + tampered signature/body + stale timestamp). Expect `31 passed, 0 failed`.
+2. **End-to-end** (needs a public URL — use a Vercel preview deploy or `vercel dev` behind a tunnel so Polar can reach the webhook):
+   1. Sign in to EmberFlow → **Settings**.
+   2. Click **Upgrade monthly**. You should land on Polar's hosted sandbox checkout.
+   3. Pay with a sandbox test card (Polar sandbox accepts Stripe test cards, e.g. `4242 4242 4242 4242`, any future expiry/CVC).
+   4. You're redirected to `/app/settings?billing=success`. Within a few seconds the `subscription.active` webhook lands, the `subscriptions` row updates, Pro features unlock, and a **Manage billing** button appears.
+   5. Click **Manage billing** → Polar customer portal opens.
+   6. Cancel in the portal → the subscription stays `active` with `cancel_at_period_end = true` (you keep Pro until period end). When it finally ends, `subscription.revoked` flips the row to Free.
+3. **Inspect deliveries:** Polar Dashboard → Webhooks → your endpoint shows each delivery, its payload, and the HTTP response. A healthy delivery returns `200`. `403` means a signature mismatch (see Troubleshooting).
+
+---
+
+## Going to production
+
+1. Repeat steps 1–4 in the **production** dashboard (https://polar.sh): create the two products, an access token, and a webhook endpoint pointing at your production URL.
+2. In Vercel, set `POLAR_SERVER=production` and swap in the **production** access token, webhook secret, and product ids.
+3. Redeploy. Do one real (small) live purchase and confirm the webhook + unlock, then refund it from the Polar dashboard if desired.
+
+---
+
+## Troubleshooting
+
+| Symptom | Likely cause / fix |
+|---|---|
+| Webhook deliveries return **403** | `POLAR_WEBHOOK_SECRET` doesn't match the endpoint's signing secret, or the endpoint **Format** isn't **Raw**. Copy the secret again; recreate the endpoint as Raw. |
+| Checkout route returns **400** | Wrong `POLAR_PRODUCT_*` id, or `POLAR_SERVER` doesn't match where the product lives (sandbox id with `POLAR_SERVER=production` or vice-versa). Product ids are environment-specific. |
+| `Missing POLAR_ACCESS_TOKEN` / `Missing POLAR_PRODUCT_...` | Env var not set in the environment actually running the function (Vercel env vs. local `.env`). Redeploy after adding on Vercel. |
+| Payment succeeds but Pro never unlocks | Webhook not configured, wrong URL, or the `subscription.*` events aren't selected on the endpoint. Check the endpoint's delivery log in the Polar dashboard. |
+| **Manage billing** button never appears | The `subscriptions` row has no `polar_customer_id` yet — it's written by the first `subscription.*` webhook. Confirm the webhook delivered `200`. |
+| `429 Too many requests` on billing routes | Upstash rate limit (5/min for checkout & portal). Wait a minute; confirm `UPSTASH_REDIS_REST_URL`/`TOKEN`. |
+| Portal route errors for a user | That user has no Polar customer yet (never subscribed). Expected — the UI only shows the portal button once a customer exists. |
+
+---
+
+## Decommissioning Paddle (deferred — do only after Polar is verified live)
+
+The migration intentionally left Paddle's data columns and Vercel secrets in place so a rollback needs no data restore. **After** a successful production purchase through Polar, clean them up as a separate, explicit step:
+
+1. **Drop the legacy columns** (destructive — take a backup first) via a new migration, e.g. `008_drop_paddle_columns.sql`:
+   ```sql
+   begin;
+   alter table public.subscriptions drop column if exists paddle_customer_id;
+   alter table public.subscriptions drop column if exists paddle_subscription_id;
+   alter table public.subscriptions drop column if exists paddle_price_id;
+   alter table public.subscriptions drop column if exists paddle_product_id;
+   commit;
+   ```
+2. **Remove the `PADDLE_*` environment variables** from Vercel (`PADDLE_ENV`, `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`, `PADDLE_PRICE_PRO_MONTHLY`, `PADDLE_PRICE_PRO_YEARLY`).
+3. **Delete the Paddle webhook endpoint** in the Paddle dashboard.
+
+The Paddle route/util code was already removed in the migration's cleanup phase; these three items are the only Paddle remnants left, and they're deliberately manual.

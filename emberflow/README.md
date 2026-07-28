@@ -1,8 +1,8 @@
 # EmberFlow
 
-EmberFlow is a finance operating system for freelancers and small agencies — clients, invoices, proposals, payments, and analytics in one workspace, built with React, Vite, Supabase (Postgres + Auth + Storage), and Paddle for subscription billing.
+EmberFlow is a finance operating system for freelancers and small agencies — clients, invoices, proposals, payments, and analytics in one workspace, built with React, Vite, Supabase (Postgres + Auth + Storage), and Polar for subscription billing.
 
-This README covers everything needed to install, configure, and deploy EmberFlow from a clean checkout. For the full Google/Microsoft OAuth walkthrough, see [`OAUTH_SETUP.md`](./OAUTH_SETUP.md).
+This README covers everything needed to install, configure, and deploy EmberFlow from a clean checkout. For the full Google/Microsoft OAuth walkthrough, see [`OAUTH_SETUP.md`](./OAUTH_SETUP.md); for Pro subscription billing, see [`POLAR_SETUP.md`](./POLAR_SETUP.md).
 
 ## Features
 
@@ -15,7 +15,7 @@ This README covers everything needed to install, configure, and deploy EmberFlow
 - **Brand Studio** — Pro-only logo, color, and font branding applied consistently across generated documents
 - **Authentication** — email/password with password reset and email verification; Google OAuth (production-verified); Microsoft OAuth (code complete, requires your own Azure app registration — see `OAUTH_SETUP.md`)
 - **Settings** — profile, business info, invoice branding, in-app password change, subscription management
-- **Subscriptions** — Free and Pro tiers via Paddle checkout, customer portal, and webhook-driven entitlements
+- **Subscriptions** — Free and Pro tiers via Polar checkout, customer portal, and webhook-driven entitlements
 - Row-level security on every table — all data access is scoped to the authenticated user in Postgres itself, not just in application code
 - PDF generation runs entirely in the browser (jsPDF + html2canvas) — no invoice/proposal content is sent to a third-party document service
 
@@ -23,8 +23,8 @@ This README covers everything needed to install, configure, and deploy EmberFlow
 
 - Node.js >= 18.13.0 and npm
 - A [Supabase](https://supabase.com) project (the free tier is sufficient)
-- A [Paddle](https://www.paddle.com) account — only required if you want to enable Pro subscription billing; the rest of the app works without it
-- An [Upstash](https://upstash.com) Redis database — recommended for rate-limiting the `/api/paddle/*` routes in production; the app still functions without it (the rate limiter fails open if Redis is unreachable)
+- A [Polar](https://polar.sh) account — only required if you want to enable Pro subscription billing; the rest of the app works without it. See [`POLAR_SETUP.md`](./POLAR_SETUP.md)
+- An [Upstash](https://upstash.com) Redis database — recommended for rate-limiting the `/api/polar/*` routes in production; the app still functions without it (the rate limiter fails open if Redis is unreachable)
 - A Google Cloud project (for Google OAuth) and/or an Azure app registration (for Microsoft OAuth) — see `OAUTH_SETUP.md`
 
 ## Project Structure
@@ -40,7 +40,7 @@ emberflow/
       utils/               Formatting, invoice math, PDF export
       document-studio/     Invoice/proposal template rendering
       data/                 Static reference data (countries, currencies, company info)
-  api/                 Vercel serverless functions (Paddle checkout/portal/webhook)
+  api/                 Vercel serverless functions (Polar checkout/portal/webhook)
   supabase/            Database schema, RLS policies, migrations
   .env.example
   vercel.json
@@ -76,7 +76,7 @@ Open the URL Vite prints in your terminal.
 `.env.example` at the repo root documents every variable EmberFlow uses, with comments explaining what each one does, where to obtain it, and whether it's required. In short:
 
 - **Frontend** (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APP_URL`) go in `frontend/.env.local` for local development.
-- **Backend** (`APP_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PADDLE_*`, `UPSTASH_*`) are read only by the `api/` serverless functions and are configured in your Vercel project's Environment Variables settings — they are never bundled into the browser build.
+- **Backend** (`APP_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `POLAR_*`, `UPSTASH_*`) are read only by the `api/` serverless functions and are configured in your Vercel project's Environment Variables settings — they are never bundled into the browser build.
 
 Read `.env.example` directly for the full, authoritative list.
 
@@ -87,14 +87,15 @@ EmberFlow's schema is split across a base schema/policy dump plus incremental mi
 In the Supabase Dashboard, open **SQL Editor** and run these files **in this exact order**:
 
 1. `supabase/schema.sql` — creates the base tables: `profiles`, `clients`, `invoices`, `invoice_items`, `payments`, `proposals`, `proposal_items`, `subscriptions`.
-2. `supabase/policies.sql` — enables row-level security on every table above (users can only access rows they own; invoice/proposal item access is derived from ownership of the parent record; subscription rows are read-only to users and mutated only by the server-side Paddle webhook handler) and sets up the `avatars`/`logos` storage bucket policies.
-3. Every file in `supabase/migrations/`, **in numeric order** (`001_production_fixes.sql` through `006_brand_studio_free_tier.sql`). Each migration is additive and idempotent (safe to run more than once), and together they add:
-   - `001` — payment/subscription columns and RLS policies missing from the initial dump, plus a `webhook_events` table the Paddle webhook handler uses for idempotency
+2. `supabase/policies.sql` — enables row-level security on every table above (users can only access rows they own; invoice/proposal item access is derived from ownership of the parent record; subscription rows are read-only to users and mutated only by the server-side Polar webhook handler) and sets up the `avatars`/`logos` storage bucket policies.
+3. Every file in `supabase/migrations/`, **in numeric order** (`001_production_fixes.sql` through `007_polar_billing.sql`). Each migration is additive and idempotent (safe to run more than once), and together they add:
+   - `001` — payment/subscription columns and RLS policies missing from the initial dump, plus a `webhook_events` table the Polar webhook handler uses for idempotency
    - `002` — the `invoices.template` column (invoice template selection won't persist without this)
    - `003` — Brand Studio's `brand_font`/`brand_accent_color` columns and the trigger that enforces they're Pro-only
    - `004` — creates the `logos` storage bucket (see **Storage Buckets** below)
    - `005` — expands the allowed `brand_font` values
    - `006` — allows Free-tier users to set a brand color (only logo/font/accent stay Pro-only)
+   - `007` — adds the `polar_customer_id`/`polar_subscription_id`/`polar_product_id` columns the Polar billing integration writes (see [`POLAR_SETUP.md`](./POLAR_SETUP.md))
 
 In **Authentication > Providers**, keep **Email** enabled. If you want Google and/or Microsoft sign-in, follow `OAUTH_SETUP.md` before testing those buttons.
 
@@ -124,12 +125,18 @@ See [`OAUTH_SETUP.md`](./OAUTH_SETUP.md) for the complete walkthrough — Google
 
 Email/password authentication works with zero additional configuration.
 
+## Subscription Billing (Polar)
+
+Pro subscriptions are handled by [Polar](https://polar.sh), a Merchant of Record that hosts checkout, remits sales tax/VAT, and runs the customer billing portal — EmberFlow never touches card data. See [`POLAR_SETUP.md`](./POLAR_SETUP.md) for the complete walkthrough: creating products, the organization access token, the webhook endpoint and signing secret, environment variables, sandbox testing, and going to production.
+
+Billing is entirely optional — with no `POLAR_*` variables configured, every account stays on the Free tier and the rest of the app works normally.
+
 ## Vercel Deployment
 
 1. Push this repository to GitHub (or GitLab/Bitbucket).
 2. Create a new Vercel project from it.
 3. Set the Vercel project's **Root Directory** to `emberflow` (only relevant if your repository has this folder nested under something else — if `emberflow/` is already the repo root, leave this as the default).
-4. Add the backend environment variables from `.env.example` in the Vercel project's **Environment Variables** settings: `APP_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APP_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and (if using Pro billing) the `PADDLE_*` variables and `UPSTASH_*` variables.
+4. Add the backend environment variables from `.env.example` in the Vercel project's **Environment Variables** settings: `APP_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APP_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and (if using Pro billing) the `POLAR_*` variables and `UPSTASH_*` variables.
 5. Deploy.
 
 `vercel.json` (inside `emberflow/`) installs and builds the Vite app from `frontend/`, serves `frontend/dist`, and rewrites all non-`/api/*` paths to `index.html` so client-side routing works on refresh and direct navigation.
@@ -148,7 +155,7 @@ npm run preview
 - Row-level security restricts every table to rows owned by the authenticated user.
 - Invoice insert/update policies verify the selected client belongs to the current user.
 - PDF generation runs locally in the browser; invoice/proposal content is never sent to a third-party document API.
-- The Paddle webhook handler verifies the Paddle signature on every request before trusting the payload, and uses a `webhook_events` table to prevent duplicate processing.
+- The Polar webhook handler verifies the Standard Webhooks signature (via the `standardwebhooks` library) on every request before trusting the payload, and uses a `webhook_events` table to prevent duplicate processing.
 
 ## Troubleshooting
 
@@ -167,16 +174,16 @@ Each environment's exact origin needs its own entry (or a wildcard) in Supabase'
 **API routes return CORS errors in production**
 `APP_URL` is unset or doesn't match your actual deployed frontend URL — `api/_utils/http.js` fails closed (omits the CORS header entirely) rather than allowing all origins when `APP_URL` is missing in production. Set it in Vercel's environment variables to your real deployed URL.
 
-**Paddle checkout/portal/webhook routes return errors, or Pro upgrades don't unlock features**
-Confirm all five `PADDLE_*` variables are set and correct, that your webhook endpoint (`https://your-domain.com/api/paddle/webhook`) is configured in the Paddle dashboard, and that `PADDLE_ENV` matches whether you're using sandbox or production Paddle credentials. Rate-limit errors on these routes (`429 Too many requests`) mean `UPSTASH_REDIS_REST_URL`/`TOKEN` are missing or incorrect.
+**Polar checkout/portal/webhook routes return errors, or Pro upgrades don't unlock features**
+Confirm `POLAR_ACCESS_TOKEN`, `POLAR_WEBHOOK_SECRET`, `POLAR_PRODUCT_PRO_MONTHLY`, and `POLAR_PRODUCT_PRO_YEARLY` are set and correct, that your webhook endpoint (`https://your-domain.com/api/polar/webhook`) is configured in the Polar dashboard, and that `POLAR_SERVER` matches whether you're using sandbox or production Polar credentials. Rate-limit errors on these routes (`429 Too many requests`) mean `UPSTASH_REDIS_REST_URL`/`TOKEN` are missing or incorrect. See [`POLAR_SETUP.md`](./POLAR_SETUP.md) → Troubleshooting.
 
 **Build fails or the app won't start locally**
 Confirm you're running Node >= 18.13.0 and that you ran `npm install` in both the repo root and `frontend/` (`npm --prefix frontend install`) — this is a two-package-manifest project.
 
 ## FAQ
 
-**Do I need Paddle to run EmberFlow?**
-No. Client management, invoices, proposals, and PDF export all work without it. Paddle is only needed if you want to sell Pro subscriptions; without it configured, every account simply stays on the Free tier's limits.
+**Do I need Polar to run EmberFlow?**
+No. Client management, invoices, proposals, and PDF export all work without it. Polar is only needed if you want to sell Pro subscriptions; without it configured, every account simply stays on the Free tier's limits.
 
 **Do I need to configure Google/Microsoft OAuth?**
 No — email/password authentication works out of the box. OAuth buttons are visible in the UI regardless, so if you don't plan to configure a provider, be aware clicking that button will fail until you either configure it (`OAUTH_SETUP.md`) or remove the button.
@@ -184,8 +191,8 @@ No — email/password authentication works out of the box. OAuth buttons are vis
 **Why do I need to run both `schema.sql` and a `migrations/` folder — why isn't there just one file?**
 `schema.sql`/`policies.sql` are a point-in-time dump from early in the project; `migrations/` contains everything added afterward. Both are required for a fully working, current database — see **Database Setup**.
 
-**Can I use a different payment provider instead of Paddle?**
-Not without code changes — the `/api/paddle/*` routes, webhook handling, and Settings page's billing UI are all Paddle-specific.
+**Can I use a different payment provider instead of Polar?**
+Not without code changes — the `/api/polar/*` routes, webhook handling, and Settings page's billing UI are Polar-specific. The provider does live behind a small, isolated surface, though (three routes, one util, one frontend service, the `POLAR_*` env vars, and the `polar_*` columns) — see `POLAR_MIGRATION_PLAN.md` for exactly where that boundary is drawn.
 
 **Is there a test suite?**
 No automated test suite is included. Verify functionality manually after setup: sign in, create a client, create an invoice, and export a PDF.

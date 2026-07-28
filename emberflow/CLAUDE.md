@@ -35,7 +35,7 @@ EmberFlow is a premium freelancer finance operating system for independent profe
 | Database | PostgreSQL (via Supabase) |
 | Auth | Supabase Auth (email/password, row-level security) |
 | Storage | Supabase Storage (avatars, logos) |
-| Payments | Paddle (checkout, webhooks, billing portal) |
+| Payments | Polar (checkout, webhooks, customer portal — Merchant of Record) |
 | API | Serverless functions on Vercel (`api/`) |
 
 ### Deployment
@@ -44,7 +44,7 @@ EmberFlow is a premium freelancer finance operating system for independent profe
 |---------|---------|
 | Vercel | Frontend hosting + serverless API routes |
 | Supabase | Database, Auth, Storage |
-| Paddle | Subscription billing |
+| Polar | Subscription billing |
 
 ---
 
@@ -80,7 +80,7 @@ The presentation layer may be redesigned completely. The application architectur
 ### PRESERVED — NEVER change
 - Supabase (database, auth, storage, RLS)
 - Vercel (hosting, serverless functions)
-- Paddle (payments, subscriptions, webhooks)
+- Polar (payments, subscriptions, webhooks)
 - Redis / Upstash
 - PostgreSQL schema and migrations
 - API routes and function signatures
@@ -104,7 +104,9 @@ The presentation layer may be redesigned completely. The application architectur
 - Component library (replace custom with shadcn/ui)
 
 ### Never migrate
-Never migrate from Supabase, Vercel, Paddle, Upstash Redis, or the current project architecture. Assume these technologies are permanent unless explicitly requested.
+Never migrate from Supabase, Vercel, Polar, Upstash Redis, or the current project architecture. Assume these technologies are permanent unless explicitly requested.
+
+> **Payment provider — migrated Paddle → Polar (2026-07-28, explicitly requested).** All billing now runs through Polar as Merchant of Record (`/api/polar/*`, `api/_utils/polar.js`, `frontend/src/services/subscriptions.js`). The Paddle route/util code has been removed; the legacy `subscriptions.paddle_*` columns are intentionally retained until a post-verification cleanup. See `POLAR_SETUP.md` and `POLAR_MIGRATION_PLAN.md`. Historical session logs below that reference Paddle describe the state at the time and are left as-is.
 
 ### STOP condition
 If a redesign requires changing backend logic, STOP and explain why before making changes. Never rewrite working backend code simply because a different implementation exists.
