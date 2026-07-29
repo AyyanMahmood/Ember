@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { Webhook, WebhookVerificationError } = require('standardwebhooks');
 
 // Map each internal plan id to the env var holding its Polar product id.
@@ -10,8 +11,25 @@ const PLAN_TO_PRODUCT_ENV = {
 // Polar subscription statuses that still grant access to paid features.
 const ACCESS_GRANTING_STATUSES = new Set(['active', 'trialing', 'past_due']);
 
+// The documented/canonical var is POLAR_SERVER (see .env.example, POLAR_SETUP.md).
+// POLAR_ENVIRONMENT is accepted as a fallback only because a deploy was found
+// configured with that name instead — the code has never read it otherwise.
+// Warn loudly so this doesn't silently strand production on the sandbox API.
+function getPolarServer() {
+  if (process.env.POLAR_SERVER) return process.env.POLAR_SERVER;
+  if (process.env.POLAR_ENVIRONMENT) {
+    console.error(
+      'POLAR_ENVIRONMENT is set but EmberFlow reads POLAR_SERVER. ' +
+      'Rename it in Vercel (Settings > Environment Variables) and redeploy — ' +
+      'until then this falls back to POLAR_ENVIRONMENT, which is undocumented.'
+    );
+    return process.env.POLAR_ENVIRONMENT;
+  }
+  return undefined;
+}
+
 function polarBaseUrl() {
-  return process.env.POLAR_SERVER === 'production'
+  return getPolarServer() === 'production'
     ? 'https://api.polar.sh'
     : 'https://sandbox-api.polar.sh';
 }
@@ -73,16 +91,40 @@ async function polarFetch(path, options = {}) {
 // Polar signs every webhook per the Standard Webhooks spec. Its signing
 // secret is a plain string; the Standard Webhooks verifier expects a base64
 // secret that it base64-decodes back into the HMAC key, so we base64-encode
-// it first — identical to what @polar-sh/sdk does internally. verify() also
-// enforces the required webhook-id/webhook-timestamp/webhook-signature
-// headers, a 5-minute timestamp tolerance (replay protection), and a
-// constant-time comparison. It throws WebhookVerificationError on failure and
-// returns the parsed (snake_case) event payload on success.
+// it first — identical to what @polar-sh/sdk does internally (verified
+// directly against polarsource/polar-js's webhooks.ts, and Polar's own docs
+// call this out as "a common gotcha with the spec"). verify() also enforces
+// the required webhook-id/webhook-timestamp/webhook-signature headers, a
+// 5-minute timestamp tolerance (replay protection), and a constant-time
+// comparison. It throws WebhookVerificationError on failure and returns the
+// parsed (snake_case) event payload on success.
 function verifyPolarWebhook(rawBody, headers) {
-  const secret = process.env.POLAR_WEBHOOK_SECRET;
+  // .trim() guards against the single most common real-world cause of a
+  // secret that "looks right" but never verifies: a trailing newline/space
+  // picked up when copying the signing secret out of the Polar dashboard.
+  const secret = (process.env.POLAR_WEBHOOK_SECRET || '').trim();
   if (!secret) throw new Error('Missing POLAR_WEBHOOK_SECRET.');
   const webhook = new Webhook(Buffer.from(secret, 'utf-8').toString('base64'));
   return webhook.verify(rawBody, headers);
+}
+
+// Diagnostic only — never logs the secret itself. Lets whoever is looking at
+// Vercel's function logs confirm, without ever printing the real value,
+// whether the POLAR_WEBHOOK_SECRET actually configured matches the one shown
+// in the Polar dashboard for the endpoint that's delivering (sandbox and
+// production endpoints each have their own distinct secret): compute
+// sha256(trimmed secret) locally from the dashboard value and compare its
+// first 12 hex chars against `sha256Prefix` below.
+function describeConfiguredWebhookSecret() {
+  const raw = process.env.POLAR_WEBHOOK_SECRET || '';
+  const trimmed = raw.trim();
+  if (!trimmed) return { configured: false };
+  return {
+    configured: true,
+    length: trimmed.length,
+    hadWhitespace: trimmed.length !== raw.length,
+    sha256Prefix: crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12),
+  };
 }
 
 // The Supabase user id travels with every subscription as the customer's
@@ -143,6 +185,7 @@ module.exports = {
   billingCycleFromPlan,
   polarFetch,
   verifyPolarWebhook,
+  describeConfiguredWebhookSecret,
   WebhookVerificationError,
   extractUserId,
   normalizeSubscription,

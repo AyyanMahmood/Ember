@@ -2,6 +2,7 @@ const { getSupabaseAdmin } = require('../_utils/supabaseAdmin');
 const { methodNotAllowed, optionsHandler, readRawBody, sendError, sendJson } = require('../_utils/http');
 const {
   verifyPolarWebhook,
+  describeConfiguredWebhookSecret,
   WebhookVerificationError,
   extractUserId,
   normalizeSubscription,
@@ -87,6 +88,20 @@ const handler = async function handler(req, res) {
     event = verifyPolarWebhook(rawBody, req.headers);
   } catch (err) {
     if (err instanceof WebhookVerificationError) {
+      // standardwebhooks throws this same error class for three distinct
+      // causes (missing headers, a timestamp outside the 5-minute tolerance,
+      // or an actual signature mismatch) and the response we send Polar must
+      // stay a generic 403 either way — but without logging err.message here
+      // there was no way to tell which of the three was actually happening.
+      // None of this logs the secret itself, only a comparable fingerprint.
+      console.error('Polar webhook signature verification failed:', err.message, {
+        hasWebhookId: Boolean(req.headers['webhook-id']),
+        hasWebhookTimestamp: Boolean(req.headers['webhook-timestamp']),
+        hasWebhookSignature: Boolean(req.headers['webhook-signature']),
+        webhookTimestamp: req.headers['webhook-timestamp'] || null,
+        bodyLength: rawBody.length,
+        configuredSecret: describeConfiguredWebhookSecret(),
+      });
       return sendJson(res, 403, { error: 'Invalid webhook signature.' });
     }
     // Anything else here is a server misconfiguration (e.g. missing secret).
