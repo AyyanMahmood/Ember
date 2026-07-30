@@ -9,8 +9,11 @@ For each item, check: does the UI show the right thing, does the `subscriptions`
 ## 1. First purchase
 
 - [ ] Free → Monthly: checkout opens, sandbox test card succeeds, redirect lands on `/app/subscriptions?billing=success`
+- [ ] Immediately on landing back: the page shows "Confirming your purchase with Polar…" (not the Upgrade-to-Pro card, not a bare "Free plan") if the webhook hasn't landed yet — this is the fix from `c56a104`, added specifically because Polar's docs confirm the subscription's status "might not be active yet" on the very first webhook event. Confirm this actually appears live at least once (it may be too fast to see if the webhook is very quick) rather than just trusting the isolated-harness verification done in this environment.
+- [ ] The `?billing=success` param disappears from the URL bar shortly after landing (not left dangling if the page is reloaded/bookmarked)
 - [ ] Within a few seconds of payment, `subscription.active` (or `.created`) webhook lands (check Polar dashboard → Webhooks → delivery log for `200`)
 - [ ] `subscriptions` row: `plan='pro_monthly'`, `status='active'`, `polar_customer_id`/`polar_subscription_id`/`polar_product_id` all populated, `current_period_start`/`current_period_end` set, `cancel_at_period_end=false`
+- [ ] The confirming banner disappears and the real Pro state renders within the ~16s bounded poll window; if it doesn't (webhook genuinely slow/stuck), confirm the page falls back to showing its real current state rather than hanging on "Confirming…" forever
 - [ ] Pro features unlock in the UI without a manual refresh (Analytics, Proposals, Brand Studio logo/font/accent, unlimited invoices/clients)
 - [ ] "Manage billing" button appears on `/app/subscriptions`
 - [ ] Free → Yearly: repeat all of the above with the yearly product
