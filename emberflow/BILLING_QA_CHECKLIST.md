@@ -45,12 +45,52 @@ For each item, check: does the UI show the right thing, does the `subscriptions`
 
 ## 5. Cancellation
 
-- [ ] **Cancel from Polar customer portal** (Manage billing → cancel in Polar's hosted UI): confirm `cancel_at_period_end` flips to `true` in the `subscriptions` row (status stays `active` — you keep Pro until period end, by design)
-- [ ] Return to EmberFlow **via the browser back button** after cancelling in the portal → the Subscriptions page must show the cancelling state without a manual reload (this is the specific scenario the `pageshow`/`visibilitychange` refetch fix in `useSubscription.js` targets — confirm it actually works live, since this environment couldn't test it against a real portal redirect)
-- [ ] Return to EmberFlow via a **second tab** (portal opened in a new tab, original tab still open) → switching back to the original tab must also pick up the change (the `visibilitychange` half of the same fix)
-- [ ] Wait for the period to actually end → `subscription.revoked` webhook lands → `plan` collapses to `'free'`, `status` updates, Pro features lock again
-- [ ] **Cancel from EmberFlow's own dashboard**: `SubscriptionsPage.jsx`'s "Cancel subscription" danger-zone action opens a confirm dialog, then redirects to the Polar portal to actually complete the cancellation (EmberFlow has no direct cancel-via-API call of its own — confirm this is what actually happens, not a silent no-op)
-- [ ] Check Vercel's function logs for the `subscription.*` webhook deliveries around a cancel — confirm which specific event type(s) Polar actually sends for a portal-initiated cancel vs. an end-of-period revoke, and cross-check that the endpoint's selected events (Polar dashboard → Webhooks → your endpoint) includes all of them. This is the one part of the historical "stays Pro after cancelling" bug this audit could not independently verify from code alone.
+**Full end-to-end audit performed 2026-07-30 — this section records what was verified with evidence (code + Polar's own docs) vs. what genuinely cannot be confirmed without a live account.**
+
+### Webhook event sequence (as documented by Polar — exact ordering/timing is NOT published)
+
+Verified directly against `polar.sh/docs` and the individual event reference pages:
+
+| Action | Resulting `status` | `cancel_at_period_end` | Event(s) Polar's docs name for it |
+|---|---|---|---|
+| Cancel at period end (the default — portal or dashboard) | stays `active` | `true` | Docs say the subscription "stays active" with the flag set; docs do **not** specify whether this arrives as `subscription.updated`, `subscription.canceled`, or both — EmberFlow's endpoint has all three selected, so this is moot for correctness (see below) |
+| Uncancel (undo before period end) | `active` | reverts to `false` | `subscription.uncanceled` |
+| Revoke immediately | `canceled`, `ended_at` set | n/a (already ended) | `subscription.revoked` — its own doc text: "Happens when the subscription is canceled or payment retries are exhausted" |
+| Cancel-at-period-end reaches `current_period_end` naturally | `canceled` | n/a | `subscription.revoked` (same event, confirmed by the doc text above covering both triggers) |
+
+**Honest limitation:** Polar's public docs do not publish a formal state-machine/ordering guarantee for these events. This audit could not produce a byte-exact "verified sequence" beyond what's quoted above — that would need either private API docs or observing real deliveries.
+
+**Why the exact order doesn't actually matter for correctness (verified by re-reading `webhook.js`/`normalizeSubscription` a second time, specifically hunting for an order-dependent bug):** every `subscription.*` event is processed identically — `normalizeSubscription(data, existing)` derives `plan`/`status`/`cancel_at_period_end` purely from that event's own payload, never by diffing against what came before. Two events arriving out of order, or concurrently (Vercel invocations can run in parallel), still converge to the same correct final state because each write is independently self-consistent, not incremental. No race condition found here on this closer, second pass.
+
+### Database sync per event
+
+- `subscriptions.plan`, `status`, `billing_cycle`, `cancel_at_period_end`, `current_period_start/end`, `polar_customer_id`/`polar_subscription_id`/`polar_product_id` — all written by the single `upsertSubscription()` path, `onConflict: 'user_id'` (safe, real unique index — confirmed in Phase 1)
+- Duplicate/replayed events: safe — `webhook_events` idempotency check returns early with `{duplicate: true}` before any write
+- [ ] Live-test: force a duplicate delivery (Polar dashboard → Webhooks → resend) and confirm no double-processing
+
+### Entitlement logic — exact answers, not assumed
+
+- **Does `cancel_at_period_end` still grant access?** Yes — confirmed both in code (`hasAccessGrantingStatus` checks `status`, never reads `cancel_at_period_end`) and in Polar's own docs ("stays active and the customer keeps their benefits — they paid for that period").
+- **Which statuses grant access?** `active`, `trialing`, `past_due` (matches Polar's real 8-value status enum — `incomplete`/`incomplete_expired`/`trialing`/`active`/`past_due`/`canceled`/`unpaid`/`paused`, verified against `polar-js`'s `SubscriptionStatus` type). `past_due` grants access deliberately, mirroring Polar's own payment-retry grace period.
+- **Which do not?** `canceled`, `unpaid`, `paused`, `incomplete`, `incomplete_expired` — all correctly excluded. `paused` was newly checked this pass (not considered in the Phase 1 audit) and is correctly excluded — consistent with how "pause" is meant to work (stop paying, stop access, keep the subscription record).
+- **When should Pro disappear?** When `status` leaves the granting set above — i.e. on `subscription.revoked` (→ `canceled`) or exhausted payment retries (→ `unpaid`), never merely on `cancel_at_period_end=true`.
+
+### Root cause of "sometimes doesn't immediately reflect" — investigated to the code's limit
+
+Two real, distinct, now-fixed contributors, both frontend/API-side (not webhook processing, not the database, not entitlement logic — those were re-verified clean this pass):
+
+1. **`useSubscription.js` only fetched once on mount** — fixed `5a12fa3` (Phase 1): now refetches on `pageshow` (bfcache restore) and `visibilitychange` (tab refocus).
+2. **Polar's customer portal had no way back to EmberFlow at all** — `return_url` was never set on the customer-session request, and Polar's own docs confirm that without it "no back button appears" in the portal. Fixed `1b27012`: both portal.js code paths now set `return_url=/app/subscriptions`, giving users a real link (a plain fresh navigation, no bfcache ambiguity) in addition to the browser back button.
+
+**What remains genuinely unverifiable from this environment (external config, not a code bug):** whether the Polar dashboard's webhook endpoint has exactly the documented event set selected. `POLAR_SETUP.md` documents 6 events (`created`/`active`/`updated`/`canceled`/`uncanceled`/`revoked`) — all three cancellation-relevant ones (`canceled`/`uncanceled`/`revoked`) are on that list, so event *selection* should not be the cause for cancellation specifically, assuming the live dashboard actually matches the doc. (Separately noted, not a cancellation-flow issue: Polar also has `subscription.past_due`, `subscription.paused`, `subscription.resumed`, and `subscription.cycled` events that aren't in EmberFlow's documented list at all — irrelevant to cancellation, relevant to Failed Payments/Renewals, flagged there instead of fixed here.)
+
+- [ ] **Cancel from Polar customer portal**: confirm `cancel_at_period_end` flips to `true` in the `subscriptions` row (status stays `active`)
+- [ ] Return to EmberFlow **via the new portal "back to EmberFlow" link** (from the `return_url` fix) → confirm it actually appears in the portal UI and lands cleanly on `/app/subscriptions` with correct state
+- [ ] Return to EmberFlow **via the browser back button** (in case a user doesn't use the portal's own link) → confirm the `pageshow`/`visibilitychange` fix still covers this
+- [ ] Return to EmberFlow via a **second tab** (portal opened in a new tab) → `visibilitychange` picks it up on refocus
+- [ ] Wait for the period to actually end → `subscription.revoked` webhook lands → `plan` collapses to `'free'`, Pro features lock again
+- [ ] **Cancel from EmberFlow's own dashboard**: the danger-zone action opens a confirm dialog, then redirects to the Polar portal to actually complete the cancellation — confirm this is what actually happens (EmberFlow has no direct cancel-via-API call of its own)
+- [ ] Check Vercel's function logs for the `subscription.*` deliveries around a real cancel to see which event name(s) Polar actually sends in practice — the one thing this audit could reason about from docs but not observe directly
 
 ## 6. Failed payments
 
