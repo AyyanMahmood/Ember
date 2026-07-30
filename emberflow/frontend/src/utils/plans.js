@@ -18,7 +18,7 @@ export const PLANS = {
   pro_monthly: {
     id: PLAN_IDS.pro_monthly,
     name: 'Pro Monthly',
-    price: '$9',
+    price: '$11',
     cadence: 'month',
     billingCycle: 'monthly',
     invoiceLimit: Infinity,
@@ -28,12 +28,12 @@ export const PLANS = {
   pro_yearly: {
     id: PLAN_IDS.pro_yearly,
     name: 'Pro Yearly',
-    price: '$90',
+    price: '$130',
     cadence: 'year',
     billingCycle: 'yearly',
     invoiceLimit: Infinity,
     clientLimit: Infinity,
-    features: ['Everything in Pro Monthly', 'Two months included', 'Premium templates', 'Priority roadmap access'],
+    features: ['Everything in Pro Monthly', 'One annual charge instead of twelve', 'Premium templates', 'Priority roadmap access'],
   },
 };
 

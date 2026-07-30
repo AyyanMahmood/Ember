@@ -50,10 +50,10 @@ In the sandbox dashboard → **Products** → **New Product**, create two **recu
 
 | Product | Billing | Price |
 |---|---|---|
-| EmberFlow Pro — Monthly | Monthly | $9.00 |
-| EmberFlow Pro — Yearly | Yearly | $90.00 |
+| EmberFlow Pro — Monthly | Monthly | $11.00 |
+| EmberFlow Pro — Yearly | Yearly | $130.00 |
 
-(Prices are illustrative — they must match what `frontend/src/utils/plans.js` advertises. Update both if you change pricing.)
+These prices must match what `frontend/src/utils/plans.js` advertises — that file is the source of truth for what the app *displays*, but Polar's product price is the source of truth for what actually gets charged. If you change pricing, update both, and update the live product price in the Polar dashboard too (`plans.js` cannot change what Polar charges).
 
 For each product, open the "**⋯**" menu → **Copy Product ID**. You'll set these as `POLAR_PRODUCT_PRO_MONTHLY` and `POLAR_PRODUCT_PRO_YEARLY`. Polar checkout is created from **product** ids (not price ids).
 

@@ -9,7 +9,7 @@ export default function PricingPage() {
     <main className="section-band">
       <Seo
         title="Pricing"
-        description="Simple, transparent pricing for freelancers and small agencies — a generous free tier and Pro plans starting at $9/month."
+        description="Simple, transparent pricing for freelancers and small agencies — a generous free tier and Pro plans starting at $11/month."
         path="/pricing"
       />
       <div className="section-heading">
