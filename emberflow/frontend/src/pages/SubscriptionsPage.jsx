@@ -161,6 +161,11 @@ export default function SubscriptionsPage() {
   const hasCustomer = Boolean(row?.polar_customer_id);
   const status = row?.status || 'active';
   const cancelling = Boolean(row?.cancel_at_period_end);
+  // Failed-payment / dunning state. Polar moves a subscription to past_due
+  // when a renewal charge fails, then auto-retries over ~3 weeks; EmberFlow
+  // keeps Pro access throughout (past_due is in hasAccessGrantingStatus /
+  // isSubscriptionActive on both the backend and frontend, deliberately).
+  const pastDue = status === 'past_due';
   const planName = subscription.plan?.name || PLANS.free.name;
 
   return (
@@ -194,9 +199,13 @@ export default function SubscriptionsPage() {
               {subscription.isPro && <StatusBadge status={cancelling ? 'pending' : status === 'active' ? 'paid' : status} />}
             </div>
             <span className="muted small">
-              {row?.current_period_end
-                ? `${cancelling ? 'Access ends' : 'Renews'} ${formatDateTime(row.current_period_end)}`
-                : 'Free plan — upgrade any time'}
+              {!row?.current_period_end
+                ? 'Free plan — upgrade any time'
+                : cancelling
+                ? `Access ends ${formatDateTime(row.current_period_end)}`
+                : pastDue
+                ? 'Payment failed — please update your card'
+                : `Renews ${formatDateTime(row.current_period_end)}`}
             </span>
           </div>
           {hasCustomer && (
@@ -215,6 +224,12 @@ export default function SubscriptionsPage() {
           <p className="muted small subscription-notice">
             Your subscription is set to cancel. You'll keep Pro access until {formatDateTime(row.current_period_end)}, then your account
             reverts to Free. Open Manage billing to resume before then.
+          </p>
+        ) : pastDue ? (
+          <p className="muted small subscription-notice">
+            Your last payment didn't go through. You keep full Pro access while Polar automatically retries the charge over the next
+            few weeks — to fix it now, open Manage billing and update your payment method. If every retry fails, your account returns
+            to Free.
           </p>
         ) : null}
       </Card>

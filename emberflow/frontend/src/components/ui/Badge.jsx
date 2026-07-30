@@ -51,13 +51,23 @@ export const StatusBadge = function StatusBadge({ status, className = '', size =
     void: 'default',
     cancelled: 'default',
     failed: 'danger',
+    // Subscription statuses (Polar). Invoices never carry these, so adding
+    // them is purely additive for the subscription surface.
+    past_due: 'warning',
+    unpaid: 'danger',
   };
 
   const variant = statusMap[status] || 'default';
 
+  // Capitalize and turn snake_case into words, so a multi-word status like
+  // "past_due" renders "Past due" instead of the raw "Past_due".
+  const label = status
+    ? status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ')
+    : '';
+
   return (
     <Badge variant={variant} size={size} className={className} {...props}>
-      {status?.charAt(0).toUpperCase() + status?.slice(1)}
+      {label}
     </Badge>
   );
 };
