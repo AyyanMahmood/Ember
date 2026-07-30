@@ -225,9 +225,9 @@ export default function SubscriptionsPage() {
       <Card variant="default">
         <CardHeader title="Refund policy" subtitle="Summary — see the full policy for details." />
         <p className="muted small">
-          Full refund within 7 days of any charge, on both Monthly and Yearly plans — email support and we'll process it, no
-          questions asked. Outside that window, cancel any time and you'll keep Pro access through the end of the period you already
-          paid for; we don't prorate partial periods.
+          Subscription charges are non-refundable except for billing errors, duplicate charges, or an extended outage — see the full
+          policy for details. Cancel any time and you'll keep Pro access through the end of the period you already paid for; we don't
+          prorate partial periods.
         </p>
         <Link to="/refund" className="link">Read the full Refund Policy →</Link>
       </Card>
