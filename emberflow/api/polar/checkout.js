@@ -22,11 +22,15 @@ module.exports = async function handler(req, res) {
     // two known Pro products, so a caller can't inject an arbitrary product.
     const productId = getProductId(plan);
 
-    // A user may only ever have one active Polar subscription. Polar has no
-    // API yet to change a subscription's product in place (monthly <-> yearly
-    // switching is a request users must complete via the hosted portal), so
-    // letting a checkout through while one is already active would create a
-    // second, parallel subscription instead of replacing the first - the
+    // A user may only ever have one active Polar subscription. Polar does
+    // have an update-subscription API that can move a subscription onto a
+    // different product with proration (product_id + proration_behavior,
+    // verified against polar.sh/docs) -- EmberFlow deliberately doesn't call
+    // it, to avoid building custom proration UI/logic this sprint. Instead,
+    // cadence switches go through cancel (via the portal) then a fresh
+    // checkout once the old period actually ends. Given that, letting a
+    // checkout through while a subscription is already active would create
+    // a second, parallel subscription instead of replacing the first - the
     // customer would end up billed on both. Block it here, not just in the
     // UI, since this route can be called directly.
     const { data: existingSubscription } = await supabase

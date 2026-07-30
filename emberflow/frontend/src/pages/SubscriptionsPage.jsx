@@ -248,9 +248,8 @@ export default function SubscriptionsPage() {
         <Card variant="default">
           <CardHeader title="Switch billing cadence" subtitle={`You're on ${planName}.`} />
           <p className="muted small">
-            Polar (our billing provider) doesn't yet support switching a subscription's plan in place. To move between Monthly and
-            Yearly, cancel your current plan from Manage billing — you'll keep Pro until it ends — then subscribe to the other
-            cadence from here once it does.
+            Switching between Monthly and Yearly isn't instant today — cancel your current plan from Manage billing, you'll keep Pro
+            until it ends, then subscribe to the other cadence from here once it does. No overlap, no double charge.
           </p>
         </Card>
       )}
@@ -290,7 +289,8 @@ export default function SubscriptionsPage() {
             <summary>Can I switch between Monthly and Yearly?</summary>
             <p className="muted small">
               Yes, but not instantly in place — cancel your current plan in Manage billing, keep Pro until it ends, then subscribe to
-              the other cadence. This is a limitation of Polar's current API, not a restriction we chose.
+              the other cadence from here. You won't be double-charged: the new cadence only starts once the period you already paid
+              for runs out.
             </p>
           </details>
           <details>
