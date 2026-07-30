@@ -1,12 +1,17 @@
-import { AlertTriangle, Crown, ExternalLink, LifeBuoy, Receipt, ShieldAlert, Sparkles } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Crown, ExternalLink, LifeBuoy, Receipt, ShieldAlert, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge, StatusBadge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Card, CardHeader } from '../components/ui/Card.jsx';
+import { ItemRow } from '../components/ui/ItemRow.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import { ConfirmDialog } from '../components/ui/Modal.jsx';
+import { ProgressBar } from '../components/ui/ProgressBar.jsx';
+import { ProgressRing } from '../components/ui/ProgressRing.jsx';
+import { SegmentedControl } from '../components/ui/SegmentedControl.jsx';
 import { COMPANY } from '../data/company.js';
+import { useAnimatedNumber } from '../hooks/useAnimatedNumber.js';
 import { useSubscription } from '../hooks/useSubscription.js';
 import { openBillingPortal, startCheckout } from '../services/subscriptions.js';
 import { formatDateTime } from '../utils/format.js';
@@ -15,8 +20,6 @@ import { formatLimit, PLANS, planPriceValue } from '../utils/plans.js';
 function UsageMeter({ label, used, limit }) {
   const unlimited = !Number.isFinite(limit);
   const pct = unlimited ? 0 : Math.min((used / limit) * 100, 100);
-  const critical = !unlimited && pct >= 95;
-  const near = !unlimited && pct >= 80;
 
   return (
     <div className="usage-meter">
@@ -24,136 +27,29 @@ function UsageMeter({ label, used, limit }) {
         <span className="muted small">{label}</span>
         <strong>{used} / {formatLimit(limit)}</strong>
       </div>
-      {!unlimited && (
-        <div className="usage-meter__track">
-          <div
-            className={`usage-meter__fill ${critical ? 'usage-meter__fill--danger' : near ? 'usage-meter__fill--warning' : ''}`}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-      )}
+      {!unlimited && <ProgressBar value={pct} thresholds={{ warning: 80, danger: 95 }} />}
     </div>
   );
 }
 
-// Ring showing how far through the current billing period the account is —
-// full right after renewal, empties as the next charge/expiry approaches.
-// Returns no fill (just the track) if there's no period to measure against
-// (e.g. Free, or a row still loading).
-function RenewalRing({ startIso, endIso, size = 56, strokeWidth = 4, children }) {
-  const pct = useMemo(() => {
-    if (!startIso || !endIso) return null;
-    const start = new Date(startIso).getTime();
-    const end = new Date(endIso).getTime();
-    const now = Date.now();
-    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
-    return Math.min(Math.max((now - start) / (end - start), 0), 1);
-  }, [startIso, endIso]);
-
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const center = size / 2;
-
-  return (
-    <div className="renewal-ring" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
-        <circle cx={center} cy={center} r={radius} strokeWidth={strokeWidth} className="renewal-ring__track" fill="none" />
-        {pct !== null && (
-          <circle
-            cx={center}
-            cy={center}
-            r={radius}
-            strokeWidth={strokeWidth}
-            className="renewal-ring__fill"
-            fill="none"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference * pct}
-            transform={`rotate(-90 ${center} ${center})`}
-          />
-        )}
-      </svg>
-      <div className="renewal-ring__icon">{children}</div>
-    </div>
-  );
-}
-
-const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
-
-// Animates toward `target` with a plain requestAnimationFrame loop (no
-// framer-motion dependency) using the same "count toward a value" technique
-// motion libraries use internally, just without the spring math. Tracks the
-// live displayed value in a ref (not just the committed target) so an
-// interrupted animation — toggling cadence again mid-count — resumes from
-// wherever it visually was instead of jumping.
-function useAnimatedNumber(target, duration = 500) {
-  const [value, setValue] = useState(target);
-  const displayRef = useRef(target);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.matchMedia(REDUCED_MOTION_QUERY).matches) {
-      displayRef.current = target;
-      setValue(target);
-      return;
-    }
-    if (displayRef.current === target) return;
-
-    const from = displayRef.current;
-    const start = performance.now();
-    let frame;
-
-    function tick(now) {
-      const elapsed = Math.min((now - start) / duration, 1);
-      const eased = 1 - (1 - elapsed) ** 3;
-      const next = from + (target - from) * eased;
-      displayRef.current = next;
-      setValue(next);
-      if (elapsed < 1) {
-        frame = requestAnimationFrame(tick);
-      } else {
-        displayRef.current = target;
-        setValue(target);
-      }
-    }
-
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [target, duration]);
-
-  return value;
+// How far through the current billing period the account is, expressed as
+// "fraction remaining" (1 = just renewed, 0 = about to renew) so it reads
+// as a countdown/runway rather than a depleting bar. Returns null (ring
+// shows only its track) when there's no period to measure against.
+function useRenewalProgress(startIso, endIso) {
+  if (!startIso || !endIso) return null;
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+  const now = Date.now();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
+  const elapsed = Math.min(Math.max((now - start) / (end - start), 0), 1);
+  return 1 - elapsed;
 }
 
 const CADENCE_OPTIONS = [
   { plan: 'pro_monthly', ...PLANS.pro_monthly, label: 'Monthly' },
   { plan: 'pro_yearly', ...PLANS.pro_yearly, label: 'Yearly' },
 ];
-
-function CadenceToggle({ selected, onSelect, disabled }) {
-  const index = CADENCE_OPTIONS.findIndex((option) => option.plan === selected);
-
-  return (
-    <div className="cadence-toggle" role="radiogroup" aria-label="Choose billing cadence">
-      <span className="cadence-toggle__thumb" style={{ transform: `translateX(${index * 100}%)` }} aria-hidden="true" />
-      {CADENCE_OPTIONS.map((option) => (
-        <label
-          key={option.plan}
-          className={`cadence-toggle__option ${selected === option.plan ? 'cadence-toggle__option--checked' : ''}`}
-        >
-          <input
-            type="radio"
-            name="billing-cadence"
-            value={option.plan}
-            checked={selected === option.plan}
-            disabled={disabled}
-            onChange={() => onSelect(option.plan)}
-            className="cadence-toggle__input"
-          />
-          {option.label}
-        </label>
-      ))}
-    </div>
-  );
-}
 
 function AnimatedPrice({ plan }) {
   const target = planPriceValue(plan);
@@ -205,6 +101,11 @@ export default function SubscriptionsPage() {
     }
   }
 
+  const renewalProgress = useRenewalProgress(
+    subscription.subscription?.current_period_start,
+    subscription.subscription?.current_period_end
+  );
+
   if (subscription.loading) {
     return (
       <div className="page-stack" role="status" aria-live="polite">
@@ -233,9 +134,9 @@ export default function SubscriptionsPage() {
 
       <Card variant="default" className="plan-hero">
         <div className="plan-hero__top">
-          <RenewalRing startIso={row?.current_period_start} endIso={row?.current_period_end}>
+          <ProgressRing value={renewalProgress} variant={subscription.isPro ? 'accent' : 'accent'} glow>
             {subscription.isPro ? <Crown size={20} aria-hidden="true" /> : <Sparkles size={20} aria-hidden="true" />}
-          </RenewalRing>
+          </ProgressRing>
           <div className="plan-hero__identity">
             <div className="plan-hero__name-row">
               <h2 className="plan-hero__name">{planName}</h2>
@@ -271,7 +172,14 @@ export default function SubscriptionsPage() {
         <Card variant="default">
           <CardHeader title="Upgrade to Pro" subtitle="Choose a billing cadence." />
           <div className="cadence-picker">
-            <CadenceToggle selected={selectedCadence} onSelect={setSelectedCadence} disabled={Boolean(billingAction)} />
+            <SegmentedControl
+              data={CADENCE_OPTIONS.map((o) => ({ value: o.plan, label: o.label }))}
+              value={selectedCadence}
+              onChange={setSelectedCadence}
+              name="billing-cadence"
+              disabled={Boolean(billingAction)}
+              aria-label="Choose billing cadence"
+            />
             <div className="cadence-picker__price">
               <AnimatedPrice plan={selectedCadence} />
               {selectedCadence === 'pro_yearly' && yearlySavings > 0 ? (
@@ -299,18 +207,16 @@ export default function SubscriptionsPage() {
       <Card variant="default">
         <CardHeader title="Billing history & invoices" subtitle="Payment history, receipts, and invoice downloads." />
         {hasCustomer ? (
-          <button type="button" className="subscription-item" onClick={manageBilling} disabled={billingAction === 'portal'}>
-            <span className="subscription-item__icon" aria-hidden="true"><Receipt size={18} /></span>
-            <span className="subscription-item__body">
-              <span className="subscription-item__title">View in Polar's customer portal</span>
-              <span className="subscription-item__subtitle">Past payments, receipts, and invoice downloads — handled securely by Polar.</span>
-            </span>
-            {billingAction === 'portal' ? (
-              <span className="spinner spinner--sm" role="status" aria-label="Opening" />
-            ) : (
-              <ExternalLink size={16} aria-hidden="true" className="subscription-item__chevron" />
-            )}
-          </button>
+          <ItemRow
+            as="button"
+            type="button"
+            onClick={manageBilling}
+            loading={billingAction === 'portal'}
+            icon={<Receipt size={18} />}
+            title="View in Polar's customer portal"
+            subtitle="Past payments, receipts, and invoice downloads — handled securely by Polar."
+            trailing={<ExternalLink size={16} aria-hidden="true" />}
+          />
         ) : (
           <p className="muted small">Nothing to show yet — you haven't subscribed to Pro. History and invoices appear here once you do.</p>
         )}
@@ -373,7 +279,7 @@ export default function SubscriptionsPage() {
       {subscription.isPro ? (
         <Card variant="default" className="danger-zone">
           <div className="danger-zone__header">
-            <span className="danger-zone__icon-badge" aria-hidden="true"><AlertTriangle size={16} /></span>
+            <span className="danger-zone__icon-badge" aria-hidden="true"><ShieldAlert size={16} /></span>
             <div>
               <h3 className="panel__title">Danger zone</h3>
               <p className="panel__subtitle">Cancel your subscription.</p>

@@ -36,11 +36,44 @@
   flex-wrap: wrap;
 }
 
+.modal-header__titlegroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
 .modal-header__title {
   font-size: var(--text-heading-sm);
   font-weight: var(--weight-bold);
   margin: 0;
   color: var(--color-ink);
+}
+
+/* Icon medallion — status-tinted circular background behind the icon,
+   reusing the app's existing *-soft/*  color pairs (no new colors). */
+.modal-header__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+}
+
+.modal-header__icon--danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.modal-header__icon--warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.modal-header__icon--success {
+  background: var(--color-success-soft);
+  color: var(--color-success);
 }
 
 .modal-close {

@@ -9,6 +9,10 @@
 @import './components/tables.css';
 @import './components/modals.css';
 @import './components/badges.css';
+@import './components/progress-bar.css';
+@import './components/progress-ring.css';
+@import './components/segmented-control.css';
+@import './components/item-row.css';
 @import './components/sidebar.css';
 @import './components/topbar.css';
 @import './components/avatars.css';

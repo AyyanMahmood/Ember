@@ -1,7 +1,19 @@
 import { useRef } from 'react';
-import { X } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, X } from 'lucide-react';
 import { Button } from './Button.jsx';
 import { useFocusTrap } from '../../hooks/useFocusTrap.js';
+
+// Status -> default icon + medallion color, so a caller can just say
+// icon="danger" and get a sensible icon + colored circular background for
+// free (HeroUI's AlertDialog.Icon does this; Radix's raw primitive and
+// shadcn's wrapper both leave it fully manual). "danger"/"warning"/"success"
+// reuse the app's existing *-soft color tokens, so no new colors are
+// introduced — Ember just adds the status->icon mapping on top.
+const STATUS_ICONS = {
+  danger: AlertTriangle,
+  warning: AlertCircle,
+  success: CheckCircle2,
+};
 
 export function Modal({
   isOpen,
@@ -13,6 +25,8 @@ export function Modal({
   closeOnOverlayClick = true,
   closeOnEscape = true,
   className = '',
+  icon,
+  iconStatus = 'danger',
 }) {
   const modalRef = useRef(null);
 
@@ -27,6 +41,12 @@ export function Modal({
     xl: 'modal-card--xl',
     full: 'modal-card--full',
   };
+
+  // `icon` accepts either a status string ("danger"/"warning"/"success", to
+  // get the default icon for that status) or a ready-made element (to use a
+  // specific icon while keeping the status's medallion color).
+  const IconComponent = typeof icon === 'string' ? STATUS_ICONS[icon] : null;
+  const iconNode = IconComponent ? <IconComponent size={20} /> : icon;
 
   return (
     <div
@@ -47,9 +67,16 @@ export function Modal({
         tabIndex={-1}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        {(title || showCloseButton) && (
+        {(title || showCloseButton || iconNode) && (
           <div className="modal-header">
-            {title && <h3 id="modal-title" className="modal-header__title">{title}</h3>}
+            <div className="modal-header__titlegroup">
+              {iconNode && (
+                <span className={`modal-header__icon modal-header__icon--${iconStatus}`} aria-hidden="true">
+                  {iconNode}
+                </span>
+              )}
+              {title && <h3 id="modal-title" className="modal-header__title">{title}</h3>}
+            </div>
             {showCloseButton && (
               <Button
                 variant="ghost"
@@ -79,9 +106,15 @@ export function ConfirmDialog({
   cancelLabel = 'Cancel',
   variant = 'danger',
   loading = false,
+  icon,
 }) {
+  // Defaults to the variant's own status icon (danger -> triangle, etc.) so
+  // every confirm dialog gets the icon-medallion treatment for free; pass
+  // icon={null} explicitly to opt out.
+  const resolvedIcon = icon === undefined ? variant : icon;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm" icon={resolvedIcon} iconStatus={variant}>
       {message && <p className="confirm-dialog__message">{message}</p>}
       <ModalFooter>
         <Button variant="secondary" onClick={onClose} disabled={loading}>

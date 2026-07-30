@@ -974,27 +974,8 @@
   gap: var(--space-2);
 }
 
-.usage-meter__track {
-  height: 0.5rem;
-  border-radius: var(--radius-full);
-  background: var(--color-line);
-  overflow: hidden;
-}
-
-.usage-meter__fill {
-  height: 100%;
-  border-radius: var(--radius-full);
-  background: var(--color-accent);
-  transition: width var(--duration-slow) var(--ease-out);
-}
-
-.usage-meter__fill--warning {
-  background: var(--color-warning);
-}
-
-.usage-meter__fill--danger {
-  background: var(--color-danger);
-}
+/* The meter's fill/track are now the shared ProgressBar primitive
+   (components/ui/ProgressBar.jsx, styles/components/progress-bar.css). */
 
 .pricing-grid--three {
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -1,0 +1,48 @@
+.progress-ring {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+}
+
+.progress-ring--glow.progress-ring--accent {
+  background: radial-gradient(closest-side, var(--color-accent-soft), transparent 72%);
+}
+
+.progress-ring--glow.progress-ring--danger {
+  background: radial-gradient(closest-side, var(--color-danger-soft), transparent 72%);
+}
+
+.progress-ring--glow.progress-ring--success {
+  background: radial-gradient(closest-side, var(--color-success-soft), transparent 72%);
+}
+
+.progress-ring > svg {
+  position: absolute;
+  inset: 0;
+}
+
+.progress-ring__track {
+  stroke: var(--color-line);
+}
+
+.progress-ring--accent .progress-ring__fill { stroke: var(--color-accent); }
+.progress-ring--danger .progress-ring__fill { stroke: var(--color-danger); }
+.progress-ring--success .progress-ring__fill { stroke: var(--color-success); }
+.progress-ring--warning .progress-ring__fill { stroke: var(--color-warning); }
+
+.progress-ring__fill {
+  transition: stroke-dashoffset 800ms var(--ease-out);
+}
+
+.progress-ring__content {
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: var(--color-accent);
+}
+
+.progress-ring--danger .progress-ring__content { color: var(--color-danger); }
+.progress-ring--success .progress-ring__content { color: var(--color-success); }
+.progress-ring--warning .progress-ring__content { color: var(--color-warning); }
