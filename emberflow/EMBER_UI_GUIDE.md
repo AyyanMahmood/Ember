@@ -43,4 +43,10 @@ Browse these directly when a pattern isn't covered by anything in `/references`:
 | Module | Kind | Status |
 |---|---|---|
 | `polar-billing/` | Backend module | Extracted 2026-07-28 from EmberFlow's Paddle→Polar migration. |
+| `components/segmented-control/` | Component | Extracted 2026-07-30 from the Subscriptions page's Monthly/Yearly cadence toggle. Mantine `FloatingIndicator`-style measured-rect sliding indicator. |
+| `components/progress-ring/` | Component | Extracted 2026-07-30 from the Subscriptions page's renewal ring. HeroUI SVG technique + Mantine flat prop API; generalized off billing-period date math to a plain 0–1 `value`. |
+| `components/progress-bar/` | Component | Extracted 2026-07-30 from the Subscriptions page's usage meters. Tremor-inspired auto-derived warning/danger threshold coloring. |
+| `components/item-row/` | Component | Extracted 2026-07-30 from the Subscriptions page's billing-history row. Chakra `DataList` label/value split + Mantine `List` icon-slot convention. |
+| `components/animated-number/` | Hook | Extracted 2026-07-30 from the Subscriptions page's price counter. animate-ui `CountingNumber`'s prop shape, reimplemented framework-free (no framer-motion); deliberately did not adopt overshoot/"back" easing — see the module's README for why. |
+| `components/modal-dialog/` | Component | Icon-medallion feature (HeroUI `AlertDialog.Icon`-inspired) extracted 2026-07-30 and applied to EmberFlow's existing shared Modal/ConfirmDialog, retroactively upgrading every confirm dialog in the app. The modal/focus-trap/drawer mechanics predate this pass and weren't re-researched against references — flagged as a follow-up. |
 | UI primitives (Button, Card, Table, Badge, etc.) | Components | Not yet extracted — still living only in `frontend/src/components/ui/`. First candidates once a component has stabilized across two or more real EmberFlow screens. |

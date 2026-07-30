@@ -680,4 +680,23 @@ Billing moved out of Settings into its own first-class `/app/subscriptions` sect
 - `frontend/src/hooks/useSubscription.js` — fetches once on mount only, no realtime subscription, no refetch-on-focus. If the webhook side is actually fine, a user sitting on an already-open `/app/subscriptions` tab simply never sees a DB row that already updated. See the `TODO` comment directly under its `useEffect`.
 - Most likely next step when this is picked up: reproduce with a real Polar sandbox portal-cancel, read the Vercel function logs (the diagnostics added in `02cb56f` — `describeConfiguredWebhookSecret()`, the webhook-failure `console.error` — already help distinguish "webhook never arrived/failed verification" from "webhook succeeded, frontend just didn't refresh"), and only then decide between fixing the Polar dashboard's selected webhook events vs. adding realtime/focus-refresh to the hook.
 
+**Not to be confused with** the separate, since-fixed "Manage Billing button fails before the portal even opens" bug (`23a3732`) — that was the portal *session creation* request failing (production error sanitization was hiding the real Polar/DB error, plus no fallback if the stored `polar_customer_id` was stale). This deferred issue is specifically about entitlement *sync after a successful cancel in the portal* — a different stage of the flow.
+
+### Ember UI extraction pass (2026-07-30)
+
+Per the Ember UI workflow (study references first, never copy blindly, extract once proven), the Subscriptions page's bespoke UI was rebuilt on four new generalized primitives plus one enhancement to the existing shared dialog — all built inside EmberFlow first, verified with a live React render (not just code review), then extracted. Full inspiration/rationale/modification notes live in each module's own `README.md` (rule: extraction docs travel with the component, not just a changelog entry here).
+
+| New/enhanced | Ember UI module (`~/Desktop/Ember UI/`) | Key finding from research |
+|---|---|---|
+| `SegmentedControl` (replaced `CadenceToggle`) | `components/segmented-control/` | The old toggle's `translateX(index * 100%)` assumed equal-width options — never actually true. Rebuilt on Mantine's `FloatingIndicator` measured-rect technique. |
+| `ProgressRing` (replaced `RenewalRing`) | `components/progress-ring/` | Generalized off billing-period date math to a plain 0–1 `value` (HeroUI's SVG technique, Mantine's flat prop API). |
+| `ProgressBar` (replaced inline usage-meter fill) | `components/progress-bar/` | Tremor is the only reference library with semantic threshold coloring on a progress bar; added auto-derivation from a `thresholds` prop on top. |
+| `ItemRow` (replaced `.subscription-item`) | `components/item-row/` | Chakra `DataList` (label/value split) + Mantine `List` (icon-slot) are both presentational-only; added the interactive hover state neither ships. |
+| `useAnimatedNumber` (extracted, unchanged) | `components/animated-number/` | animate-ui's `CountingNumber`/`SlidingNumber` and framer-motion's `backOut` easing were all considered and **deliberately not adopted** — bounce/overshoot motion conflicts with this file's own Motion Rules. Reimplemented framework-free. |
+| `Modal`/`ConfirmDialog` icon medallion (new feature on an existing shared component) | `components/modal-dialog/` | Radix's raw primitive and shadcn's wrapper both leave icon styling fully manual; HeroUI's `AlertDialog.Icon` (status → icon + medallion color together) was the only first-class API found. Applies retroactively to every existing `ConfirmDialog` call site, not just Subscriptions. |
+
+Libraries actually consulted this pass (beyond the initial redesign's shadcn/origin-ui/Tremor/MagicUI pass): Mantine, Radix UI, HeroUI, Chakra UI, animate-ui, react-bits, framer-motion. `~/Desktop/Ember UI/README.md` and `EMBER_UI_GUIDE.md`'s catalogue are both updated to match.
+
+**Not extracted, still EmberFlow-local:** `Button`, `Card`, `Badge`, `Table`, and the rest of `components/ui/` — genuinely reusable but not touched by this pass, so not re-evaluated. The `Modal` module's own focus-trap/drawer mechanics also predate this pass and weren't checked against Radix's `FocusScope`/React Aria's focus-trap utilities — worth a dedicated look before extracting further dialog features.
+
 ---
