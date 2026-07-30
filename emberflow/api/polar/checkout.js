@@ -1,5 +1,5 @@
 const { getAuthenticatedUser } = require('../_utils/supabaseAdmin');
-const { getBaseUrl, methodNotAllowed, optionsHandler, sendError, sendJson } = require('../_utils/http');
+const { getBaseUrl, methodNotAllowed, optionsHandler, sendJson } = require('../_utils/http');
 const { getProductId, hasAccessGrantingStatus, polarFetch } = require('../_utils/polar');
 const { rateLimit } = require('../_utils/rateLimit');
 
@@ -74,7 +74,13 @@ module.exports = async function handler(req, res) {
 
     return sendJson(res, 200, { url: checkoutUrl });
   } catch (err) {
+    // Deliberately not routed through sendError(): same reasoning as
+    // api/polar/portal.js — in production sendError() sanitizes every
+    // message to "An unexpected error occurred.", which hides genuinely
+    // useful, safe-to-show billing context (a rejected plan, a Polar-side
+    // rejection, a misconfigured product id) behind a dead end. Every error
+    // this route can throw is a known, bounded billing-context error.
     console.error('Polar Checkout Error:', err.message);
-    return sendError(res, err);
+    return sendJson(res, 400, { error: `Couldn't start checkout: ${err.message}` });
   }
 };
