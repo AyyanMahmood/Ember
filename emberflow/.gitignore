@@ -6,3 +6,8 @@ dist
 *.log
 supabase/.temp/
 testing-issues.md
+# Local reference clones (~3.3GB of open-source UI libraries, cloned for
+# study only — never committed). CLAUDE.md documents these as gitignored;
+# this line makes that actually true and prevents an accidental `git add -A`
+# from staging gigabytes. See CLAUDE.md → Ember UI → References.
+references/
