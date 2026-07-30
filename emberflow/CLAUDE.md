@@ -106,7 +106,7 @@ The presentation layer may be redesigned completely. The application architectur
 ### Never migrate
 Never migrate from Supabase, Vercel, Polar, Upstash Redis, or the current project architecture. Assume these technologies are permanent unless explicitly requested.
 
-> **Payment provider — migrated Paddle → Polar (2026-07-28, explicitly requested).** All billing now runs through Polar as Merchant of Record (`/api/polar/*`, `api/_utils/polar.js`, `frontend/src/services/subscriptions.js`). The Paddle route/util code has been removed; the legacy `subscriptions.paddle_*` columns are intentionally retained until a post-verification cleanup. See `POLAR_SETUP.md` and `POLAR_MIGRATION_PLAN.md`. Historical session logs below that reference Paddle describe the state at the time and are left as-is.
+> **Payment provider — migrated Paddle → Polar (2026-07-28, explicitly requested).** All billing now runs through Polar as Merchant of Record (`/api/polar/*`, `api/_utils/polar.js`, `frontend/src/services/subscriptions.js`). The Paddle route/util code has been removed; the legacy `subscriptions.paddle_*` columns are intentionally retained until a post-verification cleanup. `polar-migration` has since been merged into `main` (fast-forward — `main` and `polar-migration` now point at the same commit). See `POLAR_SETUP.md` and `POLAR_MIGRATION_PLAN.md`. Historical session logs below that reference Paddle describe the state at the time and are left as-is.
 
 ### STOP condition
 If a redesign requires changing backend logic, STOP and explain why before making changes. Never rewrite working backend code simply because a different implementation exists.
@@ -124,6 +124,40 @@ Visual quality should compete with OpenClaude, Vercel, Raycast, Arc, Linear, Cle
 EmberFlow is not just an invoicing application. It is intended to become the operating system for freelancers. Every feature should answer: "Does this help a freelancer run their business better?" Do not add features simply because other SaaS products have them. Every feature should feel intentional.
 
 Future Ember products will share this design language, component library, UX philosophy, and engineering standards. Keep architecture modular.
+
+---
+
+# Ember UI
+
+EmberFlow is no longer the only thing being built. **Ember UI** is a parallel, permanent effort: a canonical component/design system that every reusable piece built inside EmberFlow eventually graduates into, so future Ember products (and EmberFlow itself) can be assembled from it instead of rebuilt from scratch each time. Think long-term. Build systems, not pages.
+
+**Ember UI lives at `~/Desktop/Ember UI/`** (README + catalogue table, one folder per module — components, hooks, or backend modules like `polar-billing/`). EmberFlow *consumes* Ember UI; never the other way around.
+
+### Ember UI Development Rules
+
+Before building ANY UI:
+
+1. Read `EMBER_UI_GUIDE.md` (repo root).
+2. Study every relevant implementation inside `/references` (see below) — never design from a blank page when prior art exists.
+3. Search Ember UI (`~/Desktop/Ember UI/`) before creating anything new.
+4. Never copy components verbatim from a reference library. Extract ideas, improve them, and build something recognizably Ember.
+5. If multiple reference implementations solve the same problem, compare all of them: identify strengths, identify weaknesses, combine the strongest ideas, then build the best Ember-native version.
+6. Study at least **three** implementations before designing anything nontrivial — never stop at the first one that works.
+7. Every genuinely reusable component belongs in Ember UI, not buried in an EmberFlow-specific folder.
+8. Ember UI is the canonical design system going forward. Where it conflicts with an older EmberFlow-local pattern, prefer Ember UI once the equivalent exists there.
+9. Reduce third-party dependencies over time by replacing them with Ember UI components as it matures — don't rip out working libraries preemptively.
+
+### Open Source Research Philosophy
+
+Study open-source like a research lab: understand *why* something is good, extract the engineering pattern, then create something recognizably Ember. Never build clones — always evolve the idea. Research, combine, improve — do not copy.
+
+### References
+
+Local reference repositories live in `/references` at the repo root (untracked/gitignored — large, cloned locally for study, not committed):
+
+- `shadcn-ui` (cloned as `ui`), `magicui`, `originui`, `animate-ui`, `radix-ui`, `framer-motion`, `react-bits`, `mantine`, `heroui`, `chakra-ui`, `tremor`, `headlessui`
+
+Documentation-only research sources (no local clone): reactbits.dev, kokonutui.com, motion.dev, animejs.com, rive.app.
 
 ---
 
@@ -320,8 +354,8 @@ Question every screen, spacing decision, interaction, hierarchy, and animation. 
 | V1 Audit (2026-07-27) | Complete — full feature-by-feature status report produced across all 15 areas (auth, pages, invoices, proposals, brand studio, subscriptions, security, SEO, performance, prod readiness). Findings drove the two bundles below. |
 | Production Authentication bundle (2026-07-27): resend verification email, in-app password change | Code complete, build green — see "Production Authentication" section below |
 | V1 Launch Prep bundle (2026-07-27): SEO, production hardening, performance verification | Complete — see "V1 Launch Prep" section below |
-| Paddle → Polar billing migration (2026-07-28) | Code complete across all 7 phases + logic-verified (`npm run verify:polar` 31/31), build green. **Not yet live-sandbox-tested** (no Polar account/public webhook URL available in this environment) — that's the merge gate. On `polar-migration` branch, not merged to `main`. See "Paddle → Polar Billing Migration" section below. |
-| Microsoft OAuth removal (2026-07-28) | Complete — button, provider logic, Azure references, and docs all removed from V1; build green. Also on `polar-migration`, not yet merged. See "Microsoft OAuth Removal" section below. |
+| Paddle → Polar billing migration (2026-07-28) | Code complete across all 7 phases + logic-verified (`npm run verify:polar` 31/31), build green. Merged from `polar-migration` into `main`. **Not yet live-sandbox-tested** (no Polar account/public webhook URL available in this environment) — that remains the gate before calling it production-verified. See "Paddle → Polar Billing Migration" section below. |
+| Microsoft OAuth removal (2026-07-28) | Complete — button, provider logic, Azure references, and docs all removed from V1; build green. Merged from `polar-migration` into `main`. See "Microsoft OAuth Removal" section below. |
 
 A full audit and a 10-phase implementation roadmap toward a dark-first, white-label-ready premium redesign is in progress on `opclaude-redesign`. See `PROJECT_STATUS.md` → "Redesign Roadmap Progress" for phase-by-phase status.
 
