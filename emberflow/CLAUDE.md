@@ -159,6 +159,18 @@ Local reference repositories live in `/references` at the repo root (untracked/g
 
 Documentation-only research sources (no local clone): reactbits.dev, kokonutui.com, motion.dev, animejs.com, rive.app.
 
+## Motion Inspiration Library
+
+A curated study catalog of motion/animation sources for the future **Ember UI v1.5 Motion System**. Added 2026-07-30 under launch freeze — **documentation-only, nothing implemented**. The full per-source analysis (strengths, weaknesses, components worth studying, animation quality, production suitability, recreate-vs-depend) lives in `EMBER_UI_GUIDE.md` → Motion Inspiration Library; the motion-system plan + Future Loader Library live in `EMBER_UI_TIERING.md`.
+
+Sources catalogued: **Orbs** (`orbs.jakubantalik.com` — the AI "thinking orb" pattern, newly added), Motion.dev, Anime.js, Rive, React Bits, Kokonut UI, Vengeance UI, Magic UI, Origin UI, Animate UI.
+
+Normative rules that survive into any future motion work:
+- **Recreate, don't depend** — extract the technique, rebuild it Ember-branded and reduced-motion-safe. The only justified runtime dependencies are **Motion.dev** (for genuine exit/layout orchestration CSS can't do) and **Rive/Anime.js** (only for a specific signature illustration/sequence).
+- **Calm-premium, no bounce/gimmick**, CSS-first, `prefers-reduced-motion` always honored — richer motion is allowed only for rare *signature moments* (upgrade success, AI "thinking," completed export), never for chrome.
+- **⚠️ Skeleton loaders remain excluded from EmberFlow** (standing Loading-States rule below). A skeleton primitive may live in Ember UI for *other* Ember Holdings products, but is not adopted in EmberFlow unless that rule is deliberately revisited.
+- The **`EmberThinkingOrb`** is intended as a cross-product Ember Holdings motion signature ("an Ember product is thinking"), not just an EmberFlow loader.
+
 ---
 
 # Design System

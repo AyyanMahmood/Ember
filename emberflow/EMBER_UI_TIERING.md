@@ -94,3 +94,61 @@ Below the "stabilized across 2+ screens with real reuse pressure" bar, or genuin
 | Avatar / ThemeToggle / PasswordStrengthMeter | 3 | Stay custom |
 
 **Guiding principle (unchanged):** never clone. Where an OSS primitive solves a hard problem (focus management, floating positioning, chart math), adopt its *engineering* under Ember's *visual identity*. Where Ember's custom version is already good and identity-defining (Button, Card), extract and keep it. The goal is a premium, opinionated system — not a re-skinned shadcn.
+
+---
+
+# Ember UI v1.5 Motion System
+
+> **Documentation-only plan, added under launch freeze (2026-07-30). Nothing here is implemented. No code, no extraction.** Sources analyzed in `EMBER_UI_GUIDE.md` → Motion Inspiration Library. This becomes real work only post-launch (aligns with `V1.5_ROADMAP.md` → Milestone D/F).
+
+Ember's motion is **calm-premium**: motion earns its place, never decorates. Everything below is bound by the design bible (fade/spring/slide/subtle-scale; **no bounce/gimmick**; `prefers-reduced-motion` honored; CSS-first).
+
+### Motion hierarchy (the organizing idea — define this first)
+A three-tier budget so motion has a consistent "loudness," and nothing competes:
+- **Tier 0 — Chrome** (`~120ms`, `--duration-fast`): functional feedback — button press, focus ring, hover lift, toggle. Instant-feeling, never noticed.
+- **Tier 1 — Content** (`180–400ms`, `--duration-base/slow`): data appearing — card/table fade-in, list stagger, price counter, progress fills. Smooth, supportive.
+- **Tier 2 — Signature moments** (richer, longer, rarer): the few deliberately memorable beats — upgrade-to-Pro success, AI/generation "thinking," a completed export. Richer motion is *allowed* here (still tasteful) precisely because it's rare.
+
+### Planned motion primitives / patterns
+
+| Idea | Tier | Approach (constraint-bound) | Source studied |
+|---|:--:|---|---|
+| **Premium page loaders** | 1–2 | Keep the scoped `LoadingSpinner` as default; add an `EmberThinkingOrb` for generative/heavy states (Tier 2) | Orbs, Motion |
+| **Route transitions** | 1 | One shared enter/exit convention across `/app/*`; the case where adopting **Motion** (`AnimatePresence`) is justified (CSS can't do exit) | Motion.dev |
+| **Skeleton loaders** ⚠️ | — | **EXCLUDED in EmberFlow** by the standing Loading-States rule ("do not introduce skeleton screens anywhere"). May exist as an Ember UI primitive for *other* Ember Holdings products, but must NOT be adopted in EmberFlow unless that rule is deliberately revisited. Documented here only because it was on the brainstorm list. | Magic UI (shimmer) |
+| **Empty-state motion** | 1 | Subtle entrance on the existing `EmptyState` (fade/slide already used); optionally a Rive illustration for one *signature* empty state | Rive |
+| **Success animations** | 2 | SVG checkmark that draws itself (`stroke-dashoffset`); restrained — a draw, never a confetti burst | Anime.js, CSS |
+| **Billing animations** | 2 | "Welcome to Pro" moment on upgrade success (the animated price counter already exists); a calm celebratory beat, not fireworks | Animate UI |
+| **AI generation animations** | 2 | `EmberThinkingOrb` — the ambient gradient-orb "thinking" state | Orbs |
+| **Proposal generation animations** | 2 | Thinking orb + progressive content reveal as sections generate | Orbs, Motion |
+| **Invoice sent animation** | 2 | A brief, tasteful send micro-motion (paper-plane/lift-off) on "Mark sent"/send — one beat, then out of the way | Magic UI |
+| **Floating particles** | 0–1 | **Very** subtle ambient only (a few slow, low-opacity motes), opt-in, reduced-motion off; never a busy particle field (would violate "calm/never flashy") | React Bits, Kokonut |
+| **Ambient backgrounds** | 0 | Extend the existing radial-glow (`reset.css`) tastefully into the app interior — subtle, dark-first | Kokonut, Vengeance (dialed down) |
+| **Glass morphism** | 0 | Extend the existing single `backdrop-filter` use into a consistent glass token/treatment for elevated surfaces | Origin UI, Kokonut |
+| **Depth** | 0–1 | Layered shadow + very subtle parallax/scale on elevation; codify the existing floating-card language into depth tokens | (design bible) |
+
+### Guardrails
+- Every Tier 2 moment ships with a reduced-motion fallback that still communicates state (e.g. the orb becomes a static glow; the checkmark appears without drawing).
+- Prefer **one** shared motion system (tokens + a small set of primitives) over per-page bespoke animation — the drift risk is exactly what Ember UI exists to prevent.
+- Measure: signature moments must not cost jank (60fps) or block interaction.
+
+---
+
+## Future Loader Library
+
+Loaders/indicators worth recreating **later** (post-launch). Documentation only — do not implement. `Priority` assumes AI/generation features land in v1.5; adjust if they don't.
+
+| Loader | Purpose | Complexity | Priority | Inspiration |
+|---|---|:--:|:--:|---|
+| `LoadingSpinner` (exists) | Default scoped loading indicator | — | Keep | current |
+| `ProgressRing` (exists, extracted) | Determinate circular progress / period runway | — | Keep | HeroUI |
+| `ProgressBar` (exists, extracted) | Determinate linear progress w/ thresholds | — | Keep | Tremor |
+| **EmberThinkingOrb** | Ambient "AI/generation is thinking" state | High | High (if AI ships) | Orbs |
+| **SVG success check** | Signature success confirmation (draws itself) | Low | Medium | Anime.js / CSS |
+| **Document-generation progress** | Long PDF/export progress (orb + % + stage label) | Medium | Medium | Orbs + ProgressBar |
+| **Route-transition loader** | Cross-fade/slide between `/app/*` routes | Medium | Medium | Motion.dev |
+| **Ambient page-load glow** | Subtle brand glow settling in on first paint | Low | Low | CSS / Kokonut |
+| **Shimmer/skeleton** ⚠️ | Placeholder-shape loading | Low | **Excluded in EmberFlow** | Magic UI — Ember-UI-only, other products |
+| **Inline button spinner** (exists in `Button`) | In-place async feedback | — | Keep | current |
+
+**Recreation rule (unchanged):** each of these is a *technique to own*, Ember-branded and reduced-motion-safe — not a dependency to import (except Motion.dev for genuine exit/layout orchestration, and Rive/Anime.js only for a specific signature illustration/sequence). Understand → improve → surpass.
