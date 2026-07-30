@@ -139,7 +139,8 @@ Run `supabase/migrations/007_polar_billing.sql` in the Supabase SQL Editor (addi
 | Payment succeeds but Pro never unlocks | Webhook not configured, wrong URL, or the `subscription.*` events aren't selected on the endpoint. Check the endpoint's delivery log in the Polar dashboard. |
 | **Manage billing** button never appears | The `subscriptions` row has no `polar_customer_id` yet — it's written by the first `subscription.*` webhook. Confirm the webhook delivered `200`. |
 | `429 Too many requests` on billing routes | Upstash rate limit (5/min for checkout & portal). Wait a minute; confirm `UPSTASH_REDIS_REST_URL`/`TOKEN`. |
-| Portal route errors for a user | That user has no Polar customer yet (never subscribed). Expected — the UI only shows the portal button once a customer exists. |
+| Portal route errors for a user who *has* subscribed successfully | `api/polar/portal.js` now returns the real Polar error text directly (not sanitized) and tries both `polar_customer_id` and `external_customer_id` before giving up — check Vercel's function logs for the `Polar portal: customer session lookup via ... failed` line. Two known causes: (1) the org access token's scopes don't include **customer_sessions (write)** (see the scopes list above — a token created before the portal was added may only have checkouts/customers scopes); (2) the stored `polar_customer_id` was captured under a different `POLAR_SERVER` environment than the one now configured (a sandbox customer id 404s against the production API and vice versa) — the `external_customer_id` fallback recovers from this automatically, so if *both* attempts fail identically, that points at (1), not (2). |
+| Portal route errors for a user who has *never* subscribed | Expected — no Polar customer exists yet for them under either lookup. The UI only shows the portal button once a customer exists. |
 
 ---
 

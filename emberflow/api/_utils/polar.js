@@ -80,12 +80,15 @@ async function polarFetch(path, options = {}) {
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    console.error('Polar API Error:');
+    console.error(`Polar API Error: ${options.method || 'GET'} ${path} -> ${response.status}`);
     console.error(JSON.stringify(payload, null, 2));
+    // Polar's error body is usually { detail: "..." } (a string) but for
+    // 422s detail is an array of { type, loc, msg } validation objects —
+    // stringify the whole payload in that case rather than losing it.
     throw new Error(
       typeof payload?.detail === 'string'
         ? payload.detail
-        : JSON.stringify(payload?.error || payload)
+        : JSON.stringify(payload?.detail || payload?.error || payload)
     );
   }
 

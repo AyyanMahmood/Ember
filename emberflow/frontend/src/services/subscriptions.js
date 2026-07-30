@@ -16,8 +16,14 @@ async function authenticatedFetch(path, options = {}) {
     },
   });
 
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.error || 'Billing request failed.');
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    // payload is null when the response body wasn't valid JSON at all (e.g.
+    // a platform-level failure that never reached our handler's own error
+    // formatting) — surfacing the HTTP status in that case gives something
+    // concrete to search Vercel's logs for, instead of a bare generic string.
+    throw new Error(payload?.error || `Billing request failed (HTTP ${response.status}).`);
+  }
   return payload;
 }
 
