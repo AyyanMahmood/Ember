@@ -133,6 +133,20 @@ const handler = async function handler(req, res) {
     // the single source of truth for entitlement state (created, active,
     // updated, canceled, uncanceled, revoked). order.* / customer.* events
     // are acknowledged but intentionally not acted on here.
+    //
+    // KNOWN ISSUE (deferred, tracked in CLAUDE.md -> "Known Deferred Issues"):
+    // cancelling from the Polar customer portal does not reliably flip the
+    // user's entitlement in EmberFlow. This handler is the correct place to
+    // fix it once picked up — it already upserts generically on every
+    // subscription.* event, so the gap is most likely one of: (a) the
+    // production webhook endpoint's selected events not including whichever
+    // Polar fires for a portal-initiated cancel/revoke (verify against the
+    // Polar dashboard's delivery log, not assumptions), or (b) the delivery
+    // arriving fine but the frontend never refetching to see it (see the
+    // matching TODO in frontend/src/hooks/useSubscription.js). Confirm which
+    // via a real portal-cancel test with the diagnostics already in place
+    // (describeConfiguredWebhookSecret, the console.error above on 403s)
+    // before writing a fix — do not guess at the root cause.
     if (eventType.startsWith('subscription.')) {
       const userId = await resolveUserId(supabase, data);
       if (userId) {

@@ -660,3 +660,24 @@ User decision: drop Microsoft OAuth from EmberFlow V1 entirely (button, provider
 **Verification:** repo-wide case-insensitive search for `microsoft`/`azure` confirmed zero references in `frontend/src` or `api/`; the only remaining hits anywhere in the repo are the historical CLAUDE.md session logs described above. `npm install` clean, `npm run build` green.
 
 **Commits:** `131db3c` (checkpoint), `18a9010` (removal) — both on `polar-migration`, not yet merged to `main`.
+
+---
+
+## Subscriptions Redesign (2026-07-30, in progress)
+
+Billing moved out of Settings into its own first-class `/app/subscriptions` section — a dedicated sidebar item and the single place for plan, upgrade/downgrade, billing history, payment method, customer portal, invoices, and (future) refunds/cancellation flow. `SettingsPage.jsx` no longer has any billing UI. Architecture-first pass landed in `9d69e5a`; visual/motion polish is the active work — see the roadmap status table for current phase.
+
+**Server-side hardening added alongside the move:** `api/polar/checkout.js` now rejects (409) a checkout attempt while the user already has an active subscription — Polar has no API yet to change a subscription's product in place, so an unguarded second checkout would create a parallel subscription and double-bill the customer, not replace the first. `hasAccessGrantingStatus()` was extracted in `api/_utils/polar.js` so this guard and `normalizeSubscription()`'s entitlement math share one definition of "active."
+
+### Known Deferred Issue — Polar portal cancellation not syncing entitlement
+
+**Symptom:** a user who cancels their subscription from the Polar customer portal (not from inside EmberFlow) does not reliably end up back on the Free plan in EmberFlow.
+
+**Status:** identified, intentionally deferred — not being fixed during the Subscriptions redesign. Architecture below is built so the eventual fix has an obvious home; it is not itself a fix.
+
+**Where the fix belongs (do not guess further without a real test first):**
+- `api/polar/webhook.js` — the `subscription.*` handler already upserts generically on every event type (created/active/updated/canceled/uncanceled/revoked all flow through the same `upsertSubscription()`), so this is probably *not* a missing-case bug in the handler itself. See the `KNOWN ISSUE` comment directly above the `eventType.startsWith('subscription.')` check.
+- `frontend/src/hooks/useSubscription.js` — fetches once on mount only, no realtime subscription, no refetch-on-focus. If the webhook side is actually fine, a user sitting on an already-open `/app/subscriptions` tab simply never sees a DB row that already updated. See the `TODO` comment directly under its `useEffect`.
+- Most likely next step when this is picked up: reproduce with a real Polar sandbox portal-cancel, read the Vercel function logs (the diagnostics added in `02cb56f` — `describeConfiguredWebhookSecret()`, the webhook-failure `console.error` — already help distinguish "webhook never arrived/failed verification" from "webhook succeeded, frontend just didn't refresh"), and only then decide between fixing the Polar dashboard's selected webhook events vs. adding realtime/focus-refresh to the hook.
+
+---

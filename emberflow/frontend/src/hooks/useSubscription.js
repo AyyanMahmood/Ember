@@ -32,6 +32,16 @@ export function useSubscription() {
     refresh();
   }, [refresh]);
 
+  // TODO (deferred, tracked in CLAUDE.md -> "Known Deferred Issues"): this
+  // only fetches once on mount, with no realtime subscription and no
+  // refetch-on-focus/return. A user who cancels in the Polar customer
+  // portal (a separate hosted tab, not a redirect flow) and comes back to
+  // an already-open EmberFlow tab won't see the change until something
+  // forces a refresh. When the cancellation-sync issue is picked up, this
+  // is the hook to extend — either a Supabase realtime subscription on the
+  // user's `subscriptions` row, or a `refresh()` call on window focus/visibility
+  // change, whichever the investigation in api/polar/webhook.js points to.
+
   const entitlements = useMemo(() => getEntitlements(subscription), [subscription]);
 
   return {
