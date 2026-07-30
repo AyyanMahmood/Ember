@@ -1,4 +1,4 @@
-import { BarChart3, FileText, Home, LayoutTemplate, LineChart, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings, Sparkles, Users, X } from 'lucide-react';
+import { BarChart3, CreditCard, FileText, Home, LayoutTemplate, LineChart, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings, Sparkles, Users, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
@@ -16,6 +16,7 @@ const navItems = [
   { to: '/app/analytics', label: 'Analytics', icon: LineChart },
   { to: '/app/templates', label: 'Templates', icon: LayoutTemplate },
   { to: '/app/settings/brand', label: 'Brand Studio', icon: Sparkles, end: true },
+  { to: '/app/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { to: '/app/settings', label: 'Settings', icon: Settings, end: true },
 ];
 

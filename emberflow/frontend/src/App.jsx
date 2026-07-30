@@ -25,6 +25,7 @@ const ProposalFormPage = lazy(() => import('./pages/ProposalFormPage.jsx'));
 const ProposalsPage = lazy(() => import('./pages/ProposalsPage.jsx'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage.jsx'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage.jsx'));
+const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage.jsx'));
 const TemplatesPage = lazy(() => import('./pages/TemplatesPage.jsx'));
 const TermsPage = lazy(() => import('./pages/TermsPage.jsx'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage.jsx'));
@@ -73,6 +74,7 @@ export default function App() {
           <Route path="proposals/new" element={<ProposalFormPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="templates" element={<TemplatesPage />} />
+          <Route path="subscriptions" element={<SubscriptionsPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="settings/brand" element={<BrandStudioPage />} />
         </Route>

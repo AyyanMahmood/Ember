@@ -1,4 +1,4 @@
-import { Eye, EyeOff, ExternalLink, Upload } from 'lucide-react';
+import { Eye, EyeOff, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Avatar } from '../components/ui/Avatar.jsx';
 import { Button } from '../components/ui/Button.jsx';
@@ -8,41 +8,14 @@ import { EmberSelect } from '../components/ui/EmberSelect.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import { PasswordStrengthMeter } from '../components/ui/PasswordStrengthMeter.jsx';
 import { useAuth } from '../hooks/useAuth.js';
-import { useSubscription } from '../hooks/useSubscription.js';
 import { getProfile, upsertProfile } from '../services/api.js';
-import { openBillingPortal, startCheckout } from '../services/subscriptions.js';
 import { supabase } from '../services/supabase.js';
 import { CURRENCY_OPTIONS } from '../data/currencies.js';
 import { COUNTRY_OPTIONS } from '../data/countries.js';
-import { formatLimit, PLANS } from '../utils/plans.js';
 import { friendlyAuthError } from '../utils/auth.js';
-
-function UsageMeter({ label, used, limit }) {
-  const unlimited = !Number.isFinite(limit);
-  const pct = unlimited ? 0 : Math.min((used / limit) * 100, 100);
-  const near = !unlimited && pct >= 80;
-
-  return (
-    <div className="usage-meter">
-      <div className="usage-meter__header">
-        <span className="muted small">{label}</span>
-        <strong>{used} / {formatLimit(limit)}</strong>
-      </div>
-      {!unlimited && (
-        <div className="usage-meter__track">
-          <div
-            className={`usage-meter__fill ${near ? 'usage-meter__fill--warning' : ''}`}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function SettingsPage() {
   const { user, signIn, updatePassword } = useAuth();
-  const subscription = useSubscription();
   const hasPasswordAuth = user?.identities?.some((identity) => identity.provider === 'email') ?? true;
   const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' });
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -64,8 +37,6 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [billingAction, setBillingAction] = useState('');
-  const [billingError, setBillingError] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -178,32 +149,6 @@ export default function SettingsPage() {
     }
   }
 
-  async function checkout(plan) {
-    setBillingAction(plan);
-    setBillingError('');
-    try {
-      const { url } = await startCheckout(plan);
-      window.location.assign(url);
-    } catch (err) {
-      setBillingError(err.message);
-    } finally {
-      setBillingAction('');
-    }
-  }
-
-  async function manageBilling() {
-    setBillingAction('portal');
-    setBillingError('');
-    try {
-      const { url } = await openBillingPortal();
-      window.location.assign(url);
-    } catch (err) {
-      setBillingError(err.message);
-    } finally {
-      setBillingAction('');
-    }
-  }
-
   if (loading) {
     return (
       <div className="page-stack" role="status" aria-live="polite">
@@ -217,7 +162,7 @@ export default function SettingsPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Settings</p>
-          <h1 className="heading-xl">Profile, business, invoices, and billing.</h1>
+          <h1 className="heading-xl">Profile, business, and invoices.</h1>
         </div>
       </div>
 
@@ -339,37 +284,6 @@ export default function SettingsPage() {
             You sign in with Google, so there&apos;s no EmberFlow password to manage here.
           </p>
         )}
-      </Card>
-
-      <Card variant="default">
-        <CardHeader
-          title={subscription.plan?.name || PLANS.free.name}
-          subtitle="Current plan"
-          action={subscription.subscription?.polar_customer_id ? (
-            <Button variant="ghost" type="button" onClick={manageBilling} disabled={billingAction === 'portal'} leftIcon={<ExternalLink size={16} />}>
-              {billingAction === 'portal' ? 'Opening...' : 'Manage billing'}
-            </Button>
-          ) : null}
-        />
-        <div className="subscription-grid">
-          <UsageMeter label="Invoice usage" used={subscription.usage.invoicesThisMonth} limit={subscription.invoiceLimit} />
-          <UsageMeter label="Client usage" used={subscription.usage.clients} limit={subscription.clientLimit} />
-          <div>
-            <span className="muted small">Status</span>
-            <strong>{subscription.subscription?.status || 'active'}</strong>
-          </div>
-        </div>
-        {billingError ? <p className="form-error" role="alert">{billingError}</p> : null}
-        {!subscription.isPro ? (
-          <div className="form-actions">
-            <Button variant="primary" type="button" onClick={() => checkout('pro_monthly')} disabled={Boolean(billingAction)}>
-              {billingAction === 'pro_monthly' ? 'Opening...' : 'Upgrade monthly'}
-            </Button>
-            <Button variant="ghost" type="button" onClick={() => checkout('pro_yearly')} disabled={Boolean(billingAction)}>
-              {billingAction === 'pro_yearly' ? 'Opening...' : 'Upgrade yearly'}
-            </Button>
-          </div>
-        ) : null}
       </Card>
     </div>
   );

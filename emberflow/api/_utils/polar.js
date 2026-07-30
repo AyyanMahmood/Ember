@@ -11,6 +11,10 @@ const PLAN_TO_PRODUCT_ENV = {
 // Polar subscription statuses that still grant access to paid features.
 const ACCESS_GRANTING_STATUSES = new Set(['active', 'trialing', 'past_due']);
 
+function hasAccessGrantingStatus(status) {
+  return ACCESS_GRANTING_STATUSES.has(status);
+}
+
 // The documented/canonical var is POLAR_SERVER (see .env.example, POLAR_SETUP.md).
 // POLAR_ENVIRONMENT is accepted as a fallback only because a deploy was found
 // configured with that name instead — the code has never read it otherwise.
@@ -154,7 +158,7 @@ function normalizeSubscription(subscription, fallback = {}) {
   // the DB-level free-limit triggers (which read `plan`, not `status`) both
   // agree the user is no longer Pro. A cancel-at-period-end subscription
   // stays `active` until the period ends, so the user keeps Pro until then.
-  const grantsAccess = ACCESS_GRANTING_STATUSES.has(status);
+  const grantsAccess = hasAccessGrantingStatus(status);
   const plan = grantsAccess ? planFromProduct(productId) : 'free';
 
   return {
@@ -183,6 +187,7 @@ module.exports = {
   getProductId,
   planFromProduct,
   billingCycleFromPlan,
+  hasAccessGrantingStatus,
   polarFetch,
   verifyPolarWebhook,
   describeConfiguredWebhookSecret,
