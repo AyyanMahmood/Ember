@@ -1,14 +1,49 @@
 # Repository Cleanup List (Phase 3)
 
-**Nothing here has been deleted.** This is a categorized list for a human to action with judgment. Grouped by confidence. Verified by reading each file's header and checking references — not guessed.
+> ## 🧊 LAUNCH FREEZE — 2026-07-30
+> **EmberFlow is in release freeze. NOTHING in this list executes until AFTER launch.**
+> No files deleted, moved, archived, or refactored. Every item below is classified into one of four post-launch buckets; the classification is the *only* thing produced under freeze. The sole permitted code changes before launch are: **production configuration, real payment testing, critical bug fixes, security fixes.** Everything here is, by definition, none of those.
+
+**Nothing here has been deleted or moved.** This is a categorized list for a human to action *after launch*, with judgment. Verified by reading each file's header and checking references — not guessed.
 
 Rule applied: **code and API surface were already confirmed clean** in Phase 2 (no Paddle/Microsoft/debug remnants in `api/` or `frontend/src`, no dead CSS, no unused exports). This list is almost entirely **root markdown hygiene** — historical planning docs that have served their purpose.
 
 ---
 
-## A. Safe to delete now — empty stub files (0 bytes of content)
+## Final classification (freeze) — every item in exactly one bucket
 
-These are tracked but **completely empty** (0 lines). They add noise and imply content that doesn't exist.
+Four buckets, all **post-launch**. "Keep permanently" = never remove. Nothing is actioned now.
+
+| Item | Bucket | Why |
+|---|---|---|
+| `ARCHITECTURE.md` (empty) | **Delete after launch** | 0-byte stub; content lives in SPECIFICATION.md/CLAUDE.md |
+| `DESIGN.md` (empty) | **Delete after launch** | 0-byte stub; superseded by DESIGN_SYSTEM.md/EMBER_DESIGN_BIBLE.md |
+| `UI_ROADMAP.md` (empty) | **Delete after launch** | 0-byte stub; superseded by V1.5_ROADMAP.md |
+| `AGENTS.md` (empty) | **Delete after launch** (or fill) | 0-byte; may be an AI-tool convention file — owner decides delete vs. fill with a CLAUDE.md pointer |
+| `MIGRATION_PLAN.md` | **Archive after launch** | Executed UI-migration plan; historical |
+| `IMPLEMENTATION_SPEC.md` | **Archive after launch** | Executed impl spec; historical |
+| `API_VERIFICATION.md` | **Archive after launch** | Dated point-in-time verification snapshot |
+| `MIGRATION_AUDIT.md` | **Archive after launch** | Dated point-in-time schema audit |
+| `MIGRATION_NOTES.md` | **Archive after launch** | Near-empty running log the pattern didn't stick |
+| `POLAR_MIGRATION_PLAN.md` | **Archive after launch** | Completed & merged migration; historical rationale |
+| Stray out-of-repo `../frontend/` | **Delete after launch** (manual) | Stale mini-copy outside the project dir; verify then `rm -rf` |
+| `subscriptions.paddle_*` DB columns | **Delete after launch** (gated) | Only after a real production Polar purchase succeeds — see POLAR_SETUP.md → Decommissioning Paddle |
+| `CLAUDE.md`, `README.md`, `SPECIFICATION.md`, `SECURITY.md` | **Keep permanently** | Current project/tech/security reference |
+| `POLAR_SETUP.md`, `OAUTH_SETUP.md` | **Keep permanently** | Current setup guides |
+| `DESIGN_SYSTEM.md`, `EMBER_DESIGN_BIBLE.md` | **Keep permanently** | Canonical design authority |
+| `EMBER_UI_GUIDE.md`, `EMBER_UI_TIERING.md` | **Keep permanently** | Active Ember UI workflow + plan |
+| `PROJECT_STATUS.md`, `MANUAL_QA_CHECKLIST.md` | **Keep permanently** | Active roadmap tracker + frontend QA |
+| Launch doc set (`BILLING_QA_CHECKLIST`, `PRODUCTION_VALIDATION_PLAN`, `PRODUCTION_CHECKLIST`, `LAUNCH_*`, `SUPPORT_PLAYBOOK`, `V1.5_ROADMAP`, this file) | **Keep permanently** | The launch/ops documentation |
+| `references/` (local clones) | **Keep permanently** (local, gitignored) | Study material; never committed; not a repo concern |
+| `testing-issues.md` | **Keep permanently** (local, gitignored) | Local scratch; leave as-is |
+
+**Bucket totals:** Delete after launch = 5 (4 empty stubs + stray folder) · Archive after launch = 6 · Delete after launch (gated) = 1 (paddle columns) · Keep permanently = everything else.
+
+---
+
+## A. Delete AFTER LAUNCH — empty stub files (0 bytes of content)
+
+These are tracked but **completely empty** (0 lines). They add noise and imply content that doesn't exist. Under freeze they stay; delete post-launch.
 
 | File | Note |
 |---|---|
@@ -66,11 +101,13 @@ These are point-in-time planning/verification docs from the **UI design-system r
 
 ---
 
-## Suggested cleanup commit sequence (for the owner to run — not done automatically)
+## Suggested cleanup commit sequence — 🧊 FROZEN, run only AFTER launch
 
-1. `git rm` the three clearly-empty stubs (`ARCHITECTURE.md`, `DESIGN.md`, `UI_ROADMAP.md`); decide `AGENTS.md`.
-2. `mkdir docs/archive && git mv` the six B-tier historical docs into it.
+**Do not run any of this during launch freeze.** Sequence for the owner post-launch:
+
+1. `git rm` the three clearly-empty stubs (`ARCHITECTURE.md`, `DESIGN.md`, `UI_ROADMAP.md`); decide `AGENTS.md` (delete or fill).
+2. `mkdir docs/archive && git mv` the six historical "Archive after launch" docs into it.
 3. Manually verify + `rm -rf ../frontend` (the out-of-repo stale copy) after confirming it's the known leftover.
-4. Leave everything in C and D untouched.
+4. Leave everything classified "Keep permanently" untouched.
 
-**Do not** touch `paddle_*` DB columns or `testing-issues.md`.
+**Do not** touch `paddle_*` DB columns (gated on live Polar verification) or `testing-issues.md` (local scratch).
