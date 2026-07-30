@@ -735,7 +735,7 @@ Mode switch: no more UI redesign work unless functionality requires it. Prioriti
 **Remaining launch blockers:**
 - Live Polar sandbox end-to-end test — still the single biggest gap, unchanged from the original migration (no Polar credentials available in this environment, ever). `BILLING_QA_CHECKLIST.md` is the checklist to run it against.
 - Confirm the Polar dashboard's webhook endpoint has all six `subscription.*` events selected (`created`/`active`/`updated`/`canceled`/`uncanceled`/`revoked`) — `POLAR_SETUP.md` documents the required list, but this environment can't confirm what's actually configured live.
-- **Set the Polar dashboard grace period to 21 days** (Settings → Subscriptions) so Polar's default "Immediately" revoke-on-`past_due` doesn't contradict EmberFlow's deliberate keep-Pro-during-retry behavior. Not a code change — a dashboard config that should match the code before launch. See Failed Payments audit / `BILLING_QA_CHECKLIST.md` §7.
+- **Grace period: official policy is 15 days** (final business decision, 2026-07-30 Phase 2). EmberFlow's entitlement already honors ≥15 days by construction (Pro is granted for the whole `past_due` window, ~21 days to revoke, independent of Polar's grace dropdown). Config action: set the Polar dashboard grace to **21 days** (the offered value that doesn't undercut 15 — Polar offers Immediately/2/7/14/21, not 15) so Polar's own dunning emails don't revoke before the 15-day commitment. Full reasoning in `SUPPORT_PLAYBOOK.md` → Grace Period.
 - Failed-payment *pre-revoke* messaging is now built (`92ea1b8`); a *post-revoke* "here's why you're back on Free" explanation remains a minor unbuilt follow-up — not launch-blocking.
 
 ---
