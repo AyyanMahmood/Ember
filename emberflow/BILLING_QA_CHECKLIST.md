@@ -133,11 +133,30 @@ A renewal happens automatically in the background with no user navigation involv
 
 ## 7. Failed payments
 
-Confirmed against Polar's own docs (not assumed): on renewal, if the charge fails the subscription moves to `past_due` and Polar's automatic payment-recovery/retry flow begins; there's an optional org-level grace period before benefits are revoked; once retries are exhausted, `subscription.revoked` fires and status becomes `unpaid`/`canceled`.
+**Full audit performed 2026-07-30, verified against Polar's dedicated failed-payments doc (`polar.sh/docs/features/subscriptions/failed-payments`), quoted not assumed. One real bug found and fixed: the `past_due` state was presented as if the subscription were healthy. Backend/entitlement logic was verified correct and unchanged.**
 
-- [ ] Force a `past_due` state (Polar sandbox should have a way to simulate a failed renewal — check their sandbox docs) → confirm the user **keeps** Pro access (`hasAccessGrantingStatus` in `api/_utils/polar.js` already includes `past_due` by design) and the UI communicates this isn't a normal "active" state, not just silently showing "Pro" with no explanation
-- [ ] Let retries exhaust (or simulate) → `subscription.revoked` → `plan` collapses to `free`, features lock
-- [ ] Confirm there's no user-facing message today explaining *why* access was lost after a failed-payment revoke (vs. a voluntary cancel) — this is a real UX gap, not implemented this sprint (see Recommendations)
+### Polar's real dunning flow (exact, from Polar's own docs)
+
+- Renewal charge fails → subscription moves `active` → `past_due`, `past_due_at` stamped.
+- **Automatic retries: 4 attempts at 2, 7, 14, 21 days** after the initial failure. Polar emails the customer a Customer Portal link on failure so they can update their card. EmberFlow does **not** need to build any of this — retries, dunning emails, and the card-update UI are all Polar-native.
+- **Access during `past_due` depends on the org's grace-period setting** (Polar dashboard → Settings → Subscriptions): default is **"Immediately"** (benefits revoked as soon as it leaves `active`); configurable to hold benefits for 2 / 7 / 14 / 21 days.
+- Retries exhausted → subscription **revoked**: status → `canceled` (per the failed-payments page) — note Polar's *other* doc (`subscriptionrevoked.md`) says `unpaid`; the two Polar docs disagree, but see below for why it doesn't matter to EmberFlow.
+
+### Entitlement logic — verified correct, no code change
+
+- EmberFlow grants Pro during `past_due` (`hasAccessGrantingStatus` in `api/_utils/polar.js` AND `isSubscriptionActive` in `utils/plans.js` both include it — confirmed the two agree, no drift). This is a **deliberate, defensible choice**: keep a paying customer in Pro during the ~3-week retry window rather than cutting them off over a transient card decline. Left as-is.
+- On revoke, EmberFlow lands on Free correctly **regardless of Polar's `canceled`-vs-`unpaid` doc inconsistency** — neither is in the granting set, so `normalizeSubscription` derives `plan: 'free'` either way. Robust to the ambiguity by construction.
+- **Config recommendation (not a code change):** set the Polar dashboard grace period to **21 days** so Polar's own view (its dunning emails, its benefit revocation) agrees with EmberFlow keeping Pro through the retry window. With the default "Immediately" grace, Polar's emails may tell a customer their benefits are revoked while EmberFlow still (correctly, by its own policy) shows Pro — not harmful, but inconsistent messaging. Verify/set this in the dashboard before launch.
+
+### The bug that was fixed (`92ea1b8`)
+
+For a `past_due` subscription the Subscriptions page previously showed a malformed grey "Past_due" badge, a "Renews \<date\>" subtitle that falsely implied health, and **no explanation at all**. Fixed: warning-colored "Past due" badge (StatusBadge now formats snake_case + maps past_due/unpaid), accurate "Payment failed — please update your card" subtitle, and an explanatory notice covering what happened / access retained / auto-retrying / action required / consequence. Rendered-verified in headless Chrome.
+
+- [ ] Force a `past_due` state (Polar sandbox — check their docs for simulating a failed renewal) → confirm the user **keeps** Pro access AND the page now shows the warning "Past due" badge, the "Payment failed" subtitle, and the explanatory notice (the `92ea1b8` fix) — not a silent healthy-looking "Pro"
+- [ ] Confirm the Polar dashboard grace-period setting matches EmberFlow's keep-access-during-past_due behavior (recommend 21 days — see above)
+- [ ] Confirm Polar actually sends the customer a dunning email with a portal link on the failed charge (Polar-native, but verify it fires in sandbox)
+- [ ] Let retries exhaust (or simulate) → `subscription.revoked` → `plan` collapses to `free`, features lock, and the page no longer shows the past_due notice
+- [ ] Confirm there's still no user-facing explanation of *why* access was lost specifically after a failed-payment revoke (vs. a voluntary cancel) once the account is back on Free — this remains a minor UX gap (the past_due notice warns them *before* revoke, which is the higher-value moment; a post-revoke explanation is a smaller follow-up, not done this pass)
 
 ## 8. Refunds
 
