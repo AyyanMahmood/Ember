@@ -32,15 +32,31 @@ export function useSubscription() {
     refresh();
   }, [refresh]);
 
-  // TODO (deferred, tracked in CLAUDE.md -> "Known Deferred Issues"): this
-  // only fetches once on mount, with no realtime subscription and no
-  // refetch-on-focus/return. A user who cancels in the Polar customer
-  // portal (a separate hosted tab, not a redirect flow) and comes back to
-  // an already-open EmberFlow tab won't see the change until something
-  // forces a refresh. When the cancellation-sync issue is picked up, this
-  // is the hook to extend — either a Supabase realtime subscription on the
-  // user's `subscriptions` row, or a `refresh()` call on window focus/visibility
-  // change, whichever the investigation in api/polar/webhook.js points to.
+  // Root cause of "EmberFlow stays Pro after cancelling in the Polar
+  // portal" (Launch Hardening billing audit, 2026-07-30): manageBilling()
+  // sends the browser to Polar's portal via `window.location.assign` — a
+  // full navigation away from the SPA, not a new tab. Returning via the
+  // browser back button is a classic bfcache restore (no unload/no-store
+  // headers block it anywhere in this app — checked), which replays the
+  // exact pre-navigation React state instead of remounting, so the
+  // one-shot fetch above never re-runs. Refetching on `pageshow` (bfcache
+  // restore) and `visibilitychange` (plain tab refocus, e.g. portal opened
+  // in a second tab) covers both return paths without adding a realtime
+  // subscription this app doesn't otherwise need.
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.visibilityState === 'visible') refresh();
+    }
+    function handlePageShow(event) {
+      if (event.persisted) refresh();
+    }
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, [refresh]);
 
   const entitlements = useMemo(() => getEntitlements(subscription), [subscription]);
 
