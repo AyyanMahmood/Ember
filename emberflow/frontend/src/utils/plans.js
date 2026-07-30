@@ -87,3 +87,13 @@ export function getEntitlements(subscription) {
 export function formatLimit(value) {
   return value === Infinity ? 'Unlimited' : String(value);
 }
+
+// Numeric cents-free price for a plan, parsed from its display string
+// (e.g. "$11" -> 11). Used where a number is needed (animated price
+// counters, savings math) instead of duplicating the price as a second
+// source of truth — PLANS[...].price stays the one place pricing is set.
+export function planPriceValue(planId) {
+  const price = PLANS[planId]?.price || '';
+  const value = Number(price.replace(/[^0-9.]/g, ''));
+  return Number.isFinite(value) ? value : 0;
+}

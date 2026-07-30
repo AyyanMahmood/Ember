@@ -9,97 +9,191 @@
   margin-top: var(--space-3);
 }
 
-.plan-select {
+/* Entrance stagger — each direct child of the page fades/lifts in with a
+   small per-position delay. Scoped to this page only (not a global
+   page-stack behavior) so it doesn't ripple into every other screen. */
+.subscriptions-page > * {
+  animation: fade-in var(--duration-slower) var(--ease-out) both;
+}
+
+.subscriptions-page > *:nth-child(1) { animation-delay: 0ms; }
+.subscriptions-page > *:nth-child(2) { animation-delay: 40ms; }
+.subscriptions-page > *:nth-child(3) { animation-delay: 80ms; }
+.subscriptions-page > *:nth-child(4) { animation-delay: 120ms; }
+.subscriptions-page > *:nth-child(5) { animation-delay: 160ms; }
+.subscriptions-page > *:nth-child(6) { animation-delay: 200ms; }
+.subscriptions-page > *:nth-child(7) { animation-delay: 240ms; }
+.subscriptions-page > *:nth-child(n+8) { animation-delay: 280ms; }
+
+/* Plan hero */
+
+.plan-hero__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.plan-hero__identity {
   display: grid;
-  gap: var(--space-3);
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-hero__name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.plan-hero__name {
+  font-size: var(--text-heading-md);
+  font-weight: 600;
+  margin: 0;
+}
+
+.plan-hero__manage {
+  margin-left: auto;
+}
+
+.plan-hero .subscription-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: var(--space-5);
+}
+
+/* Renewal ring */
+
+.renewal-ring {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: radial-gradient(closest-side, var(--color-accent-soft), transparent 72%);
+}
+
+.renewal-ring > svg {
+  position: absolute;
+  inset: 0;
+}
+
+.renewal-ring__track {
+  stroke: var(--color-line);
+}
+
+.renewal-ring__fill {
+  stroke: var(--color-accent);
+  transition: stroke-dashoffset 800ms var(--ease-out);
+}
+
+.renewal-ring__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: var(--color-accent);
+}
+
+/* Cadence toggle + animated price */
+
+.cadence-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
   margin-bottom: var(--space-4);
 }
 
-@media (max-width: 560px) {
-  .plan-select {
-    grid-template-columns: 1fr;
-  }
-}
-
-.plan-select__option {
+.cadence-toggle {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-line);
+  display: inline-grid;
+  grid-auto-flow: column;
   background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-full);
+  padding: 3px;
+}
+
+.cadence-toggle__thumb {
+  position: absolute;
+  inset: 3px;
+  width: calc(50% - 3px);
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  transition: transform var(--duration-slow) var(--ease-spring);
+}
+
+.cadence-toggle__option {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  color: var(--color-muted);
   cursor: pointer;
-  transition: border-color var(--duration-base) var(--ease-out), background var(--duration-base) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out);
 }
 
-.plan-select__option:hover {
-  border-color: var(--color-accent);
-  transform: translateY(-1px);
+.cadence-toggle__option--checked {
+  color: var(--color-bg);
 }
 
-.plan-select__option--checked {
-  border-color: var(--color-accent);
-  background: var(--color-accent-soft);
-}
-
-.plan-select__input {
+.cadence-toggle__input {
   position: absolute;
   opacity: 0;
   width: 1px;
   height: 1px;
 }
 
-.plan-select__input:focus-visible ~ .plan-select__indicator {
+.cadence-toggle__input:focus-visible {
+  outline: none;
+}
+
+.cadence-toggle__option:has(.cadence-toggle__input:focus-visible) {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-.plan-select__indicator {
-  flex-shrink: 0;
-  width: 1.125rem;
-  height: 1.125rem;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--color-line);
-  background: var(--color-surface);
-  display: grid;
-  place-items: center;
-  transition: border-color var(--duration-base) var(--ease-out), background var(--duration-base) var(--ease-out);
-}
-
-.plan-select__option--checked .plan-select__indicator {
-  border-color: var(--color-accent);
-  background: var(--color-accent);
-}
-
-.plan-select__option--checked .plan-select__indicator::after {
-  content: '';
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: var(--radius-full);
-  background: var(--color-surface);
-}
-
-.plan-select__body {
+.cadence-picker__price {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
+  align-items: baseline;
+  gap: var(--space-3);
 }
 
-.plan-select__name {
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-price__amount {
+  font-size: var(--text-heading-lg);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.plan-price__currency {
+  font-size: var(--text-heading-sm);
   font-weight: 600;
+  margin-right: 1px;
 }
 
-.plan-select__price {
+.plan-price__cadence {
   color: var(--color-muted);
   font-size: var(--text-body-sm);
+  margin-left: 2px;
 }
 
-.plan-select__cadence {
-  color: var(--color-muted);
+.cadence-savings {
+  /* This badge holds a short phrase ("Save $2/year"), not a single status
+     word like the rest of the app's badges — the shared .badge capitalize
+     rule mid-capitalizes "year" after the slash, so opt out here. */
+  text-transform: none;
+  animation: fade-in var(--duration-base) var(--ease-out) both;
 }
 
 .subscriptions-faq {
@@ -142,10 +236,88 @@
   padding-left: 1em;
 }
 
-.danger-zone {
-  border-color: var(--color-danger-soft);
+/* Billing history row */
+
+.subscription-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  margin: calc(var(--space-1) * -1) calc(var(--space-1) * -1) 0;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-base) var(--ease-out);
 }
 
-.danger-zone__icon {
+.subscription-item:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.subscription-item:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.subscription-item__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.subscription-item__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.subscription-item__title {
+  font-weight: 500;
+}
+
+.subscription-item__subtitle {
+  color: var(--color-muted);
+  font-size: var(--text-body-sm);
+}
+
+.subscription-item__chevron {
+  flex-shrink: 0;
+  color: var(--color-muted);
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.subscription-item:hover:not(:disabled) .subscription-item__chevron {
+  transform: translate(2px, -2px);
+}
+
+/* Danger zone — the warning signal lives on the icon medallion + the
+   final action button, not a red card border (see research notes in
+   CLAUDE.md's Subscriptions Redesign section for why). */
+
+.danger-zone__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.danger-zone__icon-badge {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  background: var(--color-danger-soft);
   color: var(--color-danger);
 }
