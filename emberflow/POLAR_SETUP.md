@@ -119,6 +119,8 @@ Run `supabase/migrations/007_polar_billing.sql` in the Supabase SQL Editor (addi
    6. Cancel in the portal → the subscription stays `active` with `cancel_at_period_end = true` (you keep Pro until period end). When it finally ends, `subscription.revoked` flips the row to Free.
 3. **Inspect deliveries:** Polar Dashboard → Webhooks → your endpoint shows each delivery, its payload, and the HTTP response. A healthy delivery returns `200`. `403` means a signature mismatch (see Troubleshooting).
 
+For the full lifecycle beyond this basic upgrade test — duplicate purchases, cancellation from the portal vs. the dashboard, failed payments, webhook replay, expired/deleted subscriptions — see `BILLING_QA_CHECKLIST.md` at the repo root.
+
 ---
 
 ## Going to production
