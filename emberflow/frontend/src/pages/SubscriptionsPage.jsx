@@ -1,6 +1,6 @@
 import { Crown, ExternalLink, LifeBuoy, Receipt, ShieldAlert, Sparkles } from 'lucide-react';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Badge, StatusBadge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Card, CardHeader } from '../components/ui/Card.jsx';
@@ -74,6 +74,49 @@ export default function SubscriptionsPage() {
   const [billingAction, setBillingAction] = useState('');
   const [billingError, setBillingError] = useState('');
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Purchase-flow race condition (Launch Hardening audit, 2026-07-30):
+  // Polar's checkout redirects the browser straight back to
+  // success_url=...?billing=success the moment payment succeeds, but the
+  // subscription.* webhook that actually writes plan='pro_*' to the DB is a
+  // separate async delivery. Polar's own docs note the subscription's
+  // status "might not be active yet" on the very first event. Without this,
+  // a paying customer could land here and see "Free plan" for several
+  // seconds with zero explanation. `billing=success` was already being set
+  // but nothing ever read it. Poll briefly (bounded, not indefinite) while
+  // showing a confirming state instead of a flat "you're still Free."
+  const [confirmingPurchase, setConfirmingPurchase] = useState(() => searchParams.get('billing') === 'success');
+  const confirmAttemptsRef = useRef(0);
+
+  useEffect(() => {
+    if (searchParams.get('billing') !== 'success') return;
+    // Strip the param immediately so a later manual refresh doesn't replay this.
+    setSearchParams((prev) => {
+      prev.delete('billing');
+      return prev;
+    }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!confirmingPurchase) return undefined;
+    if (subscription.isPro) {
+      setConfirmingPurchase(false);
+      confirmAttemptsRef.current = 0;
+      return undefined;
+    }
+    if (subscription.loading) return undefined;
+    if (confirmAttemptsRef.current >= 8) {
+      setConfirmingPurchase(false);
+      return undefined;
+    }
+    const timeoutId = setTimeout(() => {
+      confirmAttemptsRef.current += 1;
+      subscription.refresh();
+    }, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [confirmingPurchase, subscription.isPro, subscription.loading, subscription.refresh]);
 
   const yearlySavings = planPriceValue('pro_monthly') * 12 - planPriceValue('pro_yearly');
 
@@ -131,6 +174,14 @@ export default function SubscriptionsPage() {
 
       {subscription.error ? <Card variant="default"><div className="error-panel" role="alert">{subscription.error}</div></Card> : null}
       {billingError ? <Card variant="default"><p className="form-error" role="alert">{billingError}</p></Card> : null}
+      {confirmingPurchase ? (
+        <Card variant="default">
+          <div className="panel__actions-row" role="status" aria-live="polite">
+            <span className="spinner spinner--sm" aria-hidden="true" />
+            <span>Confirming your purchase with Polar — this usually takes a few seconds.</span>
+          </div>
+        </Card>
+      ) : null}
 
       <Card variant="default" className="plan-hero">
         <div className="plan-hero__top">
@@ -168,7 +219,7 @@ export default function SubscriptionsPage() {
         ) : null}
       </Card>
 
-      {!subscription.isPro ? (
+      {confirmingPurchase ? null : !subscription.isPro ? (
         <Card variant="default">
           <CardHeader title="Upgrade to Pro" subtitle="Choose a billing cadence." />
           <div className="cadence-picker">
