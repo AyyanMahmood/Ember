@@ -92,7 +92,46 @@ Two real, distinct, now-fixed contributors, both frontend/API-side (not webhook 
 - [ ] **Cancel from EmberFlow's own dashboard**: the danger-zone action opens a confirm dialog, then redirects to the Polar portal to actually complete the cancellation — confirm this is what actually happens (EmberFlow has no direct cancel-via-API call of its own)
 - [ ] Check Vercel's function logs for the `subscription.*` deliveries around a real cancel to see which event name(s) Polar actually sends in practice — the one thing this audit could reason about from docs but not observe directly
 
-## 6. Failed payments
+## 6. Renewals
+
+**Full audit performed 2026-07-30. Conclusion: no code bug found — the system already handles renewals correctly. This was the single highest-stakes open question of the whole audit (see below) and it came back clean, verified against Polar's own explicit documentation, not assumed.**
+
+### The one question that mattered most here
+
+Polar has a dedicated `subscription.cycled` event, and its own docs state it "fires when the period rolls over, **before the renewal order exists and regardless of whether the renewal payment succeeds**." `subscription.cycled` is **not** in EmberFlow's configured webhook event list (`POLAR_SETUP.md` documents only `created`/`active`/`updated`/`canceled`/`uncanceled`/`revoked`). This raised a real possibility that EmberFlow might never learn about a successful renewal at all, leaving `current_period_end` stuck at the original period forever.
+
+**Resolved, verified against Polar's own docs, quoted directly:** `subscription.updated` — "Sent when a subscription is updated. **This event fires for all changes to the subscription, including renewals.**" `subscription.updated` is already in EmberFlow's configured event list. `cycled` is a more specific, earlier, payment-outcome-agnostic signal Polar offers for consumers who want to react before the charge attempt; EmberFlow doesn't need it, because the generic `updated` event (which fires with the real post-attempt status and the new period dates) already covers renewal correctly under the same generic `subscription.*` handling every other event already goes through. **Not adding `subscription.cycled`** to the webhook endpoint — it isn't needed and would only add a payload whose `status` can't yet be trusted (fires before the charge is attempted).
+
+### Verified, no bug found
+
+- **Monthly renewal / Yearly renewal** — mechanically identical in `normalizeSubscription()`; neither is special-cased, both go through the same generic `subscription.updated` → upsert path.
+- **`current_period_start`/`current_period_end` update correctly** — confirmed both from Polar's docs (renewal payload "carries the new `current_period_start` and `current_period_end`") and from re-reading `normalizeSubscription()`: it always prefers the new event's dates and only falls back to the existing row's dates if the new payload's are missing/invalid — so an update that doesn't carry period dates (e.g. a payment-method-only change) can't accidentally null them out, and one that does carry them always advances correctly.
+- **Status during a successful renewal** — does not change (stays `active`); Polar's docs confirm the subscription "only moves to `past_due` if payment fails."
+- **Customer object** — not modified by a normal renewal; the existing default payment method is charged. Nothing for EmberFlow to react to beyond the subscription fields it already tracks.
+- **Renewal after `subscription.uncanceled`** — no special-casing needed or present: the next renewal's `subscription.updated` event carries its own `cancel_at_period_end: false`, which `normalizeSubscription()` applies directly from that event's payload, same as any other event.
+- **Renewal after a previous payment retry recovered** (`past_due` → `active`) — same generic path; once status is back to `active`, subsequent renewals are indistinguishable from a subscription that was never `past_due`.
+- **Payment method updates / card replacement before renewal, manual invoice payments** — 100% Polar-side (portal-native payment method management; EmberFlow never touches card data). EmberFlow only reacts to the resulting subscription state, regardless of why it changed. "Manual invoice payments" (pay-by-invoice for enterprise-style billing) isn't a feature EmberFlow's Polar products are configured to use — not applicable to this product.
+- **Renewal date shown in UI** — `SubscriptionsPage.jsx` reads `current_period_end` straight from the row via `useSubscription()`; correct once the row is correct.
+- **Customer Portal renewal display** — 100% Polar's own hosted UI, nothing rebuilt, nothing to verify in EmberFlow's code.
+
+### Idempotency — answered explicitly, as asked
+
+- **Create duplicates?** No — `webhook_events` id-based dedup returns early on any redelivery of the same event before any write happens.
+- **Reset dates incorrectly?** Not on a genuine replay (identical payload in, identical write out). **Separate, not-yet-observed risk worth flagging**: `normalizeSubscription()` has no guard against processing events *out of order* (a genuinely different problem from replay) — if Polar ever redelivered an older, distinct event after a newer one already landed, the older event's dates would overwrite the newer ones, since there's no "only apply if newer" check (e.g. comparing `modified_at`). No evidence this has happened; not fixing it now since it's hardening against a theoretical case, not a confirmed bug — flagged as a recommendation.
+- **Remove access?** No — only a genuine status change out of the granting set removes access; a replayed renewal event has `status: 'active'` and changes nothing.
+- **Extend access twice?** Not a meaningful failure mode here — EmberFlow has no cumulative/incrementing renewal counter or usage-based extension; entitlement is always derived fresh from the *current* stored `status`/`plan`, never accumulated, so there's nothing to double-extend.
+
+### Known, accepted residual gap (not fixed — same category as prior documented limitations)
+
+A renewal happens automatically in the background with no user navigation involved at all. If a user has EmberFlow open in an already-focused, never-backgrounded tab through a renewal, the displayed `current_period_end` won't update until *something* triggers a refetch (a `visibilitychange`/`pageshow` event, or a manual reload) — there's no polling or realtime subscription. This is the same category of tradeoff already accepted for other flows (see `useSubscription.js`'s own comments) — a realtime subscription would close it but is new architecture, correctly out of scope for a bug-fix pass.
+
+- [ ] Live-test a monthly renewal in sandbox (Polar's sandbox should support fast-forwarding or a short test interval — check their sandbox docs) → confirm `subscription.updated` lands, `current_period_start`/`current_period_end` advance, `status` stays `active`
+- [ ] Live-test a yearly renewal the same way
+- [ ] Uncancel a subscription, then let it hit its next renewal → confirm `cancel_at_period_end` stays `false` throughout
+- [ ] Recover from `past_due` (successful retry), then let the next normal renewal happen → confirm no leftover `past_due` artifacts
+- [ ] Replay a renewal's webhook delivery from the Polar dashboard → confirm `{duplicate: true}`, no change to the row
+
+## 7. Failed payments
 
 Confirmed against Polar's own docs (not assumed): on renewal, if the charge fails the subscription moves to `past_due` and Polar's automatic payment-recovery/retry flow begins; there's an optional org-level grace period before benefits are revoked; once retries are exhausted, `subscription.revoked` fires and status becomes `unpaid`/`canceled`.
 
@@ -100,14 +139,14 @@ Confirmed against Polar's own docs (not assumed): on renewal, if the charge fail
 - [ ] Let retries exhaust (or simulate) → `subscription.revoked` → `plan` collapses to `free`, features lock
 - [ ] Confirm there's no user-facing message today explaining *why* access was lost after a failed-payment revoke (vs. a voluntary cancel) — this is a real UX gap, not implemented this sprint (see Recommendations)
 
-## 7. Refunds
+## 8. Refunds
 
 **Not implemented — recommendations only, see the audit report.** Manual QA once a real policy/process exists:
 
 - [ ] Confirm support's process actually includes cancelling the subscription separately after issuing a refund — Polar's docs are explicit that **refunding an order does not cancel the subscription**; the customer keeps Pro access unless someone separately cancels it
 - [ ] Confirm the in-app refund summary (`SubscriptionsPage.jsx`) and the published `/refund` policy say the same thing (this audit found and fixed one contradiction between them — re-check after any future policy change)
 
-## 8. Customer portal
+## 9. Customer portal
 
 - [ ] Manage billing opens Polar's real hosted portal (not a custom-built page) — confirm this is still true, since "never rebuild what Polar provides" is a hard rule
 - [ ] Inside the portal: change card / update payment method works (Polar-native, nothing to test in EmberFlow's own code)
@@ -115,16 +154,16 @@ Confirmed against Polar's own docs (not assumed): on renewal, if the charge fail
 - [ ] Portal opens correctly for a user whose stored `polar_customer_id` is stale/wrong-environment (the `external_customer_id` fallback added in `23a3732` should recover automatically — hard to force deliberately, but worth a note if it's ever observed)
 - [ ] Portal route for a genuinely free user (never subscribed) → friendly "no billing account yet" error, not a crash (confirm the exact message reads sensibly, not a raw Polar error string)
 
-## 9. Webhook replay / idempotency
+## 10. Webhook replay / idempotency
 
 - [ ] Re-deliver the same webhook event from the Polar dashboard's delivery log (most webhook UIs support a "resend" action) → confirm the second delivery returns `{ received: true, duplicate: true }` (via the `webhook_events` id check) and does **not** double-apply or corrupt the `subscriptions` row
 - [ ] Confirm a tampered/replayed request with a stale `webhook-timestamp` is rejected with `403` (already covered by `npm run verify:polar`'s automated signature tests — this item is about confirming the *real* Polar dashboard's resend mechanism specifically, not just the unit test)
 
-## 10. Expired subscription
+## 11. Expired subscription
 
 - [ ] A `past_due` subscription that never recovers and eventually reaches `subscription.revoked` — confirm the transition to Free is clean (no leftover `polar_subscription_id` confusion, `current_period_end` still reflects the last real period rather than being nulled out unexpectedly)
 
-## 11. Deleted customer / deleted subscription (edited or removed directly in the Polar dashboard)
+## 12. Deleted customer / deleted subscription (edited or removed directly in the Polar dashboard)
 
 - [ ] Delete or edit a subscription directly in the Polar dashboard (not through EmberFlow) → confirm `resolveUserId()`'s fallback (match by `polar_subscription_id`, then `polar_customer_id`) still resolves the correct EmberFlow user if `customer.external_id` is missing from that event
 - [ ] A customer deleted entirely in Polar with no corresponding webhook event at all → EmberFlow's row would simply go stale with no update (no event ever arrives to trigger one) — this is a silent gap, not fixable in the webhook handler itself since there's nothing to react to; worth a periodic reconciliation job someday (see Recommendations), not this sprint.
