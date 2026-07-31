@@ -39,3 +39,29 @@ export async function openBillingPortal() {
     method: 'POST',
   });
 }
+
+// Switch the active subscription to a different plan (e.g. Monthly <-> Yearly)
+// in place, via Polar's Update Subscription API. One subscription, updated —
+// never a second parallel one.
+export async function switchPlan(plan) {
+  return authenticatedFetch('/api/polar/switch', {
+    method: 'POST',
+    body: JSON.stringify({ plan }),
+  });
+}
+
+// Cancel the active subscription at period end (keeps Pro until then), or
+// resume a subscription that's set to cancel. Fully in-app — no portal.
+export async function cancelSubscription() {
+  return authenticatedFetch('/api/polar/cancel', {
+    method: 'POST',
+    body: JSON.stringify({ resume: false }),
+  });
+}
+
+export async function resumeSubscription() {
+  return authenticatedFetch('/api/polar/cancel', {
+    method: 'POST',
+    body: JSON.stringify({ resume: true }),
+  });
+}
