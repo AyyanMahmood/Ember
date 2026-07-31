@@ -239,4 +239,8 @@ The webhook → `subscriptions` upsert → `useSubscription()` model is correct 
 
 ---
 
-*End of proposal. Awaiting approval / decisions on §5 before any implementation.*
+## Update (2026-07-31) — plan-model made extensible (foundation landed)
+
+Ahead of the §5 flow decisions, the **plan model** was re-architected to be config-driven so future offerings (Lifetime, Team, Business, Enterprise, Student, Founder's, regional, promo, launch offers) become **catalog entries, not rewrites**. No new plans were added; Monthly/Yearly behavior is byte-identical. Source of truth is now a plan catalog (`frontend/src/config/plans.js` + `api/_utils/planCatalog.js`); all billing UI + Polar mapping derive from it; a `verify:polar` drift guard keeps the two files in sync. Full detail + the add-a-plan recipe in CLAUDE.md → "Billing Plan-Model Extensibility". This makes the eventual §5 implementation (plan switching, marketing handoff) land on a plan-agnostic base.
+
+*The §5 flow decisions (plan-switch mechanism, cancellation location, checkout handoff, success celebration, refund affordance, history echo) are still open and gate the switching/cancellation implementation.*

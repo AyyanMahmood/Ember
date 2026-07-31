@@ -375,6 +375,7 @@ Question every screen, spacing decision, interaction, hierarchy, and animation. 
 | Billing legibility milestone (2026-07-31): Ember Alert primitive + failed-payment messaging | Complete, build green (`61de978`, `e5599ce`). New `Alert` UI primitive (extracted to Ember UI); failed-payment **post-revoke** message + **one-click resubscribe** on Subscriptions; app-wide proactive **`past_due` dunning nudge** (`BillingNudge` in `AppLayout`); all Subscriptions notices migrated onto `Alert`. Completes 2 of the 5 Milestone-A items in `V1.5_ROADMAP.md`. Not on-device tested (standing no-browser limitation). See "Billing Legibility Milestone" section below. |
 | Billing architecture design doc (2026-07-31) | Complete (docs only, `dcbc019`). `BILLING_UX_ARCHITECTURE.md` — full current-state audit of every billing surface, UX/IA comparison vs Linear/Vercel/Notion/Framer/Arc/Cursor/GitHub, proposed ideal experience within the 6 standing billing decisions. Central recommendation: fix Monthly↔Yearly switching (Polar portal-native switch, or in-app prorated update). Awaiting decisions before implementation. |
 | Premium experience milestone (2026-07-31): activation, loaders, entrance, badge, real logo | Complete, build green + **render-verified in headless Chrome (light + dark)**. `61de978`..`e339d91`. Apple-style **Pro activation** (traced ember ring → welcome), **contextual loader family** (EmberSpinner + RouteProgress top-bar + BrandLoader; no skeletons — standing rule honored), **logo-anchored app entrance**, **Early Supporter badge**, **real EmberFlow logo wired in** (transparent hex mark extracted from the supplied lockup → `/emberflow-mark.png`, anchors entrance/sidebar/activation/auth; favicon updated to match). EmberSpinner + RouteProgress extracted to Ember UI. See "Premium Experience Milestone" section below. |
+| Billing plan-model extensibility (2026-07-31) | Complete, build green + **entitlement parity 24/24** + **verify:polar 33/33** + pricing render-verified identical. `a05ec04`..`5a17935`. The plan model is now **config-driven**: `frontend/src/config/plans.js` (data catalog) + `api/_utils/planCatalog.js` (server projection) are the single source of truth; `utils/plans.js` derives the old `PLANS` shape (fully back-compat) and all billing UI (Pricing/Landing/UpgradeModal/Subscriptions) renders from catalog helpers; Polar mapping is data-driven. **No new plans added** — Monthly/Yearly behavior byte-identical. A drift guard in `verify:polar` keeps the two config files in sync. See "Billing Plan-Model Extensibility" section below for the add-a-plan recipe. |
 
 A full audit and a 10-phase implementation roadmap toward a dark-first, white-label-ready premium redesign is in progress on `opclaude-redesign`. See `PROJECT_STATUS.md` → "Redesign Roadmap Progress" for phase-by-phase status.
 
@@ -816,3 +817,33 @@ The final major UI/UX refinement pass before v1 — making EmberFlow feel like s
 **Live-render-driven follow-ups (same session):** booting the real built bundle in headless Chrome surfaced two things static review didn't. (a) Two remaining bare-text full-screen loaders — `ProtectedRoute`'s "Loading EmberFlow…" (the app-boot auth gate) and `AuthPage`'s "Checking session…" — were upgraded to `BrandLoader` (`564e47d`); these are the highest-visibility loaders (every app entry hits the gate) and were missed by the grep-only first pass. (b) The marketing nav/footer still used a bare text wordmark, so the logo mark was added there too (`f06bce4`). Both render-verified live.
 
 **Deferred/untouched, by instruction:** the Polar portal-cancellation entitlement-sync bug (still deferred); Milestone A's backend-correctness trio (out-of-order webhook guard, TOCTOU, reconciliation). The `ProgressRing` tautological-ternary nit from last session is still unfixed (still out of scope).
+
+---
+
+## Billing Plan-Model Extensibility (2026-07-31)
+
+Per the "future architecture requirement": the current Monthly/Yearly billing was re-architected so **future offerings become configuration, not rewrites** — *without* implementing any of those future plans now (no premature complexity). Behavior is byte-identical; this is a structural change only.
+
+**Single source of truth = the plan catalog, in two runtime-appropriate files:**
+- `frontend/src/config/plans.js` — the full **data** catalog (ESM, dependency-free). Each plan declares `id`, `tier`, `group`, `name`/`shortName`, numeric `price` + `currency`, `interval` (`month|year|lifetime|once|null`), `limits`, `features`, `availability` (`public|hidden`), `highlight`. The shape deliberately does **not** assume "exactly Free + Monthly + Yearly".
+- `api/_utils/planCatalog.js` — the **server projection** (CJS): `id → tier, interval, POLAR_PRODUCT_* env var`. Only what checkout/webhook mapping needs.
+
+**Everything derives from the catalog now** (nothing enumerates plan ids by hand):
+- `frontend/src/utils/plans.js` derives the old `PLANS` object (100% back-compatible — every prior consumer untouched) and exposes `getPublicPlans`/`getPaidPlans`/`getPlansInGroup`/`getAnnualSavings`/`formatPrice`; entitlements gained an additive `tier` field (today `free|pro`) for future multi-tier UI.
+- UI: `PricingPage`, `LandingPage`, `UpgradeModal`, and the Subscriptions cadence toggle all `map()` the catalog.
+- Backend: `polar.js`'s `getProductId`/`planFromProduct`/`billingCycleFromPlan` derive from `planCatalog.js`. The checkout allow-list therefore auto-extends: a catalog plan with a `productEnvVar` is billable; anything else is rejected.
+
+**Drift guard:** `npm run verify:polar` now dynamically imports the frontend ESM catalog and asserts it agrees with the backend catalog on plan ids + intervals (33/33). Two files can't silently diverge.
+
+**▶ Recipe — how to add a future plan (e.g. `pro_lifetime`, `team_monthly`, a promo):**
+1. Add an entry to `frontend/src/config/plans.js` (set `tier`/`group`/`interval`/`price`/`features`/`availability`; `hidden` if it shouldn't be publicly listed).
+2. Add the matching entry to `api/_utils/planCatalog.js` (`id`, `tier`, `interval`, `productEnvVar`).
+3. Create the product in Polar and set its `POLAR_PRODUCT_*` env var in Vercel.
+4. `npm run verify:polar` (drift guard confirms the two catalogs match) and `npm run build`.
+   That's it — pricing page, upgrade modal, cadence/variant toggle, entitlement limits, checkout allow-list, and webhook plan-mapping all pick it up. No component/service/logic rewrite.
+
+**Deliberately NOT built (would be premature):** regional-pricing resolution, promo-code redemption, availability-window scheduling, multi-tier entitlement UI. The catalog has the *fields* to express these later (`currency`, `availability`, `tier`, `group`) but none of the *machinery* — added only when a real plan needs it.
+
+**Ember UI note:** the config-driven plan-catalog pattern is a strong candidate to fold into the `polar-billing` Ember UI module once a second Ember product consumes it — architected with extraction in mind, not extracted prematurely (single consumer today).
+
+**Testing:** `npm run build` green; entitlement parity 24/24 (prices/cadences/limits/`isPro` across active/past_due/revoked); `npm run verify:polar` 33/33 (incl. drift guard); `/pricing` render-verified pixel-identical in headless Chrome. Not live-sandbox tested (standing Polar limitation).
