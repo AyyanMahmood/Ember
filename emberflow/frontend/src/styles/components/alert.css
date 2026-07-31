@@ -1,0 +1,126 @@
+/* Ember Alert — inline notice. Soft-tinted surface + strong-toned icon/title,
+   reusing the same semantic token pairs as Badge so the two read as one
+   family. Minimal borders (design system rule): the tint alone separates it
+   from the page; no heavy outline. */
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  animation: fade-in var(--duration-base) var(--ease-out) both;
+}
+
+.alert__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 1px; /* optical-align the icon with the title's cap height */
+}
+
+.alert__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0; /* let long words wrap instead of overflowing the row */
+}
+
+.alert__title {
+  margin: 0;
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-semibold);
+  line-height: 1.45;
+}
+
+.alert__description {
+  font-size: var(--text-body-sm);
+  line-height: 1.55;
+  color: var(--color-muted);
+}
+
+.alert__description p {
+  margin: 0;
+}
+
+.alert__description p + p {
+  margin-top: var(--space-2);
+}
+
+.alert__action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.alert__dismiss {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: -0.25rem -0.25rem -0.25rem 0; /* pull into the padding so the hit-area doesn't inflate the box */
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.alert__dismiss:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-ink);
+}
+
+.alert__dismiss:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Variants: soft tint = surface, strong tone = icon + title. Description
+   stays muted in every variant so the copy reads calmly. */
+.alert--info {
+  background: var(--color-accent-soft);
+}
+.alert--info .alert__icon,
+.alert--info .alert__title {
+  color: var(--color-accent-strong);
+}
+
+.alert--success {
+  background: var(--color-success-soft);
+}
+.alert--success .alert__icon,
+.alert--success .alert__title {
+  color: var(--color-success-strong);
+}
+
+.alert--warning {
+  background: var(--color-warning-soft);
+}
+.alert--warning .alert__icon,
+.alert--warning .alert__title {
+  color: var(--color-warning-strong);
+}
+
+.alert--danger {
+  background: var(--color-danger-soft);
+}
+.alert--danger .alert__icon,
+.alert--danger .alert__title {
+  color: var(--color-danger-strong);
+}
+
+.alert--neutral {
+  background: var(--color-surface-strong);
+}
+.alert--neutral .alert__icon {
+  color: var(--color-muted);
+}
+.alert--neutral .alert__title {
+  color: var(--color-ink);
+}
