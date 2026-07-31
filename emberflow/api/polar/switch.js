@@ -1,6 +1,6 @@
 const { getAuthenticatedUser } = require('../_utils/supabaseAdmin');
 const { methodNotAllowed, optionsHandler, sendJson } = require('../_utils/http');
-const { getProductId, hasAccessGrantingStatus, planFromProduct, polarFetch } = require('../_utils/polar');
+const { collapseToFreeAfterMissingSubscription, getProductId, hasAccessGrantingStatus, planFromProduct, polarFetch } = require('../_utils/polar');
 const { rateLimit } = require('../_utils/rateLimit');
 
 // In-app plan switch (Monthly <-> Yearly). Uses Polar's native Update
@@ -48,10 +48,21 @@ module.exports = async function handler(req, res) {
     // the prorated difference now — the seamless "switch takes effect right
     // away" behavior (verified against Polar's proration guide + server
     // schema: PATCH /v1/subscriptions/{id} { product_id, proration_behavior }).
-    const updated = await polarFetch(`/v1/subscriptions/${sub.polar_subscription_id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ product_id: productId, proration_behavior: 'invoice' }),
-    });
+    let updated;
+    try {
+      updated = await polarFetch(`/v1/subscriptions/${sub.polar_subscription_id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ product_id: productId, proration_behavior: 'invoice' }),
+      });
+    } catch (err) {
+      if (err.status === 404) {
+        await collapseToFreeAfterMissingSubscription(supabase, user.id);
+        return sendJson(res, 409, {
+          error: "We couldn't find an active subscription with our billing provider, so your account has been moved to the Free plan. Choose a plan below to subscribe again — contact support if this looks wrong.",
+        });
+      }
+      throw err;
+    }
 
     // The subscription.updated webhook remains the source of truth that
     // persists the new plan to the DB; we return the derived plan so the UI

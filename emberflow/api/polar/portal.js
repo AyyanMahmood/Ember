@@ -68,7 +68,68 @@ module.exports = async function handler(req, res) {
       }
     }
 
+    // Both attempts above can still legitimately fail with 404 for an
+    // account whose Polar customer only ever existed under a *different*
+    // POLAR_SERVER environment — e.g. it subscribed during Polar sandbox
+    // testing, and this deploy now points at production. Sandbox and
+    // production are entirely separate customer databases in Polar, so
+    // neither the old stored id nor external_customer_id resolves anything
+    // there; this is the "stale customer id from the sandbox -> live
+    // migration" case. Recover by finding (by exact email — avoids creating
+    // a duplicate customer for someone who already has one under this
+    // environment but wasn't linked via external_id) or, failing that,
+    // creating a fresh customer in *this* environment, then retry once.
+    // Gated strictly on 404 ("resource not found"): any other failure
+    // (bad token, rate limit, network) is a real problem that recovery
+    // would only mask — let it bubble up as before.
+    if (lastErr?.status === 404 && subscription) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .maybeSingle();
+        const name = profile?.full_name || user.user_metadata?.full_name || user.email;
+
+        const found = await polarFetch(`/v1/customers/?email=${encodeURIComponent(user.email)}&limit=1`);
+        let recoveredCustomerId = found?.items?.[0]?.id || null;
+
+        if (!recoveredCustomerId) {
+          const created = await polarFetch('/v1/customers/', {
+            method: 'POST',
+            body: JSON.stringify({ email: user.email, name, external_id: user.id }),
+          });
+          recoveredCustomerId = created?.id || null;
+        }
+
+        if (!recoveredCustomerId) throw new Error('Polar did not return a customer id.');
+
+        session = await polarFetch('/v1/customer-sessions/', {
+          method: 'POST',
+          body: JSON.stringify({ customer_id: recoveredCustomerId, return_url: returnUrl }),
+        });
+        lastErr = null;
+      } catch (err) {
+        lastErr = err;
+        console.error('Polar portal: customer recovery (find-or-create) failed —', err.message);
+      }
+    }
+
     if (lastErr) throw lastErr;
+
+    // Keep Supabase in sync with whichever id actually just worked, so the
+    // next call takes the fast path and other code that trusts
+    // polar_customer_id (e.g. checkout.js's duplicate-subscription guard)
+    // stays correct. Only ever write an id we've just confirmed resolves —
+    // never persist an id speculatively.
+    const confirmedCustomerId = session?.customer_id;
+    if (subscription && confirmedCustomerId && confirmedCustomerId !== subscription.polar_customer_id) {
+      const { error: syncError } = await supabase
+        .from('subscriptions')
+        .update({ polar_customer_id: confirmedCustomerId })
+        .eq('user_id', user.id);
+      if (syncError) console.error('Polar portal: failed to sync recovered polar_customer_id —', syncError.message);
+    }
 
     const url = session?.customer_portal_url;
     if (!url) throw new Error('Polar did not return a customer portal URL.');

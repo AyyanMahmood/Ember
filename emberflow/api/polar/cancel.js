@@ -1,6 +1,6 @@
 const { getAuthenticatedUser } = require('../_utils/supabaseAdmin');
 const { methodNotAllowed, optionsHandler, sendJson } = require('../_utils/http');
-const { hasAccessGrantingStatus, polarFetch } = require('../_utils/polar');
+const { collapseToFreeAfterMissingSubscription, hasAccessGrantingStatus, polarFetch } = require('../_utils/polar');
 const { rateLimit } = require('../_utils/rateLimit');
 
 // In-app cancellation (and resume). Cancels via Polar's API so the whole flow
@@ -40,10 +40,21 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const updated = await polarFetch(`/v1/subscriptions/${sub.polar_subscription_id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ cancel_at_period_end: !resume }),
-    });
+    let updated;
+    try {
+      updated = await polarFetch(`/v1/subscriptions/${sub.polar_subscription_id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ cancel_at_period_end: !resume }),
+      });
+    } catch (err) {
+      if (err.status === 404) {
+        await collapseToFreeAfterMissingSubscription(supabase, user.id);
+        return sendJson(res, 409, {
+          error: "We couldn't find an active subscription with our billing provider, so your account has been moved to the Free plan. Contact support if this looks wrong.",
+        });
+      }
+      throw err;
+    }
 
     return sendJson(res, 200, {
       cancel_at_period_end:

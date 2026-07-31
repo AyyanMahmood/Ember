@@ -85,11 +85,17 @@ async function polarFetch(path, options = {}) {
     // Polar's error body is usually { detail: "..." } (a string) but for
     // 422s detail is an array of { type, loc, msg } validation objects —
     // stringify the whole payload in that case rather than losing it.
-    throw new Error(
+    const error = new Error(
       typeof payload?.detail === 'string'
         ? payload.detail
         : JSON.stringify(payload?.detail || payload?.error || payload)
     );
+    // Attached (not just logged) so callers can distinguish "this customer/
+    // resource genuinely doesn't exist in the current Polar environment"
+    // (404 — worth recovering from) from auth/config/rate-limit failures
+    // (worth surfacing as-is, not papering over with a recovery attempt).
+    error.status = response.status;
+    throw error;
   }
 
   return payload;
@@ -186,6 +192,26 @@ function normalizeSubscription(subscription, fallback = {}) {
   };
 }
 
+// A stored polar_subscription_id that 404s against the currently configured
+// Polar environment almost certainly means the row is stale (e.g. captured
+// before a sandbox -> production cutover, or the subscription was deleted
+// directly in Polar) rather than a transient failure — the same class of
+// issue api/polar/portal.js recovers from for polar_customer_id. Left alone,
+// the row would stay frozen at whatever access-granting status it had
+// forever, since no further webhook can ever arrive for a subscription that
+// doesn't exist in the current environment — silently granting Pro access
+// indefinitely. Self-heal by collapsing to Free so EmberFlow's own state
+// matches reality, and clearing the dead id per the same "never keep an id
+// we know is invalid" rule (polar_customer_id is left alone -- portal.js's
+// own recovery already re-syncs it the next time it's needed).
+async function collapseToFreeAfterMissingSubscription(supabase, userId) {
+  const { error } = await supabase
+    .from('subscriptions')
+    .update({ plan: 'free', status: 'canceled', polar_subscription_id: null })
+    .eq('user_id', userId);
+  if (error) console.error('Failed to collapse stale subscription to free:', error.message);
+}
+
 module.exports = {
   getProductId,
   planFromProduct,
@@ -197,4 +223,5 @@ module.exports = {
   WebhookVerificationError,
   extractUserId,
   normalizeSubscription,
+  collapseToFreeAfterMissingSubscription,
 };
