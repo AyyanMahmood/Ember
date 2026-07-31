@@ -43,9 +43,18 @@ module.exports = async function handler(req, res) {
       // sendError() replaces the message with a generic string in production
       // (by design, for unexpected errors) - this is an expected, safe,
       // user-actionable message, so send it directly instead.
+      //
+      // This branch is only reachable via stale frontend state, a direct API
+      // call, or a race between tabs -- normal UI navigation routes an
+      // already-subscribed user to switch.js instead (see "V1 Billing
+      // Customer Journey" / api/polar/switch.js), which changes the existing
+      // subscription's product in place rather than cancel-then-resubscribe.
+      // The message below used to describe that older cancel-first flow,
+      // which is no longer the real (or best) path -- kept in sync here so a
+      // user who does hit this 409 gets accurate guidance.
       return sendJson(res, 409, {
         error:
-          'You already have an active subscription. To switch between Monthly and Yearly, cancel your current plan first (Manage billing) - you keep Pro until it ends, then you can subscribe to the new cadence.',
+          'You already have an active subscription. Go to Subscriptions to switch between Monthly and Yearly, or manage your billing there.',
       });
     }
 
