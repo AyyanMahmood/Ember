@@ -1,11 +1,12 @@
 import { useState } from 'react';
 
-// The brand asset. Drop the real logo at frontend/public/emberflow-logo.svg
-// (preferred — crisp at any size) and it is used everywhere automatically.
-// Until then, EmberMark below is a graceful, on-brand fallback so nothing
-// ever renders a broken image. A caller can point at a different file via
-// the `src` prop (e.g. a wordmark variant).
-const DEFAULT_LOGO_SRC = '/emberflow-logo.svg';
+// The brand mark — the square EmberFlow hex symbol, transparent-background,
+// extracted from the supplied logo lockup. Used everywhere a square mark fits
+// (app entrance, sidebar, activation ring, auth loader), so the same mark
+// anchors every "this is EmberFlow" moment. The full horizontal lockup lives
+// at /emberflow-logo.png for wide/marketing contexts. EmberMark below is a
+// graceful fallback so nothing renders broken if the asset is ever missing.
+const DEFAULT_LOGO_SRC = '/emberflow-mark.png';
 
 // Inline fallback mark — a warm rounded-square ember monogram. Deliberately
 // self-contained (no external asset, theme-aware via tokens) so it holds up
