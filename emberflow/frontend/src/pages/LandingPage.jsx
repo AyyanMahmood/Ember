@@ -237,7 +237,12 @@ export default function LandingPage() {
                   features={plan.features}
                   highlight={plan.highlight}
                   cta={
-                    <Button as={Link} variant={isFree ? 'secondary' : 'primary'} to="/register" fullWidth>
+                    <Button
+                      as={Link}
+                      variant={isFree ? 'secondary' : 'primary'}
+                      to={isFree ? '/register' : `/register?plan=${plan.id}`}
+                      fullWidth
+                    >
                       {isFree ? 'Start free' : 'Start Pro'}
                     </Button>
                   }

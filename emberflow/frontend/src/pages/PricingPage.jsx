@@ -34,7 +34,12 @@ export default function PricingPage() {
               features={plan.features}
               highlight={plan.highlight}
               cta={
-                <Button as={Link} variant={isFree ? 'secondary' : 'primary'} to="/register" fullWidth>
+                <Button
+                  as={Link}
+                  variant={isFree ? 'secondary' : 'primary'}
+                  to={isFree ? '/register' : `/register?plan=${plan.id}`}
+                  fullWidth
+                >
                   {isFree ? 'Start free' : `Start ${plan.shortName.toLowerCase()}`}
                 </Button>
               }

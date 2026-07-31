@@ -1,6 +1,6 @@
 import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input } from '../components/ui/Input.jsx';
@@ -8,7 +8,9 @@ import { BrandLoader } from '../components/ui/Loading.jsx';
 import { PasswordStrengthMeter } from '../components/ui/PasswordStrengthMeter.jsx';
 import { Seo } from '../components/Seo.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import { startCheckout } from '../services/subscriptions.js';
 import { friendlyAuthError, isDisposableEmail } from '../utils/auth.js';
+import { clearPendingPlan, getPendingPlan, setPendingPlan } from '../utils/pendingCheckout.js';
 
 function GoogleIcon() {
   return (
@@ -35,8 +37,42 @@ export default function AuthPage({ mode }) {
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendState, setResendState] = useState('idle');
 
+  // Persist a plan chosen on the pricing page (?plan=pro_yearly) so checkout
+  // opens for it automatically once the user is authenticated — they never
+  // pick twice.
+  useEffect(() => {
+    const plan = new URLSearchParams(location.search).get('plan');
+    if (plan) setPendingPlan(plan);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Single post-auth routing choke point (email/password success, OAuth
+  // return that lands here already-authed, or an already-signed-in visit):
+  // if a plan is pending, open its checkout; otherwise go to the app. Guarded
+  // so it runs exactly once.
+  const routedRef = useRef(false);
+  useEffect(() => {
+    if (!user || routedRef.current) return;
+    routedRef.current = true;
+    const pending = getPendingPlan();
+    if (pending) {
+      clearPendingPlan();
+      startCheckout(pending)
+        .then(({ url }) => window.location.assign(url))
+        .catch(() => navigate('/app/subscriptions', { replace: true }));
+    } else {
+      navigate(location.state?.from || '/app', { replace: true });
+    }
+  }, [user, navigate, location.state]);
+
   if (loading) return <div className="screen-loader"><BrandLoader label="Checking session…" /></div>;
-  if (user) return <Navigate to="/app" replace />;
+  if (user) {
+    return (
+      <div className="screen-loader">
+        <BrandLoader label={getPendingPlan() ? 'Opening checkout…' : 'Signing you in…'} />
+      </div>
+    );
+  }
 
   async function handleGoogleSignIn() {
     setError('');
@@ -82,7 +118,9 @@ export default function AuthPage({ mode }) {
       return;
     }
 
-    navigate(location.state?.from || '/app');
+    // Success with a session: leave routing to the post-auth effect above, so
+    // the submit path and the already-authenticated path share one behavior
+    // (open checkout for a pending plan, otherwise go to the app).
   }
 
   async function handleResend() {

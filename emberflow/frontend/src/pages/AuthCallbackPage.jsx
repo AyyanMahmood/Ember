@@ -3,9 +3,11 @@ import { Navigate } from 'react-router-dom';
 import { BrandLoader } from '../components/ui/Loading.jsx';
 import { Seo } from '../components/Seo.jsx';
 import { supabase } from '../services/supabase.js';
+import { startCheckout } from '../services/subscriptions.js';
+import { clearPendingPlan, getPendingPlan } from '../utils/pendingCheckout.js';
 
 export default function AuthCallbackPage() {
-  const [status, setStatus] = useState('working'); // 'working' | 'success' | 'failed'
+  const [status, setStatus] = useState('working'); // 'working' | 'checkout' | 'success' | 'failed'
   const ranOnce = useRef(false);
 
   useEffect(() => {
@@ -27,17 +29,36 @@ export default function AuthCallbackPage() {
       }
 
       const { data: sessionData } = await supabase.auth.getSession();
-      setStatus(sessionData?.session ? 'success' : 'failed');
+      if (!sessionData?.session) {
+        setStatus('failed');
+        return;
+      }
+
+      // If a plan was chosen before signing in, open its checkout instead of
+      // landing on the app — the "never ask twice" flow, completed after OAuth.
+      const pending = getPendingPlan();
+      if (pending) {
+        clearPendingPlan();
+        setStatus('checkout');
+        try {
+          const { url } = await startCheckout(pending);
+          window.location.assign(url);
+          return;
+        } catch {
+          // Fall through into the app if checkout can't be started.
+        }
+      }
+      setStatus('success');
     }
 
     completeSignIn();
   }, []);
 
-  if (status === 'working') {
+  if (status === 'working' || status === 'checkout') {
     return (
       <div className="page-stack" role="status" aria-live="polite">
         <Seo title="Signing you in" noindex path="/auth/callback" />
-        <BrandLoader label="Signing you in…" />
+        <BrandLoader label={status === 'checkout' ? 'Opening checkout…' : 'Signing you in…'} />
       </div>
     );
   }
