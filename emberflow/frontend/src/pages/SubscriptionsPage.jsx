@@ -1,6 +1,7 @@
 import { Crown, ExternalLink, LifeBuoy, Receipt, ShieldAlert, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { Alert } from '../components/ui/Alert.jsx';
 import { Badge, StatusBadge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Card, CardHeader } from '../components/ui/Card.jsx';
@@ -166,6 +167,13 @@ export default function SubscriptionsPage() {
   // keeps Pro access throughout (past_due is in hasAccessGrantingStatus /
   // isSubscriptionActive on both the backend and frontend, deliberately).
   const pastDue = status === 'past_due';
+  // Involuntary revoke: Polar exhausted its payment retries and set the
+  // subscription to `unpaid`, which normalizeSubscription() collapses to
+  // plan='free'. We deliberately key off `unpaid` (not `canceled`) so we
+  // never tell a user who *chose* to cancel that their "payment failed" —
+  // `canceled` covers both voluntary cancels and Polar's immediate revoke,
+  // whereas `unpaid` unambiguously means "we couldn't collect the renewal."
+  const revokedForNonPayment = !subscription.isPro && status === 'unpaid';
   const planName = subscription.plan?.name || PLANS.free.name;
 
   return (
@@ -177,15 +185,32 @@ export default function SubscriptionsPage() {
         </div>
       </div>
 
-      {subscription.error ? <Card variant="default"><div className="error-panel" role="alert">{subscription.error}</div></Card> : null}
-      {billingError ? <Card variant="default"><p className="form-error" role="alert">{billingError}</p></Card> : null}
+      {subscription.error ? <Alert variant="danger" title="Couldn't load your subscription">{subscription.error}</Alert> : null}
+      {billingError ? <Alert variant="danger" title="Something went wrong">{billingError}</Alert> : null}
       {confirmingPurchase ? (
-        <Card variant="default">
-          <div className="panel__actions-row" role="status" aria-live="polite">
-            <span className="spinner spinner--sm" aria-hidden="true" />
-            <span>Confirming your purchase with Polar — this usually takes a few seconds.</span>
-          </div>
-        </Card>
+        <Alert variant="info" icon={<span className="spinner spinner--sm" aria-hidden="true" />}>
+          Confirming your purchase with Polar — this usually takes a few seconds.
+        </Alert>
+      ) : null}
+      {revokedForNonPayment ? (
+        <Alert
+          variant="danger"
+          title="Your Pro plan ended — we couldn't collect your last payment"
+          action={
+            <Button
+              variant="primary"
+              size="sm"
+              type="button"
+              onClick={() => checkout(selectedCadence)}
+              disabled={Boolean(billingAction)}
+            >
+              {billingAction === selectedCadence ? 'Opening…' : 'Resubscribe to Pro'}
+            </Button>
+          }
+        >
+          After several automatic retries the renewal charge still didn't go through, so your account is back on Free — nothing you
+          created has been deleted. Resubscribe any time to restore Analytics, Proposals, unlimited invoices, and Brand Studio.
+        </Alert>
       ) : null}
 
       <Card variant="default" className="plan-hero">
@@ -221,16 +246,16 @@ export default function SubscriptionsPage() {
         </div>
 
         {cancelling ? (
-          <p className="muted small subscription-notice">
-            Your subscription is set to cancel. You'll keep Pro access until {formatDateTime(row.current_period_end)}, then your account
-            reverts to Free. Open Manage billing to resume before then.
-          </p>
+          <Alert variant="neutral" className="subscription-notice" title="Scheduled to cancel">
+            You'll keep Pro access until {formatDateTime(row.current_period_end)}, then your account reverts to Free — nothing is
+            deleted. Open Manage billing to resume before then.
+          </Alert>
         ) : pastDue ? (
-          <p className="muted small subscription-notice">
+          <Alert variant="warning" className="subscription-notice" title="Payment failed — we're retrying">
             Your last payment didn't go through. You keep full Pro access while Polar automatically retries the charge over the next
             few weeks — to fix it now, open Manage billing and update your payment method. If every retry fails, your account returns
             to Free.
-          </p>
+          </Alert>
         ) : null}
       </Card>
 

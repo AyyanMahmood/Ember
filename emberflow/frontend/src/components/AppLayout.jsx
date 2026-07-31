@@ -6,6 +6,7 @@ import { useProfile } from '../hooks/useProfile.js';
 import { Avatar } from './ui/Avatar.jsx';
 import { Button } from './ui/Button.jsx';
 import { ThemeToggle } from './ui/ThemeToggle.jsx';
+import { BillingNudge } from './BillingNudge.jsx';
 import { Seo } from './Seo.jsx';
 
 const navItems = [
@@ -173,6 +174,7 @@ export default function AppLayout() {
           </div>
         </header>
         <main className="content" id="main-content" tabIndex={-1}>
+          <BillingNudge />
           <Outlet />
         </main>
       </div>

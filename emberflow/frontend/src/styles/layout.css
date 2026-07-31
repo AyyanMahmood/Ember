@@ -90,6 +90,12 @@
   flex: 1;
 }
 
+/* App-wide billing nudge sits at the top of the content column (inherits
+   .content padding) and separates itself from the page below. */
+.billing-nudge {
+  margin-bottom: var(--space-5);
+}
+
 .page-stack {
   display: grid;
   gap: var(--space-5);
