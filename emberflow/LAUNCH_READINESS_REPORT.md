@@ -1,31 +1,61 @@
 # EmberFlow — Launch Readiness Report
 
-**Date:** 2026-07-30 · **Phase:** Launch Hardening Phase 2 (final) · **Prepared as:** the engineer signing off for production.
+**Date:** 2026-07-30, updated 2026-08-01 · **Phase:** Final Launch Hardening Session · **Prepared as:** the engineer signing off for production.
 
-This is the comprehensive engineering assessment. Companion docs: `LAUNCH_BLOCKERS.md`, `PRODUCTION_CHECKLIST.md`, `SUPPORT_PLAYBOOK.md`, `BILLING_QA_CHECKLIST.md`, `EMBER_UI_TIERING.md`.
+This is the comprehensive engineering assessment. Companion docs: `LAUNCH_BLOCKERS.md`, `PRODUCTION_CHECKLIST.md`, `SUPPORT_PLAYBOOK.md`, `BILLING_QA_CHECKLIST.md`, `EMBER_UI_TIERING.md`. Full per-issue root-cause writeup for this update lives in `CLAUDE.md` → "Final Launch Hardening Session (2026-08-01)".
 
 ---
 
-## The one-line answer
+## 2026-08-01 update — Final Launch Hardening Session
+
+A dedicated audit-first stabilization pass investigated 8 named launch blockers (Brand Studio false errors, billing portal, checkout 500, password reset, subscription lifecycle, webhook verification, environment variables, misleading messages). **8 real bugs found and fixed**, each root-caused before being touched, `npm run build` and `npm run verify:polar` (33/33) green after every change. Migration 008 (the Brand Studio fix) has been **applied to and confirmed live in production**. Nothing here required new architecture, features, or UI redesign.
+
+### Remaining manual tasks
+
+1. **Update the Supabase Reset Password email template** to embed `{{ .TokenHash }}` (exact snippet given in-chat and in `CLAUDE.md`) — without this, the new code-side fix falls back to the old same-browser-only behavior rather than reliably working cross-device.
+2. **Confirm the production Vercel environment variables**, specifically: `POLAR_SERVER` is named correctly (not the legacy `POLAR_ENVIRONMENT`) and set to `production`; `POLAR_ACCESS_TOKEN` and both `POLAR_PRODUCT_PRO_*` ids are the **production** (not sandbox) values; `POLAR_WEBHOOK_SECRET` matches the **production** webhook endpoint's secret specifically; `APP_URL`/`VITE_APP_URL` match the real live domain. This environment cannot be read from this session — no Vercel CLI/dashboard access here.
+3. **Confirm the Polar dashboard's production webhook endpoint** has all six `subscription.*` events selected (`created`/`active`/`updated`/`canceled`/`uncanceled`/`revoked`), per `POLAR_SETUP.md`.
+4. **Run the live Polar sandbox/production end-to-end billing test** — unchanged, the single biggest remaining gate, present since the original Paddle → Polar migration.
+5. **Push this session's 6 commits** (`938ae31`..`0790a20`, still local-only on `main` — nothing has been pushed to origin this session).
+
+### Remaining production risks
+
+- **Never-run billing path.** Every "verified" billing claim in this repo (this session included) is scoped to code + Polar's own documentation, not a real transaction. This is the dominant residual risk and has been since the original migration.
+- **Unconfirmed live environment config.** If item 2 above turns out wrong (e.g. the webhook secret is still sandbox's), every production webhook silently 403s and no subscription ever syncs — this would look identical to the stale-id bug fixed this session, but with a different, ongoing root cause. Worth explicitly ruling out, not just assuming fixed.
+- **Reset-password fix is incomplete until the dashboard template is updated.** The code is safe either way (falls back gracefully), but the actual bug isn't closed until item 1 is done.
+- **Residual, accepted (unchanged from Phase 2, still deferred to v1.5 by design, not oversights):** the out-of-order-webhook write guard, the duplicate-checkout TOCTOU race, and — new this session — the fact that a stale-sandbox subscription only self-heals *reactively* when a user hits Switch or Cancel, not proactively. None of these are new; all are documented, bounded, and judged non-blocking for launch.
+- **npm advisories** (react-router-dom open redirect, dev-only esbuild) — unchanged from Phase 2, non-blocking, tracked for a scoped v1.5 upgrade.
+
+### Production readiness score: **≈ 91 / 100** (up from 88 on 2026-07-30)
+
+The increase reflects real bugs closed this session (a genuine access-control leak in switch/cancel, a Brand Studio correctness bug now live in production, a reset-password flow that will now work cross-device once the template is updated) — not a change in the fundamental gate. The score is still capped by the same thing it was capped by on 2026-07-30: **no code confidence, however high, substitutes for a real Polar transaction.**
+
+### Launch recommendation
+
+**Not yet — but the remaining gap is now almost entirely external verification, not code.** Every item in "Remaining manual tasks" above is a config/dashboard/testing action, zero of them require more engineering. Recommended sequence: (1) push the 6 commits, (2) update the email template, (3) confirm the Vercel checklist, (4) run the live Polar test, (5) launch. A Free-tier-only soft launch remains available immediately if you want to ship the stabilized app before the Polar/email items are closed out — nothing in this session's fixes is gated on Polar being live.
+
+---
+
+## The one-line answer (original, 2026-07-30)
 
 > **Can EmberFlow launch today? — No, but it is close, and the gap is verification and configuration, not engineering.**
 
-The product is production-quality code that has been audited deeply (five flow-by-flow billing audits, six real bugs found and fixed). What stands between it and launch is that **no real Polar transaction has ever been executed** — every "verified" claim is scoped to code + Polar's own docs — plus unconfirmed production config/migration state. None of the remaining work is *building*; it is *proving*. Realistic time-to-launch once someone with Polar credentials runs the checklist: **1–2 days**.
+The product is production-quality code that has been audited deeply (five flow-by-flow billing audits, six real bugs found and fixed as of 2026-07-30; three more found and fixed 2026-08-01, see the update above). What stands between it and launch is that **no real Polar transaction has ever been executed** — every "verified" claim is scoped to code + Polar's own docs — plus unconfirmed production config/migration state. None of the remaining work is *building*; it is *proving*. Realistic time-to-launch once someone with Polar credentials runs the checklist: **1–2 days**.
 
 ---
 
 ## Readiness scorecard
 
-| Area | Score | One-line justification |
-|---|---:|---|
-| **Billing** | 82 / 100 | Code + doc verified exhaustively, 6 bugs fixed, idempotent & correct — but **never run live** (−15) and prod config unconfirmed (−3). |
-| **Backend** | 90 / 100 | Minimal, clean surface (3 routes, 4 utils), signed idempotent webhook, service-role-only writes, rate-limited. Deducted for the theoretical out-of-order-webhook write and env-var-load-bearing entitlement. |
-| **Frontend** | 87 / 100 | Mature, responsive, accessible, dark-first, lazy-loaded. Deducted because on-device QA (`MANUAL_QA_CHECKLIST.md`) is still largely unrun by a human and Lighthouse hasn't been executed. |
-| **Security** | 85 / 100 | RLS owner-only, Standard-Webhooks signature verify, CORS fail-closed, rate limiting, no secrets in the bundle by construction. Deducted for open npm advisories (low real impact) and no live pen test. |
-| **Performance** | 85 / 100 | Route-level code splitting, split vendor chunks, jsPDF/html2canvas deferred to when a doc is actually edited, self-hosted fonts. Deducted because Lighthouse was never actually run (no browser in the build env). |
-| **Architecture** | 92 / 100 | Provider-agnostic entitlement, single source of truth (signed webhook), clean separation, modular, Ember UI extraction discipline. The strongest area. |
-| **Documentation** | 95 / 100 | Unusually thorough and, deliberately, honest about what is and isn't verified. This report set, the QA checklists, the support playbook, and the per-flow audits. |
-| **Overall** | **≈ 88 / 100** | Excellent, launch-grade engineering; gated on live billing verification + production config. |
+| Area | Score (2026-07-30) | Score (2026-08-01) | What changed |
+|---|---:|---:|---|
+| **Billing** | 82 / 100 | 85 / 100 | 3 more real bugs closed (stale sandbox→production customer/subscription ids now self-heal instead of failing or leaking access; stale plan-switch copy fixed) — still capped by **never run live** (−15) and prod config unconfirmed (−3). |
+| **Backend** | 90 / 100 | 91 / 100 | Portal/switch/cancel routes now handle a whole class of "environment migration left stale ids" failures gracefully instead of surfacing raw Polar errors or silently granting indefinite access. |
+| **Frontend** | 87 / 100 | 89 / 100 | Password reset now has a real "link expired" state instead of a confusing raw error; Brand Studio's free tier actually works end-to-end for the first time. Still deducted for unrun on-device QA / Lighthouse. |
+| **Security** | 85 / 100 | 86 / 100 | Tightened "never persist an id we haven't just confirmed works" discipline across portal/switch/cancel. Unchanged: open npm advisories, no live pen test. |
+| **Performance** | 85 / 100 | 85 / 100 | No change this session (out of scope). |
+| **Architecture** | 92 / 100 | 93 / 100 | The self-heal-on-404 pattern (portal, switch, cancel all share one `collapseToFreeAfterMissingSubscription` / recovery approach) is a clean, reusable answer to "what happens when an external id goes stale" — the kind of thing worth keeping consistent as the app grows. |
+| **Documentation** | 95 / 100 | 96 / 100 | This report, `CLAUDE.md`'s full per-issue writeup, and the migration/email-template/env-var checklists stay honest about exactly what's confirmed vs. what still needs a human with real credentials. |
+| **Overall** | **≈ 88 / 100** | **≈ 91 / 100** | See the 2026-08-01 update above for detail. |
 
 The overall figure is intentionally *not* higher than Billing, because a finance product cannot be "more ready than its billing."
 
@@ -43,6 +73,9 @@ Five flows audited end-to-end this sprint, each against code **and** Polar's own
 | 4 | False UI claim that Polar can't switch plans in place | `874b68c` |
 | 5 | Portal session had no `return_url` → **no way back to EmberFlow from the portal at all** | `1b27012` |
 | 6 | `past_due` failed-payment state presented as if healthy (malformed badge, "Renews" subtitle, no explanation) | `92ea1b8` |
+| 7 | Billing portal "customer does not exist" for accounts whose Polar customer only ever existed in sandbox | `c3ab27f` (2026-08-01) |
+| 8 | Switch/Cancel had no handling for a stale (404) subscription id — would grant indefinite Pro access with no recovery path | `c3ab27f` (2026-08-01) |
+| 9 | Checkout's duplicate-subscription error described the old cancel-then-resubscribe flow, contradicting the in-app Switch feature | `3ef3230` (2026-08-01) |
 
 **Verified correct and left unchanged** (with reasons, not assumptions): the `409` duplicate-subscription guard; the `user_id` unique index making the upsert safe; owner-only RLS; status-aware entitlement that mirrors Polar's real lifecycle (`active`/`trialing`/`past_due` grant; `canceled`/`unpaid`/`paused`/`incomplete*` don't) and is robust to Polar's own `canceled`-vs-`unpaid` doc inconsistency; renewals arriving as `subscription.updated`; webhook idempotency via `webhook_events`; the customer portal being 100% Polar-native (nothing rebuilt).
 
@@ -102,10 +135,12 @@ Five flows audited end-to-end this sprint, each against code **and** Polar's own
 
 ## Launch blockers (see `LAUNCH_BLOCKERS.md` for detail)
 
-1. 🔴 **No live Polar transaction ever run** — the hard gate.
-2. 🔴 **Production Polar + Vercel config unverified** (products, env vars, webhook endpoint, grace period).
-3. 🔴 **Migration 007 confirmed applied to production** (direct column check).
-4. 🟠 **Production domain decided & made consistent** (blocks a *polished* launch, not a technical one).
+1. 🔴 **No live Polar transaction ever run** — the hard gate, unchanged.
+2. 🔴 **Production Polar + Vercel config unverified** (products, env vars — specifically `POLAR_SERVER` vs the legacy `POLAR_ENVIRONMENT` name, webhook endpoint/secret, grace period). Cannot be confirmed from this environment.
+3. 🟢 **Migration 007 confirmed applied to production** (direct column check, 2026-07-30).
+4. 🟢 **Migration 008 confirmed applied to production** (direct function-body check, 2026-08-01 — the Brand Studio free-tier fix).
+5. 🟠 **Reset Password email template needs a manual update** (embed `{{ .TokenHash }}`) for the 2026-08-01 password-reset fix to take full effect cross-device.
+6. 🟠 **Production domain decided & made consistent** (blocks a *polished* launch, not a technical one).
 
 ---
 
@@ -145,4 +180,4 @@ Five flows audited end-to-end this sprint, each against code **and** Polar's own
 
 ## Bottom line
 
-EmberFlow is **engineered to launch**. The billing system is correct, minimal, idempotent, and honestly documented; the app is mature and accessible; the architecture is clean. It is **not cleared to launch today** solely because the billing path has never been run against real Polar and the production configuration is unconfirmed — both of which are a focused day of verification, not more building. Do not launch on code confidence alone: **run the live test first.**
+EmberFlow is **engineered to launch**. The billing system is correct, minimal, idempotent, and honestly documented; the app is mature and accessible; the architecture is clean. As of 2026-08-01, three more real bugs (two of them genuine correctness/access-control gaps, not polish) have been found and fixed, and one of the two blocking migrations is now confirmed live in production. It is **still not cleared to launch today** — solely because the billing path has never been run against real Polar, the production environment configuration is unconfirmed, and one email template still needs a manual update. None of that is more building; it's a focused round of verification. Do not launch on code confidence alone: **run the live test first.**
