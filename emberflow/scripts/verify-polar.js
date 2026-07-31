@@ -130,5 +130,29 @@ assert('stale timestamp throws', (() => {
   } catch { return true; }
 })());
 
-console.log(`\n==== ${pass} passed, ${fail} failed ====`);
-process.exit(fail === 0 ? 0 : 1);
+// ── Catalog drift guard ──────────────────────────────────────────────────
+// The plan catalog lives in two runtime-appropriate places: the frontend's
+// config/plans.js (ESM, full display data) and api/_utils/planCatalog.js (CJS,
+// the server projection). They must never disagree on WHICH plans exist or
+// their billing interval. Dynamically import the frontend catalog (it's pure
+// data) and assert parity, so a plan added to one file but not the other fails
+// CI instead of silently shipping a half-wired plan.
+console.log('\n# Plan catalog drift (frontend config/plans.js vs backend planCatalog.js)');
+import('../frontend/src/config/plans.js')
+  .then((fe) => {
+    const { PLAN_CATALOG, planIds } = require('../api/_utils/planCatalog.js');
+    const feIds = fe.planCatalog.map((p) => p.id).sort();
+    const beIds = planIds().sort();
+    assert('plan id sets match', JSON.stringify(feIds) === JSON.stringify(beIds));
+
+    const beInterval = Object.fromEntries(PLAN_CATALOG.map((p) => [p.id, p.interval ?? null]));
+    const intervalsMatch = fe.planCatalog.every((p) => beInterval[p.id] === (p.interval ?? null));
+    assert('plan intervals match per id', intervalsMatch);
+  })
+  .catch((err) => {
+    assert('frontend catalog importable for drift check (' + err.message + ')', false);
+  })
+  .finally(() => {
+    console.log(`\n==== ${pass} passed, ${fail} failed ====`);
+    process.exit(fail === 0 ? 0 : 1);
+  });

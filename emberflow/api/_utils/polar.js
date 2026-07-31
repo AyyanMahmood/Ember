@@ -1,12 +1,6 @@
 const crypto = require('crypto');
 const { Webhook, WebhookVerificationError } = require('standardwebhooks');
-
-// Map each internal plan id to the env var holding its Polar product id.
-// Polar checkout is created from PRODUCT ids, not price ids.
-const PLAN_TO_PRODUCT_ENV = {
-  pro_monthly: 'POLAR_PRODUCT_PRO_MONTHLY',
-  pro_yearly: 'POLAR_PRODUCT_PRO_YEARLY',
-};
+const { BILLING_CYCLE_BY_INTERVAL, billablePlans, planById } = require('./planCatalog');
 
 // Polar subscription statuses that still grant access to paid features.
 const ACCESS_GRANTING_STATUSES = new Set(['active', 'trialing', 'past_due']);
@@ -38,28 +32,34 @@ function polarBaseUrl() {
     : 'https://sandbox-api.polar.sh';
 }
 
+// Resolve a plan id to its live Polar product id. Data-driven off the plan
+// catalog: any plan with a productEnvVar is billable; anything else (or an
+// unknown id) is rejected. Polar checkout is created from PRODUCT ids.
 function getProductId(plan) {
   if (typeof plan !== 'string') {
     throw new Error('Invalid billing plan.');
   }
 
-  const envName = PLAN_TO_PRODUCT_ENV[plan];
-  if (!envName) throw new Error('Unsupported billing plan.');
-  const productId = process.env[envName];
-  if (!productId) throw new Error(`Missing ${envName}.`);
+  const def = planById(plan);
+  if (!def || !def.productEnvVar) throw new Error('Unsupported billing plan.');
+  const productId = process.env[def.productEnvVar];
+  if (!productId) throw new Error(`Missing ${def.productEnvVar}.`);
   return productId;
 }
 
+// Reverse map: a Polar product id back to our plan id. Matches against every
+// billable plan's configured product env value; unknown products collapse to
+// free (so a product we don't recognize never grants paid access).
 function planFromProduct(productId) {
-  if (productId && productId === process.env.POLAR_PRODUCT_PRO_YEARLY) return 'pro_yearly';
-  if (productId && productId === process.env.POLAR_PRODUCT_PRO_MONTHLY) return 'pro_monthly';
-  return 'free';
+  if (!productId) return 'free';
+  const match = billablePlans().find((p) => process.env[p.productEnvVar] === productId);
+  return match ? match.id : 'free';
 }
 
 function billingCycleFromPlan(plan) {
-  if (plan === 'pro_yearly') return 'yearly';
-  if (plan === 'pro_monthly') return 'monthly';
-  return 'free';
+  const def = planById(plan);
+  if (!def) return 'free';
+  return BILLING_CYCLE_BY_INTERVAL[def.interval] || 'free';
 }
 
 async function polarFetch(path, options = {}) {
