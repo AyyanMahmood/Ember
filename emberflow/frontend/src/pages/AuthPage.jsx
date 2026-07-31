@@ -4,6 +4,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Input } from '../components/ui/Input.jsx';
+import { BrandLoader } from '../components/ui/Loading.jsx';
 import { PasswordStrengthMeter } from '../components/ui/PasswordStrengthMeter.jsx';
 import { Seo } from '../components/Seo.jsx';
 import { useAuth } from '../hooks/useAuth.js';
@@ -34,7 +35,7 @@ export default function AuthPage({ mode }) {
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendState, setResendState] = useState('idle');
 
-  if (loading) return <div className="screen-loader">Checking session...</div>;
+  if (loading) return <div className="screen-loader"><BrandLoader label="Checking session…" /></div>;
   if (user) return <Navigate to="/app" replace />;
 
   async function handleGoogleSignIn() {
