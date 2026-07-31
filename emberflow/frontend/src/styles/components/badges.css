@@ -129,3 +129,20 @@
 .chip--danger { background: var(--color-danger-soft); color: var(--color-danger-strong); }
 .chip--draft { background: var(--color-draft-soft); color: var(--color-draft); }
 .chip--muted { background: var(--color-line); color: var(--color-muted); }
+/* Early Supporter — a quiet neutral recognition pill. A single mid-slate
+   gray that reads as "gray, not colored" on both dark and light surfaces,
+   with white text. Deliberately flat: no gradient, no gold, no glow. */
+.early-supporter-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  padding: 0.2rem 0.6rem;
+  background: #3a404a;
+  color: #fff;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+}

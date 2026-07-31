@@ -72,6 +72,24 @@ export const StatusBadge = function StatusBadge({ status, className = '', size =
   );
 };
 
+// Early Supporter recognition — a deliberately quiet neutral pill for launch
+// users. Per spec: small, rounded, subtle light-gray surface, white text; no
+// gradient, no gold, no glow. Kept as its own component (not a Badge variant)
+// because it's a fixed, non-status label with its own restrained styling.
+export const EarlySupporterBadge = forwardRef(function EarlySupporterBadge({
+  className = '',
+  children = 'Early Supporter',
+  ...props
+}, ref) {
+  return (
+    <span ref={ref} className={`early-supporter-badge ${className}`.trim()} {...props}>
+      {children}
+    </span>
+  );
+});
+
+EarlySupporterBadge.displayName = 'EarlySupporterBadge';
+
 export const Chip = forwardRef(function Chip({
   variant = 'default',
   removable = false,

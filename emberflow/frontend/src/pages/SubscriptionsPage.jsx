@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ProActivation } from '../components/ProActivation.jsx';
 import { Alert } from '../components/ui/Alert.jsx';
-import { Badge, StatusBadge } from '../components/ui/Badge.jsx';
+import { Badge, EarlySupporterBadge, StatusBadge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Card, CardHeader } from '../components/ui/Card.jsx';
 import { ItemRow } from '../components/ui/ItemRow.jsx';
@@ -14,8 +14,10 @@ import { ProgressRing } from '../components/ui/ProgressRing.jsx';
 import { SegmentedControl } from '../components/ui/SegmentedControl.jsx';
 import { COMPANY } from '../data/company.js';
 import { useAnimatedNumber } from '../hooks/useAnimatedNumber.js';
+import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
 import { openBillingPortal, startCheckout } from '../services/subscriptions.js';
+import { isEarlySupporter } from '../utils/earlySupporter.js';
 import { formatDateTime } from '../utils/format.js';
 import { formatLimit, PLANS, planPriceValue } from '../utils/plans.js';
 
@@ -72,6 +74,8 @@ function AnimatedPrice({ plan }) {
 
 export default function SubscriptionsPage() {
   const subscription = useSubscription();
+  const { user } = useAuth();
+  const earlySupporter = isEarlySupporter(user);
   const [selectedCadence, setSelectedCadence] = useState('pro_yearly');
   const [billingAction, setBillingAction] = useState('');
   const [billingError, setBillingError] = useState('');
@@ -233,6 +237,7 @@ export default function SubscriptionsPage() {
             <div className="plan-hero__name-row">
               <h2 className="plan-hero__name">{planName}</h2>
               {subscription.isPro && <StatusBadge status={cancelling ? 'pending' : status === 'active' ? 'paid' : status} />}
+              {earlySupporter && <EarlySupporterBadge />}
             </div>
             <span className="muted small">
               {!row?.current_period_end
