@@ -1,5 +1,11 @@
 # Billing Lifecycle QA Checklist
 
+> ## ⚠️ SUPERSEDED — historical audit record (kept for its webhook/entitlement reasoning)
+>
+> **For the actionable pre-Live checklist, use [`LAUNCH_QA.md`](./LAUNCH_QA.md), not this file.**
+>
+> This document was written on 2026-07-30, **before** the 2026-07-31 customer-journey work made **plan switching** and **cancellation** in-app. Its **§3 (cadence switch), §4 (downgrade), and §5 (cancellation)** describe the *old* flow — "cancel-then-resubscribe" and "cancel via the Polar portal / no direct cancel API." **That is no longer how EmberFlow works:** Monthly↔Yearly switching uses Polar's Update Subscription API in place (`api/polar/switch.js`), and cancel/resume are in-app (`api/polar/cancel.js`). See `SUPPORT_PLAYBOOK.md`, `BILLING_UX_ARCHITECTURE.md`, and CLAUDE.md → "V1 Billing Customer Journey" for current behavior. The webhook-idempotency, renewal, failed-payment, and entitlement reasoning in §5–§12 remains accurate and is worth reading; the *flow* claims in §3–§5 are flagged inline below.
+
 **Status: NOT verified.** Produced during the 2026-07-30 Launch Hardening audit from code + Polar's own documentation (verified directly against `polarsource/polar-js` source and `polar.sh/docs`, not recalled from memory) — not from a live sandbox run. This environment has no Polar account/credentials, so nothing below has been exercised end-to-end. Work through it against a real Polar **sandbox** account before launch; see `POLAR_SETUP.md` for account/webhook setup.
 
 For each item, check: does the UI show the right thing, does the `subscriptions` row match, and (where relevant) does Vercel's function log show what you'd expect. Note the exact failure if something doesn't match — "didn't work" isn't enough to act on.
@@ -26,6 +32,8 @@ For each item, check: does the UI show the right thing, does the `subscriptions`
 
 ## 3. Upgrade / cadence switch (Monthly ↔ Yearly)
 
+> **⚠️ OUTDATED (2026-07-31):** this section describes the old **cancel-then-resubscribe** design. EmberFlow now switches **in place** via Polar's Update Subscription API (`api/polar/switch.js`, `proration_behavior: 'invoice'`) — one subscription, prorated by Polar, no cancel step. The current switch test lives in `LAUNCH_QA.md` → Subscription lifecycle. The historical text below is retained for context only.
+
 **Corrected understanding of Polar's real capability (2026-07-30, superseding the note that used to be here — the old note overstated Polar's limitation and was fixed in `874b68c` after being found stated as fact in the app's own UI):** Polar has a real **Update Subscription API** (`product_id` + `proration_behavior`: `invoice`/`prorate`/`next_period`/`reset`, verified against `polar.sh/docs/api-reference/subscriptions/update-subscription`) that can move a subscription onto a different product with proration handled by Polar. Polar's Customer Portal also has a configurable self-serve "switch subscription plans" feature (`Settings → Customer portal` in the Polar dashboard). **EmberFlow does not use either of these** — it deliberately keeps Monthly and Yearly as separate products (confirmed this is Polar's own recommended design: "one product per pricing model," not a workaround) and requires cancel-then-resubscribe instead of an in-place swap, to avoid building custom proration UI/logic. This was a deliberate scope decision this sprint, not a technical limitation — do not describe it to users as something Polar can't do.
 
 - [ ] **Checkout creation while already Pro** — `checkout.js`'s `409` guard fires (verified in code, see §2) — confirm live that clicking anything that would call `/api/polar/checkout` while Pro is actually unreachable from the UI (the "Switch billing cadence" card replaces the Upgrade card entirely once `isPro`) and that hitting the API directly still gets the `409`
@@ -39,6 +47,8 @@ For each item, check: does the UI show the right thing, does the `subscriptions`
 - [ ] **Billing period changes** — confirm the new subscription's `current_period_start`/`current_period_end` are a fresh period from the new checkout date, not inherited from the old subscription
 
 ## 4. Downgrade
+
+> **⚠️ OUTDATED (2026-07-31):** Yearly → Monthly is now an in-app in-place switch (see §3's banner), not cancel-then-resubscribe.
 
 - [ ] Yearly → Monthly: same mechanism as #3 (cancel, then resubscribe) — verify the UI copy doesn't imply anything more automatic exists
 - [ ] Monthly/Yearly → Free: this **is** cancellation (EmberFlow has no paid tier below Pro) — see section 5
@@ -89,7 +99,7 @@ Two real, distinct, now-fixed contributors, both frontend/API-side (not webhook 
 - [ ] Return to EmberFlow **via the browser back button** (in case a user doesn't use the portal's own link) → confirm the `pageshow`/`visibilitychange` fix still covers this
 - [ ] Return to EmberFlow via a **second tab** (portal opened in a new tab) → `visibilitychange` picks it up on refocus
 - [ ] Wait for the period to actually end → `subscription.revoked` webhook lands → `plan` collapses to `'free'`, Pro features lock again
-- [ ] **Cancel from EmberFlow's own dashboard**: the danger-zone action opens a confirm dialog, then redirects to the Polar portal to actually complete the cancellation — confirm this is what actually happens (EmberFlow has no direct cancel-via-API call of its own)
+- [ ] ~~**Cancel from EmberFlow's own dashboard**: the danger-zone action opens a confirm dialog, then redirects to the Polar portal~~ **⚠️ OUTDATED (2026-07-31):** the danger-zone Cancel is now **in-app** — a confirm dialog then a direct call to `api/polar/cancel.js` (`cancel_at_period_end: true`), **no portal redirect**. Resume is likewise in-app. See `LAUNCH_QA.md` → Subscription lifecycle for the current cancel/resume test.
 - [ ] Check Vercel's function logs for the `subscription.*` deliveries around a real cancel to see which event name(s) Polar actually sends in practice — the one thing this audit could reason about from docs but not observe directly
 
 ## 6. Renewals

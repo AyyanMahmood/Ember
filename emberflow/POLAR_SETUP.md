@@ -11,19 +11,23 @@ This guide takes you from a fresh Polar account to a working Pro upgrade flow, i
 ## How it fits together
 
 ```
-Settings "Upgrade"  ──POST /api/polar/checkout──▶  Polar  ──hosted checkout──▶  card charged
-        ▲                                                                            │
-        │                                                            subscription.* webhook
-        │                                                                            ▼
+/app/subscriptions "Upgrade"  ──POST /api/polar/checkout──▶  Polar  ──hosted checkout──▶  card charged
+        ▲                                                                                     │
+        │        switch / cancel: POST /api/polar/{switch,cancel} ──PATCH /v1/subscriptions──▶│
+        │                                                                     subscription.* webhook
+        │                                                                                     ▼
    reads subscriptions row  ◀──── /api/polar/webhook  (verify signature → upsert subscriptions)
 ```
 
 | Piece | File |
 |---|---|
 | Create checkout session | `api/polar/checkout.js` → `POST /v1/checkouts/` |
-| Open customer portal | `api/polar/portal.js` → `POST /v1/customer-sessions/` |
+| Switch plan (Monthly↔Yearly, in place) | `api/polar/switch.js` → `PATCH /v1/subscriptions/{id}` (`product_id` + `proration_behavior`) |
+| Cancel / resume (in-app) | `api/polar/cancel.js` → `PATCH /v1/subscriptions/{id}` (`cancel_at_period_end`) |
+| Open customer portal (card + invoices only) | `api/polar/portal.js` → `POST /v1/customer-sessions/` |
 | Receive lifecycle events | `api/polar/webhook.js` → verifies + upserts `subscriptions` |
 | Shared client + verification | `api/_utils/polar.js` |
+| Plan catalog (data + server projection) | `frontend/src/config/plans.js`, `api/_utils/planCatalog.js` |
 | Frontend calls | `frontend/src/services/subscriptions.js` |
 | Entitlements (provider-agnostic) | `frontend/src/utils/plans.js`, `hooks/useSubscription.js` |
 
@@ -62,7 +66,7 @@ For each product, open the "**⋯**" menu → **Copy Product ID**. You'll set th
 Dashboard → **Settings → Developers → Organization Access Tokens** → **Create**.
 
 - Give it a name (e.g. `emberflow-server`).
-- Grant it the scopes the integration uses: **checkouts (write)**, **customer_sessions (write)**, and **customers / products (read)**. When in doubt, granting the full set is fine — this token is server-side only.
+- Grant it the scopes the integration uses: **checkouts (write)**, **customer_sessions (write)**, **subscriptions (write)** — required for in-app plan switch + cancel/resume, added 2026-07-31 — and **customers / products (read)**. When in doubt, granting the full set is fine — this token is server-side only. **A token created before 2026-07-31 will lack `subscriptions (write)` and must be regenerated**, or switch/cancel will 403.
 - Copy the token (shown once) → `POLAR_ACCESS_TOKEN`.
 
 This token is read only by the `api/` serverless functions. **Never** put it in `frontend/.env.local` or any `VITE_*` variable — that would ship it to the browser.
@@ -109,17 +113,18 @@ Run `supabase/migrations/007_polar_billing.sql` in the Supabase SQL Editor (addi
 
 ## Testing guide (sandbox)
 
-1. **Logic checks (no account needed):** from `emberflow/`, run `npm run verify:polar`. This exercises plan↔product mapping, status-aware subscription normalization, and Standard Webhooks signature verification (valid + tampered signature/body + stale timestamp). Expect `31 passed, 0 failed`.
+1. **Logic checks (no account needed):** from `emberflow/`, run `npm run verify:polar`. This exercises plan↔product mapping, status-aware subscription normalization, the frontend/backend plan-catalog drift guard, and Standard Webhooks signature verification (valid + tampered signature/body + stale timestamp). Expect `33 passed, 0 failed`.
 2. **End-to-end** (needs a public URL — use a Vercel preview deploy or `vercel dev` behind a tunnel so Polar can reach the webhook):
-   1. Sign in to EmberFlow → **Settings**.
-   2. Click **Upgrade monthly**. You should land on Polar's hosted sandbox checkout.
+   1. Sign in to EmberFlow → **Subscriptions** (`/app/subscriptions`).
+   2. Click **Upgrade to Monthly**. You should land on Polar's hosted sandbox checkout. *(Also test the pricing entry point: from `/pricing` click "Start yearly" while logged out → register/sign in → checkout should open automatically for Yearly, no second pick.)*
    3. Pay with a sandbox test card (Polar sandbox accepts Stripe test cards, e.g. `4242 4242 4242 4242`, any future expiry/CVC).
-   4. You're redirected to `/app/settings?billing=success`. Within a few seconds the `subscription.active` webhook lands, the `subscriptions` row updates, Pro features unlock, and a **Manage billing** button appears.
-   5. Click **Manage billing** → Polar customer portal opens.
-   6. Cancel in the portal → the subscription stays `active` with `cancel_at_period_end = true` (you keep Pro until period end). When it finally ends, `subscription.revoked` flips the row to Free.
+   4. You're redirected to `/app/subscriptions?billing=success`. The activation "Welcome to Pro" moment plays while the `subscription.active` webhook lands, the `subscriptions` row updates, Pro features unlock, and **Manage billing** / **View all invoices** appear.
+   5. **Switch plan (in-app):** click **Switch to Yearly** → confirm → the row's `plan`/`polar_product_id` update via `subscription.updated`, still **one** subscription in the Polar dashboard (an in-place update, not a new subscription).
+   6. **Cancel (in-app):** danger zone → **Cancel subscription** → confirm → `cancel_at_period_end = true`, `status` stays `active` (you keep Pro until period end). **Resume subscription** flips it back to `false`. When the period finally ends, `subscription.revoked` flips the row to Free.
+   7. **Portal (cards + invoices only):** click **Manage billing** / **View all invoices** → Polar portal opens for card update + receipts.
 3. **Inspect deliveries:** Polar Dashboard → Webhooks → your endpoint shows each delivery, its payload, and the HTTP response. A healthy delivery returns `200`. `403` means a signature mismatch (see Troubleshooting).
 
-For the full lifecycle beyond this basic upgrade test — duplicate purchases, cancellation from the portal vs. the dashboard, failed payments, webhook replay, expired/deleted subscriptions — see `BILLING_QA_CHECKLIST.md` at the repo root.
+For the full pre-Live checklist — duplicate purchases, in-app switch/cancel/resume, failed payments, webhook replay, expired/deleted subscriptions, and the non-billing areas — see **`LAUNCH_QA.md`** at the repo root (the exhaustive gate before switching Polar to Live). `BILLING_QA_CHECKLIST.md` is the older billing-audit record and is superseded by `LAUNCH_QA.md`.
 
 ---
 
@@ -137,6 +142,7 @@ For the full lifecycle beyond this basic upgrade test — duplicate purchases, c
 |---|---|
 | Webhook deliveries return **403** | `POLAR_WEBHOOK_SECRET` doesn't match the endpoint's signing secret, or the endpoint **Format** isn't **Raw**. Sandbox and production endpoints each have their own distinct secret — make sure you copied the one for the environment that's actually delivering. Check Vercel's function logs for the `Polar webhook signature verification failed` line: it names the exact cause (`Missing required headers`, `Message timestamp too old/new`, or `No matching signature found`) plus a `sha256Prefix` fingerprint of the currently-configured secret — `sha256(<trimmed secret from the dashboard>)`'s first 12 hex chars should match it; if not, the deployed value is wrong or a Vercel redeploy hasn't happened since it was last changed (env var edits don't apply to already-running deployments). Also confirm the endpoint **Format** is **Raw**. |
 | Checkout route returns **400** | Wrong `POLAR_PRODUCT_*` id, or `POLAR_SERVER` doesn't match where the product lives (sandbox id with `POLAR_SERVER=production` or vice-versa). Product ids are environment-specific. |
+| **Switch / cancel** route returns `Couldn't switch/cancel …` with a Polar **403** | The org access token is missing the **subscriptions (write)** scope (added to the integration 2026-07-31). Regenerate the token with that scope in Polar dashboard → Developers and update `POLAR_ACCESS_TOKEN`. A `409` from switch/cancel is expected and benign — the user has no active paid subscription to change (or is already on that plan). |
 | `Missing POLAR_ACCESS_TOKEN` / `Missing POLAR_PRODUCT_...` | Env var not set in the environment actually running the function (Vercel env vs. local `.env`). Redeploy after adding on Vercel. |
 | Payment succeeds but Pro never unlocks | Webhook not configured, wrong URL, or the `subscription.*` events aren't selected on the endpoint. Check the endpoint's delivery log in the Polar dashboard. |
 | **Manage billing** button never appears | The `subscriptions` row has no `polar_customer_id` yet — it's written by the first `subscription.*` webhook. Confirm the webhook delivered `200`. |

@@ -1,6 +1,8 @@
 # EmberFlow Billing UX & Architecture — Design Document
 
-**Status:** Proposal for review. **No code has been written for this document.** Implementation is gated on approval of the architecture below.
+> **✅ STATUS: APPROVED & IMPLEMENTED (2026-07-31).** All six §5 decisions shipped — see §5, the plan-model "Update" note, and the "customer journey IMPLEMENTED" note at the end, plus CLAUDE.md → "V1 Billing Customer Journey" and `SUPPORT_PLAYBOOK.md` for current behavior. **Read §1 (current-state audit) and §3 (proposal options) as the *former* state and the decision process** — e.g. "no in-place switch / cancel-then-resubscribe" in §1.9 was the problem being solved; switching and cancellation are now **in-app** (Polar Update/Cancel APIs). This document is retained as the design record.
+
+**Status:** ~~Proposal for review~~ → **implemented** (banner above).
 **Date:** 2026-07-31
 **Author:** Claude (design pass, resuming from the v1.5 roadmap at the user's request to revisit billing architecture before building Milestone A's backend items)
 
