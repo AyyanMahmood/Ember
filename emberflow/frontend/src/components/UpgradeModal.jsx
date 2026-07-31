@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PLANS } from '../utils/plans.js';
+import { getPaidPlans } from '../utils/plans.js';
 import { startCheckout } from '../services/subscriptions.js';
 import { Button } from './ui/Button.jsx';
 import { PricingCard } from './ui/Card.jsx';
@@ -27,39 +27,26 @@ export default function UpgradeModal({ open, onClose, reason = 'Upgrade to Pro t
       <p className="muted">{reason}</p>
       {error ? <p className="form-error">{error}</p> : null}
       <div className="upgrade-grid">
-        <PricingCard
-          name={PLANS.pro_monthly.name}
-          price={PLANS.pro_monthly.price}
-          period={PLANS.pro_monthly.cadence}
-          features={PLANS.pro_monthly.features}
-          highlight
-          cta={
-            <Button
-              variant="primary"
-              fullWidth
-              onClick={() => checkout('pro_monthly')}
-              loading={loadingPlan === 'pro_monthly'}
-            >
-              Upgrade monthly
-            </Button>
-          }
-        />
-        <PricingCard
-          name={PLANS.pro_yearly.name}
-          price={PLANS.pro_yearly.price}
-          period={PLANS.pro_yearly.cadence}
-          features={PLANS.pro_yearly.features}
-          cta={
-            <Button
-              variant="primary"
-              fullWidth
-              onClick={() => checkout('pro_yearly')}
-              loading={loadingPlan === 'pro_yearly'}
-            >
-              Upgrade yearly
-            </Button>
-          }
-        />
+        {getPaidPlans().map((plan) => (
+          <PricingCard
+            key={plan.id}
+            name={plan.name}
+            price={plan.price}
+            period={plan.cadence}
+            features={plan.features}
+            highlight={plan.highlight}
+            cta={
+              <Button
+                variant="primary"
+                fullWidth
+                onClick={() => checkout(plan.id)}
+                loading={loadingPlan === plan.id}
+              >
+                Upgrade {plan.shortName.toLowerCase()}
+              </Button>
+            }
+          />
+        ))}
       </div>
     </Modal>
   );

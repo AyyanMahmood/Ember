@@ -19,7 +19,7 @@ import { useSubscription } from '../hooks/useSubscription.js';
 import { openBillingPortal, startCheckout } from '../services/subscriptions.js';
 import { isEarlySupporter } from '../utils/earlySupporter.js';
 import { formatDateTime } from '../utils/format.js';
-import { formatLimit, PLANS, planPriceValue } from '../utils/plans.js';
+import { formatLimit, getAnnualSavings, getPlansInGroup, PLANS, planPriceValue } from '../utils/plans.js';
 
 function UsageMeter({ label, used, limit }) {
   const unlimited = !Number.isFinite(limit);
@@ -50,10 +50,10 @@ function useRenewalProgress(startIso, endIso) {
   return 1 - elapsed;
 }
 
-const CADENCE_OPTIONS = [
-  { plan: 'pro_monthly', ...PLANS.pro_monthly, label: 'Monthly' },
-  { plan: 'pro_yearly', ...PLANS.pro_yearly, label: 'Yearly' },
-];
+// The upgrade cadence choices are the paid variants of the 'pro' group, from
+// the catalog — a third variant (or a different group's variants) needs no
+// change here.
+const CADENCE_OPTIONS = getPlansInGroup('pro').map((plan) => ({ plan: plan.id, ...plan, label: plan.shortName }));
 
 function AnimatedPrice({ plan }) {
   const target = planPriceValue(plan);
@@ -126,7 +126,7 @@ export default function SubscriptionsPage() {
     return () => clearTimeout(timeoutId);
   }, [showActivation, subscription.isPro, subscription.loading, subscription.refresh]);
 
-  const yearlySavings = planPriceValue('pro_monthly') * 12 - planPriceValue('pro_yearly');
+  const yearlySavings = getAnnualSavings('pro');
 
   async function checkout(plan) {
     setBillingAction(plan);

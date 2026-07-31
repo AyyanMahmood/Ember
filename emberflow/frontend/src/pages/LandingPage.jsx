@@ -6,7 +6,7 @@ import { StatusBadge } from '../components/ui/Badge.jsx';
 import { PricingCard } from '../components/ui/Card.jsx';
 import { Seo } from '../components/Seo.jsx';
 import { FEATURES } from '../data/features.js';
-import { PLANS } from '../utils/plans.js';
+import { getPublicPlans } from '../utils/plans.js';
 import { scrollToId } from '../utils/scroll.js';
 
 function Reveal({ children, className = '', delay = 0, as: Tag = 'div', ...props }) {
@@ -222,21 +222,28 @@ export default function LandingPage() {
           </p>
         </div>
         <div className="lp-pricing__grid">
-          <PricingCard
-            name={PLANS.free.name}
-            price={PLANS.free.price}
-            period={PLANS.free.cadence}
-            features={PLANS.free.features}
-            cta={<Button as={Link} variant="secondary" to="/register" fullWidth>Start free</Button>}
-          />
-          <PricingCard
-            name={PLANS.pro_monthly.name}
-            price={PLANS.pro_monthly.price}
-            period={PLANS.pro_monthly.cadence}
-            features={PLANS.pro_monthly.features}
-            highlight
-            cta={<Button as={Link} variant="primary" to="/register" fullWidth>Start Pro</Button>}
-          />
+          {/* Teaser: the free tier + the highlighted paid plan, from the
+              catalog. A different headline plan is a catalog flag, not an edit. */}
+          {getPublicPlans()
+            .filter((plan) => plan.tier === 'free' || plan.highlight)
+            .map((plan) => {
+              const isFree = plan.tier === 'free';
+              return (
+                <PricingCard
+                  key={plan.id}
+                  name={plan.name}
+                  price={plan.price}
+                  period={plan.cadence}
+                  features={plan.features}
+                  highlight={plan.highlight}
+                  cta={
+                    <Button as={Link} variant={isFree ? 'secondary' : 'primary'} to="/register" fullWidth>
+                      {isFree ? 'Start free' : 'Start Pro'}
+                    </Button>
+                  }
+                />
+              );
+            })}
         </div>
       </Reveal>
 
