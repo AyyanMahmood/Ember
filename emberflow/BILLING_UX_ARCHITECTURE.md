@@ -208,7 +208,11 @@ The webhook → `subscriptions` upsert → `useSubscription()` model is correct 
 
 ---
 
-## 5. Open decisions (need your call before implementation)
+## 5. Open decisions — ✅ RESOLVED & IMPLEMENTED (2026-07-31)
+
+> All six were approved and built (see the completion note at the end of this doc + CLAUDE.md → "V1 Billing Customer Journey"). Switching = **in-app** via Polar's Update Subscription API (approved "Option A / seamless from EmberFlow"); cancellation = **in-app** (no portal); checkout handoff = **pre-selected plan carried through auth**; celebration = **shipped**; billing problems = **prefilled email**; history echo = **in-app summary + View-all-invoices to Polar**. The list below is the original proposal, kept for the record.
+
+### (original) Open decisions (need your call before implementation)
 
 1. **Plan switching — Option A (portal-native switch), Option B (in-app prorated update), or C (fallback)?** This is the biggest one. My recommendation: A now, B as the premium follow-up.
 2. **Cancellation — move fully in-app (Option B route), or keep the portal bounce?** Recommendation: in-app, bundled with B.
@@ -244,3 +248,16 @@ The webhook → `subscriptions` upsert → `useSubscription()` model is correct 
 Ahead of the §5 flow decisions, the **plan model** was re-architected to be config-driven so future offerings (Lifetime, Team, Business, Enterprise, Student, Founder's, regional, promo, launch offers) become **catalog entries, not rewrites**. No new plans were added; Monthly/Yearly behavior is byte-identical. Source of truth is now a plan catalog (`frontend/src/config/plans.js` + `api/_utils/planCatalog.js`); all billing UI + Polar mapping derive from it; a `verify:polar` drift guard keeps the two files in sync. Full detail + the add-a-plan recipe in CLAUDE.md → "Billing Plan-Model Extensibility". This makes the eventual §5 implementation (plan switching, marketing handoff) land on a plan-agnostic base.
 
 *The §5 flow decisions (plan-switch mechanism, cancellation location, checkout handoff, success celebration, refund affordance, history echo) are still open and gate the switching/cancellation implementation.*
+
+## Update (2026-07-31, later) — customer journey IMPLEMENTED
+
+All six §5 decisions were approved and shipped. The billing journey now happens inside EmberFlow; Polar is exposed only for card entry and the full invoice archive.
+
+- **Plan switching:** in-app, in place, via Polar's Update Subscription API (`PATCH /v1/subscriptions/{id}` `{ product_id, proration_behavior:'invoice' }`) — `api/polar/switch.js`. One subscription always (an update, not a second checkout). Seamless from EmberFlow; no portal redirect.
+- **Cancellation + resume:** in-app (`cancel_at_period_end`) — `api/polar/cancel.js`. No portal. The separately-deferred webhook-sync work was left untouched; the UI reflects via bounded polling.
+- **Checkout handoff:** the chosen plan is carried `?plan=` → register/login/OAuth → auto-checkout (`utils/pendingCheckout.js`). Never ask twice.
+- **Success celebration:** the `ProActivation` ember-ring welcome (already shipped) — plays only after a successful purchase, never on refresh.
+- **Refund/billing problems:** a prefilled "Report a billing problem" support email; no ticketing system.
+- **History echo:** an in-app billing summary (plan / renewal / last + next payment) + "View all invoices" → Polar. No duplication of Polar's archive.
+
+Full detail + the manual-verification checklist: CLAUDE.md → "V1 Billing Customer Journey". Verified by build + `verify:polar` 33/33 + headless-Chrome render; **not** live-sandbox tested (no Polar credentials in this environment — the standing launch gate).
