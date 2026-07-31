@@ -1,6 +1,7 @@
 import { Crown, ExternalLink, LifeBuoy, Receipt, ShieldAlert, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { ProActivation } from '../components/ProActivation.jsx';
 import { Alert } from '../components/ui/Alert.jsx';
 import { Badge, StatusBadge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
@@ -84,10 +85,15 @@ export default function SubscriptionsPage() {
   // separate async delivery. Polar's own docs note the subscription's
   // status "might not be active yet" on the very first event. Without this,
   // a paying customer could land here and see "Free plan" for several
-  // seconds with zero explanation. `billing=success` was already being set
-  // but nothing ever read it. Poll briefly (bounded, not indefinite) while
-  // showing a confirming state instead of a flat "you're still Free."
-  const [confirmingPurchase, setConfirmingPurchase] = useState(() => searchParams.get('billing') === 'success');
+  // seconds with zero explanation.
+  //
+  // Presentation (2026-07-31): instead of a flat "confirming…" spinner, this
+  // drives the ProActivation experience — the ember-ring welcome overlay.
+  // We keep polling entitlement underneath so `subscription.isPro` flips as
+  // soon as the webhook lands; the overlay watches that and reveals the
+  // welcome, then dismisses itself via onDone. `billing=success` was already
+  // being set but nothing read it.
+  const [showActivation, setShowActivation] = useState(() => searchParams.get('billing') === 'success');
   const confirmAttemptsRef = useRef(0);
 
   useEffect(() => {
@@ -101,23 +107,20 @@ export default function SubscriptionsPage() {
   }, []);
 
   useEffect(() => {
-    if (!confirmingPurchase) return undefined;
-    if (subscription.isPro) {
-      setConfirmingPurchase(false);
-      confirmAttemptsRef.current = 0;
-      return undefined;
-    }
+    if (!showActivation) return undefined;
+    // Entitlement synced, or we've hit the poll ceiling — stop polling. The
+    // overlay owns its own dismissal (it reveals the welcome the moment
+    // isPro is true, or proceeds optimistically after its safety ceiling),
+    // so we deliberately don't tear it down here.
+    if (subscription.isPro) return undefined;
     if (subscription.loading) return undefined;
-    if (confirmAttemptsRef.current >= 8) {
-      setConfirmingPurchase(false);
-      return undefined;
-    }
+    if (confirmAttemptsRef.current >= 8) return undefined;
     const timeoutId = setTimeout(() => {
       confirmAttemptsRef.current += 1;
       subscription.refresh();
     }, 2000);
     return () => clearTimeout(timeoutId);
-  }, [confirmingPurchase, subscription.isPro, subscription.loading, subscription.refresh]);
+  }, [showActivation, subscription.isPro, subscription.loading, subscription.refresh]);
 
   const yearlySavings = planPriceValue('pro_monthly') * 12 - planPriceValue('pro_yearly');
 
@@ -177,7 +180,20 @@ export default function SubscriptionsPage() {
   const planName = subscription.plan?.name || PLANS.free.name;
 
   return (
-    <div className="page-stack subscriptions-page">
+    <>
+      {/* Rendered outside .subscriptions-page so the page's entrance stagger
+          (.subscriptions-page > *) never overrides the overlay's own motion. */}
+      {showActivation ? (
+        <ProActivation
+          activated={subscription.isPro}
+          onDone={() => {
+            setShowActivation(false);
+            confirmAttemptsRef.current = 0;
+          }}
+        />
+      ) : null}
+
+      <div className="page-stack subscriptions-page">
       <div className="page-header">
         <div>
           <p className="eyebrow">Subscriptions</p>
@@ -187,11 +203,6 @@ export default function SubscriptionsPage() {
 
       {subscription.error ? <Alert variant="danger" title="Couldn't load your subscription">{subscription.error}</Alert> : null}
       {billingError ? <Alert variant="danger" title="Something went wrong">{billingError}</Alert> : null}
-      {confirmingPurchase ? (
-        <Alert variant="info" icon={<span className="spinner spinner--sm" aria-hidden="true" />}>
-          Confirming your purchase with Polar — this usually takes a few seconds.
-        </Alert>
-      ) : null}
       {revokedForNonPayment ? (
         <Alert
           variant="danger"
@@ -259,7 +270,7 @@ export default function SubscriptionsPage() {
         ) : null}
       </Card>
 
-      {confirmingPurchase ? null : !subscription.isPro ? (
+      {!subscription.isPro ? (
         <Card variant="default">
           <CardHeader title="Upgrade to Pro" subtitle="Choose a billing cadence." />
           <div className="cadence-picker">
@@ -402,6 +413,7 @@ export default function SubscriptionsPage() {
         variant="danger"
         loading={billingAction === 'portal'}
       />
-    </div>
+      </div>
+    </>
   );
 }

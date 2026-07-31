@@ -1,0 +1,197 @@
+/* Brand marks — the EmberFlow logo and its inline fallback monogram.
+   Kept minimal and token-driven so both hold up on dark and light surfaces
+   and at any size (topbar 20px → activation 88px). */
+
+.ember-logo {
+  display: block;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.ember-mark {
+  display: block;
+  user-select: none;
+}
+
+.ember-mark__plate {
+  fill: var(--color-surface-strong);
+}
+
+.ember-mark__flame {
+  fill: var(--color-accent);
+}
+
+/* ============================================================
+   Pro activation experience — a single traced ember ring around
+   the logo, then a warm welcome that dissolves into the page.
+   ============================================================ */
+
+.pro-activation {
+  position: fixed;
+  inset: 0;
+  z-index: 700; /* above modals (500) and toasts (600) — nothing overlaps it */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  /* Warm near-black, ember-tinted at the centre so the whole moment feels
+     lit from within rather than a flat black screen. */
+  background: radial-gradient(120% 120% at 50% 42%, #14100e 0%, var(--color-bg) 62%);
+  animation: pro-activation-in 400ms var(--ease-out) both;
+}
+
+.pro-activation--exiting {
+  /* Expand-and-fade so it dissolves into the Subscriptions page beneath. */
+  animation: pro-activation-out 540ms var(--ease-in-out) both;
+}
+
+.pro-activation__stage {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: grid;
+  place-items: center;
+}
+
+.pro-activation__halo {
+  position: absolute;
+  inset: -24%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(192, 96, 58, 0.3) 0%, rgba(192, 96, 58, 0) 68%);
+  opacity: 0;
+  animation: pro-halo-in 1200ms var(--ease-out) 300ms forwards;
+}
+
+/* While waiting for entitlement to sync, the halo breathes to signal work. */
+.pro-activation--holding .pro-activation__halo {
+  animation: pro-halo-breathe 2.4s var(--ease-in-out) infinite;
+}
+
+.pro-activation__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); /* start the trace at 12 o'clock */
+  overflow: visible;
+}
+
+.pro-activation__ring-track {
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 2;
+}
+
+.pro-activation__ring-trace {
+  stroke: var(--color-accent);
+  stroke-width: 2;
+  stroke-dasharray: 352; /* 2πr, r = 56 */
+  stroke-dashoffset: 352;
+  filter: drop-shadow(0 0 5px rgba(192, 96, 58, 0.55));
+  animation: pro-ring-trace 1650ms var(--ease-out) forwards;
+}
+
+.pro-activation__logo {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 4px 24px rgba(192, 96, 58, 0.28));
+  animation: pro-logo-in 900ms var(--ease-out) both;
+}
+
+.pro-activation__caption {
+  text-align: center;
+  max-width: 30rem;
+  padding: 0 var(--space-6);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
+}
+
+.pro-activation__caption.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pro-activation__title {
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+.pro-activation__subtitle {
+  margin-top: var(--space-2);
+  font-size: var(--text-body);
+  color: var(--color-muted);
+}
+
+@keyframes pro-ring-trace {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes pro-logo-in {
+  from { opacity: 0; transform: scale(0.86); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pro-halo-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pro-halo-breathe {
+  0%, 100% { opacity: 0.65; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+@keyframes pro-activation-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pro-activation-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.02); }
+}
+
+/* ============================================================
+   App entrance — the logo anchors the moment of entering the app,
+   then dissolves as the interface settles in beneath it.
+   ============================================================ */
+
+.app-entrance {
+  position: fixed;
+  inset: 0;
+  z-index: 650; /* above content/toasts, below the Pro activation moment */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 120% at 50% 45%, #131011 0%, var(--color-bg) 64%);
+  animation: app-entrance-out 620ms var(--ease-in-out) 520ms forwards;
+}
+
+.app-entrance__logo {
+  filter: drop-shadow(0 4px 22px rgba(192, 96, 58, 0.22));
+  animation: app-entrance-logo 720ms var(--ease-out) both;
+}
+
+@keyframes app-entrance-logo {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes app-entrance-out {
+  from { opacity: 1; visibility: visible; }
+  to { opacity: 0; visibility: hidden; transform: scale(1.03); }
+}
+
+/* The interface settles in from just behind the dissolving logo. */
+.app-shell--entering .content {
+  animation: app-shell-settle 700ms var(--ease-out) 480ms both;
+}
+
+@keyframes app-shell-settle {
+  from { opacity: 0; transform: translateY(6px) scale(0.994); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
