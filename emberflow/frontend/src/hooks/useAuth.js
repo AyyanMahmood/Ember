@@ -57,6 +57,15 @@ export function AuthProvider({ children }) {
         supabase.auth.resetPasswordForEmail(email, {
           redirectTo: authRedirectUrl('/reset-password'),
         }),
+      // Explicit token_hash verification for the recovery link, rather than
+      // relying on Supabase's automatic ?code= exchange -- that exchange
+      // only succeeds if the PKCE code verifier is still in the localStorage
+      // of whatever browser opens the link, which is only true when it's the
+      // same browser/profile that requested the reset. Recovery links are
+      // routinely opened somewhere else (a different device, a different
+      // browser, a phone's mail app), so that verifier is very often gone by
+      // the time the link is actually clicked -- see ResetPasswordPage.jsx.
+      verifyPasswordRecovery: (tokenHash, type) => supabase.auth.verifyOtp({ token_hash: tokenHash, type }),
       updatePassword: (password) => supabase.auth.updateUser({ password }),
       resendVerificationEmail: (email) =>
         supabase.auth.resend({

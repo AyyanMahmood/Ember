@@ -38,6 +38,10 @@ export function friendlyAuthError(error) {
     return 'This link is invalid or expired. Request a new link and try again.';
   }
 
+  if (normalized.includes('auth session missing')) {
+    return 'Your session has expired. Please request a new password reset link and try again.';
+  }
+
   if (normalized.includes('provider is not enabled') || normalized.includes('unsupported provider')) {
     return 'This sign-in method isn’t set up yet. Please use email and password, or try again later.';
   }
