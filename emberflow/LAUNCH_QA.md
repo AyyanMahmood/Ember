@@ -30,6 +30,7 @@
 - ☐ **Google OAuth** sign in → `/auth/callback` → `/app`; session persists across a refresh.
 - ☐ Wrong password / unknown email → friendly error (not a raw Supabase string).
 - ☐ **Password reset**: request email → reset link → set new password → sign in with it.
+- ☐ **Password reset (cross-device, 2026-08-01 fix):** request the reset on one device/browser, open the link on a *different* one → still works (requires the Supabase Reset Password email template to embed `{{ .TokenHash }}` — see `CLAUDE.md` → "Final Launch Hardening Session" for the exact template snippet; without it, this still only works same-browser). An expired/already-used link shows a clear "this link has expired" state with a way back to request a new one, not "Auth session missing."
 - ☐ **Resend verification email** works for an unconfirmed account.
 - ☐ **Change password** (Settings → Security) requires the current password; rejects a wrong current password.
 - ☐ An OAuth-only account sees the "you sign in with Google" note instead of a password form.
@@ -82,6 +83,7 @@
 - ☐ Cancel → let the period end → `subscription.revoked` → `plan` collapses to `free`, Pro locks, nothing deleted (data still readable).
 - ☐ Post-revoke via failed payment (`unpaid`) shows the "we couldn't collect your last payment" message + one-click Resubscribe (distinct from a voluntary cancel).
 - ☐ Switch/cancel error paths: a Polar failure surfaces an actionable message (not a generic "unexpected error"); a `409`/`403` behaves as documented.
+- ☐ **Stale-subscription self-heal (2026-08-01 fix):** for an account whose `polar_subscription_id` no longer exists in the current Polar environment, Switch/Cancel returns a clear "moved to Free plan" message instead of a raw error, and the `subscriptions` row actually collapses to `plan=free`/`status=canceled` (confirm in Supabase, not just the UI message).
 
 ## 6. Customer Portal (card + invoices only)
 
@@ -89,7 +91,7 @@
 - ☐ Update card in the portal works; the change is reflected on the next charge.
 - ☐ Invoice history / receipts are visible and downloadable in the portal.
 - ☐ The portal's **cancel/switch options are absent** (disabled in config §0) — the in-app controls are the only path.
-- ☐ Portal opens for a user with a stale/wrong-environment `polar_customer_id` (the `external_customer_id` fallback recovers).
+- ☐ Portal opens for a user with a stale/wrong-environment `polar_customer_id` — the `external_customer_id` fallback recovers first; if that also 404s (e.g. a genuinely sandbox-era customer with no production counterpart), the route finds-or-creates a customer in the current environment and syncs the id back to Supabase (2026-08-01 fix).
 - ☐ Portal button is **absent** for a never-subscribed user (no crash; correct).
 - ☐ Returning from the portal reflects state (the `return_url` back-link + the `pageshow`/`visibilitychange` refetch).
 

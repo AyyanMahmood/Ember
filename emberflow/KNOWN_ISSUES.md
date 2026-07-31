@@ -1,8 +1,10 @@
 # EmberFlow — Known Issues
 
-Genuine, real remaining issues only — no invented future work. Each is something actually true of the current codebase/config as of 2026-07-31. Grouped by when it needs to be addressed.
+Genuine, real remaining issues only — no invented future work. Each is something actually true of the current codebase/config as of 2026-08-01. Grouped by when it needs to be addressed.
 
 **Snapshot:** there is **no known code defect that breaks the customer journey**. Entitlement is verified (parity 24/24, `verify:polar` 33/33) and the billing UI is render-verified. The launch gate is **live verification + Polar production config**, not a bug fix. Everything below is either that gate, a deliberately-deferred hardening item, or a minor polish.
+
+**Update (2026-08-01):** a Final Launch Hardening Session found and fixed 8 real bugs not previously listed here (they were reported directly, not yet documented) — a Brand Studio false-error on free-tier saves (migration `008`, now live), a billing-portal "customer does not exist" for sandbox-era accounts, a localhost checkout 500 (dev-proxy DX, not app code), a password-reset session bug, and a subscription-lifecycle self-heal for stale Polar ids in Switch/Cancel (see item 7 below, now partially closed). Full writeup in `CLAUDE.md` → "Final Launch Hardening Session."
 
 ---
 
@@ -18,8 +20,7 @@ These are launch **gates** — not code defects, but things that must be true be
    Specifically: the org access token must include **`subscriptions (write)`** (a token minted before 2026-07-31 lacks it → in-app switch/cancel return 403); the webhook endpoint must have all six `subscription.*` events at **Raw** format; the grace period should be **21 days**; and the portal's self-serve **cancel/switch should be disabled** (those are in-app now). `APP_URL` and the `POLAR_*` vars must be set for production and redeployed.
    → *Action:* `LAUNCH_QA.md` §0 "Go-Live configuration."
 
-3. **Supabase migration `007_polar_billing.sql` must be confirmed applied to production.**
-   It adds the `polar_customer_id/subscription_id/product_id` columns the switch/cancel/portal routes read. Confirm the columns exist in the prod DB (not just that the file exists).
+3. ~~**Supabase migration `007_polar_billing.sql` must be confirmed applied to production.**~~ **Confirmed 2026-08-01** — `polar_customer_id`/`polar_subscription_id`/`polar_product_id` verified present on `public.subscriptions` via a direct `information_schema` query against production. Migration `008` (the Brand Studio free-tier fix) was also applied and confirmed this session.
 
 ---
 
@@ -43,8 +44,8 @@ These are launch **gates** — not code defects, but things that must be true be
 6. **Exact 15-day grace is not code-enforced.**
    Entitlement grants Pro for the whole `past_due` window (until Polar revokes, ~21 days), so the 15-day promise is honored **with margin** — never less than promised. Enforcing *exactly* 15 days (cutting at day 15 while Polar still retries to 21) would need custom logic; granting slightly more grace never harms a customer.
 
-7. **No periodic Polar↔Supabase reconciliation job.**
-   A subscription/customer deleted directly in the Polar dashboard with no corresponding webhook would leave EmberFlow's row stale (nothing to react to). A scheduled reconcile would catch these edge rows.
+7. **No periodic Polar↔Supabase reconciliation job (narrowed 2026-08-01).**
+   Switch and Cancel now self-heal reactively: if a stored `polar_subscription_id` 404s against Polar (e.g. a sandbox-era row from before the production cutover), the route collapses the account to Free instead of leaving it frozen at stale Pro access. This closes the gap for accounts that actually touch Switch or Cancel. Still missing: a **proactive** check for accounts that never do — a subscription/customer deleted directly in the Polar dashboard (or left over from the sandbox era) with no corresponding webhook and no user-initiated Switch/Cancel would stay stale indefinitely. A scheduled reconcile job would close this fully; still deferred to v1.5.
 
 8. **Live Lighthouse baseline never run.**
    Static picture is good (all routes lazy-loaded, vendor chunks split, `jspdf`/`html2canvas` deferred to when a document editor runs, self-hosted fonts), but performance/a11y have not been measured on a real device.

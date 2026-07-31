@@ -88,7 +88,7 @@ In the Supabase Dashboard, open **SQL Editor** and run these files **in this exa
 
 1. `supabase/schema.sql` — creates the base tables: `profiles`, `clients`, `invoices`, `invoice_items`, `payments`, `proposals`, `proposal_items`, `subscriptions`.
 2. `supabase/policies.sql` — enables row-level security on every table above (users can only access rows they own; invoice/proposal item access is derived from ownership of the parent record; subscription rows are read-only to users and mutated only by the server-side Polar webhook handler) and sets up the `avatars`/`logos` storage bucket policies.
-3. Every file in `supabase/migrations/`, **in numeric order** (`001_production_fixes.sql` through `007_polar_billing.sql`). Each migration is additive and idempotent (safe to run more than once), and together they add:
+3. Every file in `supabase/migrations/`, **in numeric order** (`001_production_fixes.sql` through `008_fix_brand_accent_null_check.sql`). Each migration is additive and idempotent (safe to run more than once), and together they add:
    - `001` — payment/subscription columns and RLS policies missing from the initial dump, plus a `webhook_events` table the Polar webhook handler uses for idempotency
    - `002` — the `invoices.template` column (invoice template selection won't persist without this)
    - `003` — Brand Studio's `brand_font`/`brand_accent_color` columns and the trigger that enforces they're Pro-only
@@ -96,6 +96,7 @@ In the Supabase Dashboard, open **SQL Editor** and run these files **in this exa
    - `005` — expands the allowed `brand_font` values
    - `006` — allows Free-tier users to set a brand color (only logo/font/accent stay Pro-only)
    - `007` — adds the `polar_customer_id`/`polar_subscription_id`/`polar_product_id` columns the Polar billing integration writes (see [`POLAR_SETUP.md`](./POLAR_SETUP.md))
+   - `008` — fixes a trigger bug where saving just a brand color (no accent override) was misdetected as a Pro-gated change and rejected for Free-tier users
 
 In **Authentication > Providers**, keep **Email** enabled. If you want Google sign-in, follow `OAUTH_SETUP.md` before testing that button.
 
@@ -164,6 +165,9 @@ The `logos`/`avatars` bucket doesn't exist yet in your Supabase project. See **S
 
 **Invoice template selection doesn't persist / Brand Studio fields don't save**
 You're likely missing migrations. Re-check **Database Setup** — `002` adds the `invoices.template` column, `003` adds Brand Studio's columns. Migrations are additive and safe to re-run if you're not sure which ones already applied.
+
+**Free-tier Brand Studio save fails with "Pro subscription required for brand customization"**
+You're missing migration `008`. Without it, saving just a brand color (the one Brand Studio field Free users are meant to be able to edit) can be misdetected as a Pro-gated change and rejected, even though nothing Pro-only was touched.
 
 **Google sign-in redirects to an error page, or back to the login page with "Sign-in was cancelled or failed"**
 Almost always a redirect URL mismatch between what the app requests and what's allow-listed in your Supabase Dashboard (Authentication > URL Configuration > Redirect URLs). See `OAUTH_SETUP.md`'s **Common Mistakes** and **Troubleshooting** sections — this is the single most common OAuth setup issue.
