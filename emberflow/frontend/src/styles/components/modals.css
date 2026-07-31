@@ -76,6 +76,11 @@
   color: var(--color-success);
 }
 
+.modal-header__icon--info {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
 .modal-close {
   display: inline-flex;
   align-items: center;

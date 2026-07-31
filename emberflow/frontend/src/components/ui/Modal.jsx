@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { AlertCircle, AlertTriangle, CheckCircle2, X } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from 'lucide-react';
 import { Button } from './Button.jsx';
 import { useFocusTrap } from '../../hooks/useFocusTrap.js';
 
@@ -13,6 +13,7 @@ const STATUS_ICONS = {
   danger: AlertTriangle,
   warning: AlertCircle,
   success: CheckCircle2,
+  info: Info,
 };
 
 export function Modal({

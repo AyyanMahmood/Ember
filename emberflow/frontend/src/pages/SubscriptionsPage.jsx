@@ -1,4 +1,4 @@
-import { Crown, ExternalLink, LifeBuoy, Receipt, ShieldAlert, Sparkles } from 'lucide-react';
+import { ArrowLeftRight, Calendar, CreditCard, Crown, ExternalLink, MailWarning, Receipt, RotateCcw, ShieldAlert, Sparkles, Wallet } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ProActivation } from '../components/ProActivation.jsx';
@@ -16,7 +16,7 @@ import { COMPANY } from '../data/company.js';
 import { useAnimatedNumber } from '../hooks/useAnimatedNumber.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSubscription } from '../hooks/useSubscription.js';
-import { openBillingPortal, startCheckout } from '../services/subscriptions.js';
+import { cancelSubscription, openBillingPortal, resumeSubscription, startCheckout, switchPlan } from '../services/subscriptions.js';
 import { isEarlySupporter } from '../utils/earlySupporter.js';
 import { formatDateTime } from '../utils/format.js';
 import { formatLimit, getAnnualSavings, getPlansInGroup, PLANS, planPriceValue } from '../utils/plans.js';
@@ -80,6 +80,13 @@ export default function SubscriptionsPage() {
   const [billingAction, setBillingAction] = useState('');
   const [billingError, setBillingError] = useState('');
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [switchConfirmOpen, setSwitchConfirmOpen] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const switchTargetRef = useRef(null);
+  const switchPollRef = useRef(0);
+  const cancelTargetRef = useRef(true); // true = cancelling, false = resuming
+  const cancelPollRef = useRef(0);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Purchase-flow race condition (Launch Hardening audit, 2026-07-30):
@@ -152,6 +159,90 @@ export default function SubscriptionsPage() {
     }
   }
 
+  // In-app plan switch. Kicks off Polar's in-place product change, then polls
+  // briefly so the plan hero reflects the new plan without a manual refresh
+  // (the subscription.updated webhook is what actually persists the row —
+  // this just waits for it to land, mirroring the purchase-confirm poll).
+  async function doSwitch(targetId) {
+    setSwitchConfirmOpen(false);
+    setBillingError('');
+    switchTargetRef.current = targetId;
+    switchPollRef.current = 0;
+    setSwitching(true);
+    try {
+      await switchPlan(targetId);
+      subscription.refresh();
+    } catch (err) {
+      setBillingError(err.message);
+      setSwitching(false);
+    }
+  }
+
+  async function doCancel() {
+    setCancelConfirmOpen(false);
+    setBillingError('');
+    cancelTargetRef.current = true;
+    cancelPollRef.current = 0;
+    setCancelBusy(true);
+    try {
+      await cancelSubscription();
+      subscription.refresh();
+    } catch (err) {
+      setBillingError(err.message);
+      setCancelBusy(false);
+    }
+  }
+
+  async function doResume() {
+    setBillingError('');
+    cancelTargetRef.current = false;
+    cancelPollRef.current = 0;
+    setCancelBusy(true);
+    try {
+      await resumeSubscription();
+      subscription.refresh();
+    } catch (err) {
+      setBillingError(err.message);
+      setCancelBusy(false);
+    }
+  }
+
+  // Poll the synced row until the switched plan / cancel state is reflected,
+  // then stop. Bounded (8 tries) so a lagging webhook can't spin forever.
+  useEffect(() => {
+    if (!switching) return undefined;
+    if (subscription.subscription?.plan === switchTargetRef.current) {
+      setSwitching(false);
+      return undefined;
+    }
+    if (switchPollRef.current >= 8) {
+      setSwitching(false);
+      return undefined;
+    }
+    const t = setTimeout(() => {
+      switchPollRef.current += 1;
+      subscription.refresh();
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [switching, subscription.subscription?.plan, subscription.refresh]);
+
+  useEffect(() => {
+    if (!cancelBusy) return undefined;
+    if (Boolean(subscription.subscription?.cancel_at_period_end) === cancelTargetRef.current) {
+      setCancelBusy(false);
+      return undefined;
+    }
+    if (cancelPollRef.current >= 8) {
+      setCancelBusy(false);
+      return undefined;
+    }
+    const t = setTimeout(() => {
+      cancelPollRef.current += 1;
+      subscription.refresh();
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [cancelBusy, subscription.subscription?.cancel_at_period_end, subscription.refresh]);
+
   const renewalProgress = useRenewalProgress(
     subscription.subscription?.current_period_start,
     subscription.subscription?.current_period_end
@@ -182,6 +273,35 @@ export default function SubscriptionsPage() {
   // whereas `unpaid` unambiguously means "we couldn't collect the renewal."
   const revokedForNonPayment = !subscription.isPro && status === 'unpaid';
   const planName = subscription.plan?.name || PLANS.free.name;
+  const currentPlanId = row?.plan;
+  const activePlan = (currentPlanId && PLANS[currentPlanId]) || null;
+  // The plan a Pro user would switch TO — the other paid variant in the group.
+  // With two cadences this is simply "the other one"; a third variant would
+  // want a picker, but today the switch is an unambiguous binary.
+  const otherPlan = subscription.isPro
+    ? getPlansInGroup('pro').find((p) => p.id !== currentPlanId) || null
+    : null;
+
+  // "Report a billing problem" = a prefilled support email (no ticketing
+  // system), with the account + plan context filled in so support has what
+  // they need and the user just describes the issue.
+  const billingProblemHref = (() => {
+    const lines = [
+      'Hi EmberFlow team,',
+      '',
+      "I'd like to report a billing problem.",
+      '',
+      `Account: ${user?.email || '(your account email)'}`,
+      `Current plan: ${planName}${subscription.isPro ? ` (${status})` : ''}`,
+      cancelling && row?.current_period_end ? `Scheduled to cancel on ${formatDateTime(row.current_period_end)}` : null,
+      '',
+      'What happened:',
+      '',
+      '',
+      'Thanks,',
+    ].filter((line) => line !== null);
+    return `mailto:${COMPANY.supportEmail}?subject=${encodeURIComponent('EmberFlow billing problem')}&body=${encodeURIComponent(lines.join('\n'))}`;
+  })();
 
   return (
     <>
@@ -264,7 +384,7 @@ export default function SubscriptionsPage() {
         {cancelling ? (
           <Alert variant="neutral" className="subscription-notice" title="Scheduled to cancel">
             You'll keep Pro access until {formatDateTime(row.current_period_end)}, then your account reverts to Free — nothing is
-            deleted. Open Manage billing to resume before then.
+            deleted. You can resume any time before then from the section below.
           </Alert>
         ) : pastDue ? (
           <Alert variant="warning" className="subscription-notice" title="Payment failed — we're retrying">
@@ -302,29 +422,84 @@ export default function SubscriptionsPage() {
         </Card>
       ) : (
         <Card variant="default">
-          <CardHeader title="Switch billing cadence" subtitle={`You're on ${planName}.`} />
-          <p className="muted small">
-            Switching between Monthly and Yearly isn't instant today — cancel your current plan from Manage billing, you'll keep Pro
-            until it ends, then subscribe to the other cadence from here once it does. No overlap, no double charge.
-          </p>
+          <CardHeader
+            title="Switch plan"
+            subtitle={cancelling ? 'Your plan is scheduled to cancel.' : `You're on ${planName}.`}
+          />
+          {cancelling ? (
+            <p className="muted small">
+              You're set to cancel on {formatDateTime(row.current_period_end)}. Resume below to stay on Pro — then you can switch plans.
+            </p>
+          ) : otherPlan ? (
+            <>
+              <p className="muted small">
+                Prefer to pay {otherPlan.interval === 'year' ? 'once a year' : 'monthly'}? Switch to {otherPlan.name} — {otherPlan.price}/
+                {otherPlan.cadence}. The change takes effect right away and Polar prorates the difference, so you're never on two plans at once.
+              </p>
+              <div className="form-actions">
+                <Button
+                  variant="secondary"
+                  type="button"
+                  onClick={() => setSwitchConfirmOpen(true)}
+                  loading={switching}
+                  leftIcon={<ArrowLeftRight size={16} />}
+                >
+                  {switching ? 'Switching…' : `Switch to ${otherPlan.shortName}`}
+                </Button>
+              </div>
+            </>
+          ) : null}
         </Card>
       )}
 
       <Card variant="default">
-        <CardHeader title="Billing history & invoices" subtitle="Payment history, receipts, and invoice downloads." />
-        {hasCustomer ? (
-          <ItemRow
-            as="button"
-            type="button"
-            onClick={manageBilling}
-            loading={billingAction === 'portal'}
-            icon={<Receipt size={18} />}
-            title="View in Polar's customer portal"
-            subtitle="Past payments, receipts, and invoice downloads — handled securely by Polar."
-            trailing={<ExternalLink size={16} aria-hidden="true" />}
-          />
+        <CardHeader title="Billing summary" subtitle="Your plan and payments at a glance." />
+        {subscription.isPro ? (
+          <>
+            <dl className="billing-summary">
+              <div className="billing-summary__row">
+                <dt><Crown size={16} aria-hidden="true" /> Current plan</dt>
+                <dd>{planName}{activePlan ? ` · ${activePlan.price}/${activePlan.cadence}` : ''}</dd>
+              </div>
+              <div className="billing-summary__row">
+                <dt><Calendar size={16} aria-hidden="true" /> {cancelling ? 'Access ends' : 'Renewal date'}</dt>
+                <dd>{row?.current_period_end ? formatDateTime(row.current_period_end) : '—'}</dd>
+              </div>
+              <div className="billing-summary__row">
+                <dt><Wallet size={16} aria-hidden="true" /> Last payment</dt>
+                <dd>
+                  {row?.current_period_start ? formatDateTime(row.current_period_start) : '—'}
+                  {activePlan ? ` · ${activePlan.price}` : ''}
+                </dd>
+              </div>
+              <div className="billing-summary__row">
+                <dt><CreditCard size={16} aria-hidden="true" /> Next payment</dt>
+                <dd>
+                  {cancelling
+                    ? 'None — plan ends'
+                    : pastDue
+                    ? 'Retrying…'
+                    : row?.current_period_end
+                    ? `${activePlan ? `${activePlan.price} · ` : ''}${formatDateTime(row.current_period_end)}`
+                    : '—'}
+                </dd>
+              </div>
+            </dl>
+            {hasCustomer ? (
+              <ItemRow
+                as="button"
+                type="button"
+                onClick={manageBilling}
+                loading={billingAction === 'portal'}
+                icon={<Receipt size={18} />}
+                title="View all invoices"
+                subtitle="Receipts and invoice downloads — securely in Polar's portal."
+                trailing={<ExternalLink size={16} aria-hidden="true" />}
+              />
+            ) : null}
+          </>
         ) : (
-          <p className="muted small">Nothing to show yet — you haven't subscribed to Pro. History and invoices appear here once you do.</p>
+          <p className="muted small">Nothing to show yet — you haven't subscribed to Pro. Your plan and payments appear here once you do.</p>
         )}
       </Card>
 
@@ -344,9 +519,8 @@ export default function SubscriptionsPage() {
           <details>
             <summary>Can I switch between Monthly and Yearly?</summary>
             <p className="muted small">
-              Yes, but not instantly in place — cancel your current plan in Manage billing, keep Pro until it ends, then subscribe to
-              the other cadence from here. You won't be double-charged: the new cadence only starts once the period you already paid
-              for runs out.
+              Yes — right from this page, and it takes effect immediately. Your subscription switches in place (you never end up on two
+              plans), and Polar prorates the difference for the time left on your current plan, so there's no double charge.
             </p>
           </details>
           <details>
@@ -374,49 +548,79 @@ export default function SubscriptionsPage() {
       </Card>
 
       <Card variant="default">
-        <CardHeader title="Support" subtitle="Billing questions we can't answer above." />
+        <CardHeader title="Billing help" subtitle="A wrong charge, a duplicate, or anything that doesn't look right." />
         <div className="form-actions">
-          <Button as="a" href={`mailto:${COMPANY.supportEmail}`} variant="secondary" leftIcon={<LifeBuoy size={16} />}>
-            Email support
+          <Button as="a" href={billingProblemHref} variant="secondary" leftIcon={<MailWarning size={16} />}>
+            Report a billing problem
           </Button>
           <Link to="/contact" className="button button--ghost">Contact page</Link>
         </div>
       </Card>
 
       {subscription.isPro ? (
-        <Card variant="default" className="danger-zone">
-          <div className="danger-zone__header">
-            <span className="danger-zone__icon-badge" aria-hidden="true"><ShieldAlert size={16} /></span>
-            <div>
-              <h3 className="panel__title">Danger zone</h3>
-              <p className="panel__subtitle">Cancel your subscription.</p>
+        cancelling ? (
+          <Card variant="default">
+            <CardHeader
+              title="Subscription ending"
+              subtitle={`Pro access continues until ${row?.current_period_end ? formatDateTime(row.current_period_end) : 'the end of your period'}.`}
+            />
+            <p className="muted small">
+              You're set to cancel, so there won't be another renewal. Changed your mind? Resume any time before it ends and nothing else changes.
+            </p>
+            <div className="form-actions">
+              <Button variant="primary" type="button" onClick={doResume} loading={cancelBusy} leftIcon={<RotateCcw size={16} />}>
+                {cancelBusy ? 'Resuming…' : 'Resume subscription'}
+              </Button>
             </div>
-          </div>
-          <p className="muted small">
-            Cancelling stops future renewals. You keep Pro access until {row?.current_period_end ? formatDateTime(row.current_period_end) : 'the end of your current period'},
-            then your account reverts to Free automatically — nothing is deleted.
-          </p>
-          <div className="form-actions">
-            <Button variant="danger" type="button" onClick={() => setCancelConfirmOpen(true)} leftIcon={<ShieldAlert size={16} />}>
-              Cancel subscription
-            </Button>
-          </div>
-        </Card>
+          </Card>
+        ) : (
+          <Card variant="default" className="danger-zone">
+            <div className="danger-zone__header">
+              <span className="danger-zone__icon-badge" aria-hidden="true"><ShieldAlert size={16} /></span>
+              <div>
+                <h3 className="panel__title">Cancel subscription</h3>
+                <p className="panel__subtitle">Stop future renewals.</p>
+              </div>
+            </div>
+            <p className="muted small">
+              You keep Pro access until {row?.current_period_end ? formatDateTime(row.current_period_end) : 'the end of your current period'},
+              then your account reverts to Free automatically — nothing is deleted, and you can resume any time before then.
+            </p>
+            <div className="form-actions">
+              <Button variant="danger" type="button" onClick={() => setCancelConfirmOpen(true)} loading={cancelBusy} leftIcon={<ShieldAlert size={16} />}>
+                Cancel subscription
+              </Button>
+            </div>
+          </Card>
+        )
       ) : null}
 
       <ConfirmDialog
         isOpen={cancelConfirmOpen}
         onClose={() => setCancelConfirmOpen(false)}
-        onConfirm={() => {
-          setCancelConfirmOpen(false);
-          manageBilling();
-        }}
+        onConfirm={doCancel}
         title="Cancel your subscription?"
-        message={`You'll be taken to Polar's secure billing portal to finish cancelling. You'll keep Pro access until ${row?.current_period_end ? formatDateTime(row.current_period_end) : 'the end of your current period'} — nothing is deleted, and you can resume any time before then.`}
-        confirmLabel="Continue to billing portal"
+        message={`You'll keep Pro access until ${row?.current_period_end ? formatDateTime(row.current_period_end) : 'the end of your current period'}, then your account reverts to Free — nothing is deleted, and you can resume any time before then.`}
+        confirmLabel="Cancel subscription"
         cancelLabel="Never mind"
         variant="danger"
-        loading={billingAction === 'portal'}
+        loading={cancelBusy}
+      />
+
+      <ConfirmDialog
+        isOpen={switchConfirmOpen}
+        onClose={() => setSwitchConfirmOpen(false)}
+        onConfirm={() => otherPlan && doSwitch(otherPlan.id)}
+        title={otherPlan ? `Switch to ${otherPlan.name}?` : 'Switch plan?'}
+        message={
+          otherPlan
+            ? `Your plan changes to ${otherPlan.name} (${otherPlan.price}/${otherPlan.cadence}) right away. Polar prorates the difference for the time left on your current plan — you stay on a single subscription, with no double charge.`
+            : ''
+        }
+        confirmLabel={otherPlan ? `Switch to ${otherPlan.shortName}` : 'Switch'}
+        cancelLabel="Not now"
+        variant="info"
+        loading={switching}
       />
       </div>
     </>
