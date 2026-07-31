@@ -5,9 +5,18 @@ import { useAuth } from '../hooks/useAuth.js';
 import { useProfile } from '../hooks/useProfile.js';
 import { Avatar } from './ui/Avatar.jsx';
 import { Button } from './ui/Button.jsx';
+import { EmberLogo } from './ui/EmberLogo.jsx';
 import { ThemeToggle } from './ui/ThemeToggle.jsx';
+import { AppEntrance } from './AppEntrance.jsx';
 import { BillingNudge } from './BillingNudge.jsx';
 import { Seo } from './Seo.jsx';
+
+// One brief brand entrance per app load (AppLayout only mounts on full
+// entry/reload, never on in-app route changes), then it dissolves.
+const REDUCE_MOTION =
+  typeof window !== 'undefined' && window.matchMedia
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false;
 
 const navItems = [
   { to: '/app', label: 'Dashboard', icon: Home, end: true },
@@ -26,6 +35,7 @@ const SIDEBAR_COLLAPSED_KEY = 'emberflow-sidebar-collapsed';
 export default function AppLayout() {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true');
+  const [entering, setEntering] = useState(true);
   const { signOut, user } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
@@ -37,6 +47,13 @@ export default function AppLayout() {
     item.end ? location.pathname === item.to : location.pathname.startsWith(item.to)
   );
   const pageTitle = activeNavItem?.label || 'Dashboard';
+
+  // Retire the brand entrance once it has played (or near-instantly when
+  // reduced motion is preferred). Timed to just outlast the CSS fade-out.
+  useEffect(() => {
+    const t = setTimeout(() => setEntering(false), REDUCE_MOTION ? 200 : 1150);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -70,15 +87,16 @@ export default function AppLayout() {
   }
 
   return (
-    <div className={`app-shell ${collapsed ? 'app-shell--collapsed' : ''}`}>
+    <div className={`app-shell ${collapsed ? 'app-shell--collapsed' : ''} ${entering ? 'app-shell--entering' : ''}`.trim()}>
       <Seo title={pageTitle} noindex path={location.pathname} />
+      {entering && <AppEntrance />}
       <a className="skip-link" href="#main-content">Skip to main content</a>
       {open && <div className="sidebar-overlay" onClick={() => setOpen(false)} />}
       <aside className={`sidebar ${open ? 'sidebar--open' : ''} ${collapsed ? 'sidebar--collapsed' : ''}`}>
         <div className="brand-row">
           <NavLink to="/app" className="brand-mark" onClick={() => setOpen(false)} aria-label="EmberFlow home">
+            <EmberLogo size={24} className="brand-mark__logo" alt="" />
             <span className="brand-mark__full" aria-hidden={collapsed}>EmberFlow</span>
-            <span className="brand-mark__short" aria-hidden={!collapsed}>E</span>
           </NavLink>
           <button
             ref={closeButtonRef}
