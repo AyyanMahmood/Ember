@@ -36,6 +36,7 @@ export default function AuthPage({ mode }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendState, setResendState] = useState('idle');
+  const [openingCheckout, setOpeningCheckout] = useState(false);
 
   // Persist a plan chosen on the pricing page (?plan=pro_yearly) so checkout
   // opens for it automatically once the user is authenticated — they never
@@ -56,6 +57,7 @@ export default function AuthPage({ mode }) {
     routedRef.current = true;
     const pending = getPendingPlan();
     if (pending) {
+      setOpeningCheckout(true);
       clearPendingPlan();
       startCheckout(pending)
         .then(({ url }) => window.location.assign(url))
@@ -69,7 +71,7 @@ export default function AuthPage({ mode }) {
   if (user) {
     return (
       <div className="screen-loader">
-        <BrandLoader label={getPendingPlan() ? 'Opening checkout…' : 'Signing you in…'} />
+        <BrandLoader label={openingCheckout ? 'Opening checkout…' : 'Signing you in…'} />
       </div>
     );
   }
