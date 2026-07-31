@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { LoadingSpinner } from '../components/ui/Loading.jsx';
+import { BrandLoader } from '../components/ui/Loading.jsx';
 import { Seo } from '../components/Seo.jsx';
 import { supabase } from '../services/supabase.js';
 
@@ -37,7 +37,7 @@ export default function AuthCallbackPage() {
     return (
       <div className="page-stack" role="status" aria-live="polite">
         <Seo title="Signing you in" noindex path="/auth/callback" />
-        <LoadingSpinner size="lg" label="Signing you in..." />
+        <BrandLoader label="Signing you in…" />
       </div>
     );
   }

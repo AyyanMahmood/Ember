@@ -4,7 +4,7 @@ import AppLayout from './components/AppLayout.jsx';
 import PublicLayout from './components/PublicLayout.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
-import { PageLoader } from './components/ui/Loading.jsx';
+import { RouteProgress } from './components/ui/Loading.jsx';
 
 const AuthPage = lazy(() => import('./pages/AuthPage.jsx'));
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage.jsx'));
@@ -35,7 +35,7 @@ const ContactPage = lazy(() => import('./pages/ContactPage.jsx'));
 export default function App() {
   return (
     <ErrorBoundary>
-      <Suspense fallback={<PageLoader />}>
+      <Suspense fallback={<RouteProgress />}>
         <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
