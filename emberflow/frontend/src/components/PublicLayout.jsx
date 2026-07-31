@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Menu } from 'lucide-react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from './ui/Button.jsx';
+import { EmberLogo } from './ui/EmberLogo.jsx';
 import { ThemeToggle } from './ui/ThemeToggle.jsx';
 import { Drawer, DrawerFooter } from './ui/Modal.jsx';
 import { scrollToId } from '../utils/scroll.js';
@@ -68,6 +69,7 @@ export default function PublicLayout() {
       <header className="marketing-nav">
         <div className="marketing-nav__inner">
           <Link className="brand-mark" to="/">
+            <EmberLogo size={24} className="brand-mark__logo" alt="" />
             EmberFlow
           </Link>
           <nav className="marketing-nav__links" aria-label="Main">
@@ -132,7 +134,7 @@ export default function PublicLayout() {
       <footer className="marketing-footer">
         <div className="marketing-footer__grid">
           <div className="marketing-footer__brand">
-            <Link to="/" className="brand-mark">EmberFlow</Link>
+            <Link to="/" className="brand-mark"><EmberLogo size={22} className="brand-mark__logo" alt="" />EmberFlow</Link>
             <p>The finance workspace for independent professionals and small agencies.</p>
           </div>
           <div className="marketing-footer__col">
