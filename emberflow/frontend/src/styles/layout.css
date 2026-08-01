@@ -817,7 +817,13 @@
 }
 
 @media (max-width: 767px) {
-  .marketing-nav__links {
+  /* .marketing-nav__links is itself a <nav>, so the generic descendant
+     selector .marketing-nav nav (specificity 0,1,1) above always beat a
+     bare .marketing-nav__links (0,1,0) here regardless of this media
+     query, silently keeping the full desktop nav visible and overflowing
+     on every screen ≤767px. Scoping to the parent class raises this to
+     0,2,0 so it actually wins. */
+  .marketing-nav .marketing-nav__links {
     display: none;
   }
 
