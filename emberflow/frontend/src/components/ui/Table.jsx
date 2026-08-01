@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Check, Minus } from 'lucide-react';
 import { Button } from './Button.jsx';
 import { Checkbox } from './Input.jsx';
@@ -135,7 +136,15 @@ export function Table({
                   <p className="empty-state__message">{emptyMessage}</p>
                   {emptyAction && (
                     <div className="empty-state__action">
-                      <Button {...emptyAction} />
+                      {/* emptyAction is always a plain { label, to } object -- Button
+                          only ever renders `children` as its label and needs `as={Link}`
+                          to actually navigate via `to`, so a bare {...emptyAction} spread
+                          silently dumped both as dead DOM attributes on a native <button>
+                          (no visible text, no click behavior) instead of rendering
+                          correctly. */}
+                      <Button as={Link} to={emptyAction.to} variant="primary">
+                        {emptyAction.label}
+                      </Button>
                     </div>
                   )}
                 </div>
