@@ -1279,6 +1279,16 @@
     flex-direction: column;
   }
 
+  /* align-items: flex-start above stops children stretching to the
+     container's width, so the title block shrink-wraps to its unwrapped
+     max-content width instead -- e.g. "Create, send, and track client
+     invoices." rendering as one 467px-wide line and overflowing a 375px
+     viewport. Force it back to the container width so text wraps again. */
+  .page-header > div:first-child {
+    width: 100%;
+    min-width: 0;
+  }
+
   /* Tighten the vertical rhythm between stacked page sections by one step on
      phones (20 → 16px). Most visible on list pages whose first card content
      starts flush at the card's top edge (e.g. Proposals, where the table
