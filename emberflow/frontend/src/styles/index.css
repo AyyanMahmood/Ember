@@ -25,6 +25,7 @@
 @import './components/brand-studio.css';
 @import './components/templates-page.css';
 @import './components/subscriptions.css';
+@import './components/delete-account.css';
 @import '../document-studio/document.css';
 @import '../document-studio/studio.css';
 

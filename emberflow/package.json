@@ -6,7 +6,8 @@
     "dev": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
     "preview": "npm --prefix frontend run preview",
-    "verify:polar": "node scripts/verify-polar.js"
+    "verify:polar": "node scripts/verify-polar.js",
+    "verify:account-deletion": "node scripts/verify-account-deletion.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.50.0",

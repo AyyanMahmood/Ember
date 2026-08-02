@@ -1,8 +1,16 @@
 # EmberFlow — Launch Readiness Report
 
-**Date:** 2026-07-30, updated 2026-08-01 · **Phase:** Final Launch Hardening Session · **Prepared as:** the engineer signing off for production.
+**Date:** 2026-07-30, updated 2026-08-01, 2026-08-02 · **Phase:** Final Launch Hardening Session · **Prepared as:** the engineer signing off for production.
 
 This is the comprehensive engineering assessment. Companion docs: `LAUNCH_BLOCKERS.md`, `PRODUCTION_CHECKLIST.md`, `SUPPORT_PLAYBOOK.md`, `BILLING_QA_CHECKLIST.md`, `EMBER_UI_TIERING.md`. Full per-issue root-cause writeup for this update lives in `CLAUDE.md` → "Final Launch Hardening Session (2026-08-01)".
+
+---
+
+## 2026-08-02 update — Account deletion (Tier 1 launch blocker)
+
+EmberFlow had no way for a user to permanently delete their account — a hard blocker for any SaaS holding client PII, invoices, and payment records, independent of and unrelated to the billing-verification gate below. Closed: **Settings → Danger Zone → Delete Account**, backed by `api/account/delete.js` + `delete_user_account(uuid)` (migration `012_delete_account.sql`). Full design/reasoning in README.md → "Account Deletion"; security model in `KNOWN_ISSUES.md` item 4.
+
+Build green, `verify:polar` 33/33 (no regression), new `verify:account-deletion` 36/36 (confirmation matching, the billing-revocation decision, and the handler's full control flow — billing/DB/storage/auth failure ordering — against a mocked Supabase client). **Not yet live-verified**: migration `012` has not been applied to production, and no real Supabase project or Polar subscription has exercised the actual RLS/FK/Storage/revocation behavior (same standing no-live-credentials gap as every Polar item below). This does not move the billing-readiness score — it closes a separate, previously-untracked compliance/data-handling gap.
 
 ---
 

@@ -14,7 +14,7 @@ This README covers everything needed to install, configure, and deploy EmberFlow
 - **Templates** — 17 invoice/proposal document designs (3 free, 14 Pro)
 - **Brand Studio** — Pro-only logo, color, and font branding applied consistently across generated documents
 - **Authentication** — email/password with password reset and email verification; Google OAuth (production-verified — see `OAUTH_SETUP.md`)
-- **Settings** — profile, business info, invoice branding, in-app password change, subscription management
+- **Settings** — profile, business info, invoice branding, in-app password change, subscription management, permanent account deletion
 - **Subscriptions** — Free and Pro tiers via Polar checkout, customer portal, and webhook-driven entitlements
 - Row-level security on every table — all data access is scoped to the authenticated user in Postgres itself, not just in application code
 - PDF generation runs entirely in the browser (jsPDF + html2canvas) — no invoice/proposal content is sent to a third-party document service
@@ -88,7 +88,7 @@ In the Supabase Dashboard, open **SQL Editor** and run these files **in this exa
 
 1. `supabase/schema.sql` — creates the base tables: `profiles`, `clients`, `invoices`, `invoice_items`, `payments`, `proposals`, `proposal_items`, `subscriptions`.
 2. `supabase/policies.sql` — enables row-level security on every table above (users can only access rows they own; invoice/proposal item access is derived from ownership of the parent record; subscription rows are read-only to users and mutated only by the server-side Polar webhook handler) and sets up the `avatars`/`logos` storage bucket policies.
-3. Every file in `supabase/migrations/`, **in numeric order** (`001_production_fixes.sql` through `008_fix_brand_accent_null_check.sql`). Each migration is additive and idempotent (safe to run more than once), and together they add:
+3. Every file in `supabase/migrations/`, **in numeric order** (`001_production_fixes.sql` through `012_delete_account.sql`). Each migration is additive and idempotent (safe to run more than once), and together they add:
    - `001` — payment/subscription columns and RLS policies missing from the initial dump, plus a `webhook_events` table the Polar webhook handler uses for idempotency
    - `002` — the `invoices.template` column (invoice template selection won't persist without this)
    - `003` — Brand Studio's `brand_font`/`brand_accent_color` columns and the trigger that enforces they're Pro-only
@@ -97,6 +97,10 @@ In the Supabase Dashboard, open **SQL Editor** and run these files **in this exa
    - `006` — allows Free-tier users to set a brand color (only logo/font/accent stay Pro-only)
    - `007` — adds the `polar_customer_id`/`polar_subscription_id`/`polar_product_id` columns the Polar billing integration writes (see [`POLAR_SETUP.md`](./POLAR_SETUP.md))
    - `008` — fixes a trigger bug where saving just a brand color (no accent override) was misdetected as a Pro-gated change and rejected for Free-tier users
+   - `009` — removes `image/svg+xml` from the `logos` bucket's allowed MIME types (closes a stored-XSS vector — SVGs can carry `<script>`, and the bucket serves public URLs directly)
+   - `010` — persists `template` on invoice creation (previously silently dropped) and adds a server-side Pro gate for premium templates, closing a Free-tier bypass that only relied on UI gating
+   - `011` — adds a server-side Pro gate for payment tracking, and fixes `proposals`/`proposal_items` RLS to keep granting access during `past_due`, matching the app's own dunning policy
+   - `012` — adds `delete_user_account(uuid)`, the SECURITY DEFINER function behind **Settings → Danger Zone → Delete Account** (see **Account Deletion** below)
 
 In **Authentication > Providers**, keep **Email** enabled. If you want Google sign-in, follow `OAUTH_SETUP.md` before testing that button.
 
@@ -132,6 +136,14 @@ Pro subscriptions are handled by [Polar](https://polar.sh), a Merchant of Record
 
 Billing is entirely optional — with no `POLAR_*` variables configured, every account stays on the Free tier and the rest of the app works normally.
 
+## Account Deletion
+
+**Settings → Danger Zone → Delete Account** permanently deletes a user's account: their active Polar subscription (if any) is revoked immediately, every database row they own is deleted atomically via the `delete_user_account(uuid)` Postgres function (migration `012_delete_account.sql`), their uploaded files (`avatars`/`logos`) are removed from Storage, and finally the Supabase Auth user itself is deleted.
+
+Implemented server-side (`api/account/delete.js`) — never client-side `.delete()` calls — because a Free (or lapsed-Pro) user's own `proposals`/`proposal_items` rows are behind an active-Pro RLS `DELETE` policy (see `001_production_fixes.sql`); an RLS-scoped client would silently delete zero of those rows, leaving orphans behind after an apparently successful deletion. The endpoint verifies the caller's identity from their JWT and always deletes that verified id's data — never a client-supplied one.
+
+Order matters and is deliberate: billing is canceled *before* any data is touched (so a failure there aborts with nothing deleted), the database transaction runs next, then storage cleanup (best-effort), then the auth user last (only once everything else has succeeded, since every step before it is safely retryable). See the extensive comments in `api/account/delete.js` and `supabase/migrations/012_delete_account.sql` for the full reasoning. Pure logic (confirmation matching, the billing-revocation decision) is covered by `npm run verify:account-deletion`.
+
 ## Vercel Deployment
 
 1. Push this repository to GitHub (or GitLab/Bitbucket).
@@ -157,6 +169,7 @@ npm run preview
 - Invoice insert/update policies verify the selected client belongs to the current user.
 - PDF generation runs locally in the browser; invoice/proposal content is never sent to a third-party document API.
 - The Polar webhook handler verifies the Standard Webhooks signature (via the `standardwebhooks` library) on every request before trusting the payload, and uses a `webhook_events` table to prevent duplicate processing.
+- `delete_user_account(uuid)` is a SECURITY DEFINER function granted only to `service_role` — it is unreachable from `anon`/`authenticated`, so it can only ever run via `api/account/delete.js`, which independently verifies the caller's own JWT before invoking it with that verified id.
 
 ## Troubleshooting
 

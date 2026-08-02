@@ -6,6 +6,8 @@ Genuine, real remaining issues only — no invented future work. Each is somethi
 
 **Update (2026-08-01):** a Final Launch Hardening Session found and fixed 8 real bugs not previously listed here (they were reported directly, not yet documented) — a Brand Studio false-error on free-tier saves (migration `008`, now live), a billing-portal "customer does not exist" for sandbox-era accounts, a localhost checkout 500 (dev-proxy DX, not app code), a password-reset session bug, and a subscription-lifecycle self-heal for stale Polar ids in Switch/Cancel (see item 7 below, now partially closed). Full writeup in `CLAUDE.md` → "Final Launch Hardening Session."
 
+**Update (2026-08-02):** the Tier 1 launch blocker "no way to permanently delete an account" is now closed at the code level — see README.md → "Account Deletion." Migration `012_delete_account.sql` joins migrations `007`/`008` (item 3 below) as **not yet confirmed applied to production** — same standing gate, added as item 4.
+
 ---
 
 ## 🔴 Must fix / confirm before launch
@@ -21,6 +23,10 @@ These are launch **gates** — not code defects, but things that must be true be
    → *Action:* `LAUNCH_QA.md` §0 "Go-Live configuration."
 
 3. ~~**Supabase migration `007_polar_billing.sql` must be confirmed applied to production.**~~ **Confirmed 2026-08-01** — `polar_customer_id`/`polar_subscription_id`/`polar_product_id` verified present on `public.subscriptions` via a direct `information_schema` query against production. Migration `008` (the Brand Studio free-tier fix) was also applied and confirmed this session.
+
+4. **Supabase migration `012_delete_account.sql` must be applied to production before Delete Account can work live.**
+   Adds `delete_user_account(uuid)`, the SECURITY DEFINER function `api/account/delete.js` calls to atomically delete a user's rows. Without it, every deletion attempt fails at the RPC step with a clear "couldn't delete your data, nothing was changed" error (fails safe — no partial deletion, but the feature doesn't work until this is applied). Also not yet exercised against a live Supabase project or live Polar subscription (no credentials available in this environment, ever) — `npm run verify:account-deletion` covers the pure logic and the handler's control flow against a mocked client, not the real RLS/FK/Storage/Polar behavior.
+   → *Action:* apply `supabase/migrations/012_delete_account.sql` to production, then manually delete one Free test account and one Pro test account (with real client/invoice/logo data) and confirm no rows remain in any table and no files remain in Storage.
 
 ---
 

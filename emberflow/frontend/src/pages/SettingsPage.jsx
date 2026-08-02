@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Upload } from 'lucide-react';
+import { Eye, EyeOff, ShieldAlert, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Avatar } from '../components/ui/Avatar.jsx';
 import { Button } from '../components/ui/Button.jsx';
@@ -7,16 +7,20 @@ import { Input, Textarea } from '../components/ui/Input.jsx';
 import { EmberSelect } from '../components/ui/EmberSelect.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import { PasswordStrengthMeter } from '../components/ui/PasswordStrengthMeter.jsx';
+import { DeleteAccountModal } from '../components/DeleteAccountModal.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import { useSubscription } from '../hooks/useSubscription.js';
 import { getProfile, upsertProfile } from '../services/api.js';
 import { supabase } from '../services/supabase.js';
 import { CURRENCY_OPTIONS } from '../data/currencies.js';
 import { COUNTRY_OPTIONS } from '../data/countries.js';
-import { friendlyAuthError } from '../utils/auth.js';
+import { authRedirectUrl, friendlyAuthError } from '../utils/auth.js';
 
 export default function SettingsPage() {
   const { user, signIn, updatePassword } = useAuth();
+  const { isPro } = useSubscription();
   const hasPasswordAuth = user?.identities?.some((identity) => identity.provider === 'email') ?? true;
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' });
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
@@ -47,7 +51,13 @@ export default function SettingsPage() {
         setForm({
           full_name: profile.full_name || user.user_metadata?.full_name || '',
           business_name: profile.business_name || '',
-          email: profile.email || user.email || '',
+          // user.email (Supabase Auth's own record) is authoritative and
+          // always reflects the real, currently-confirmed login email;
+          // profiles.email is just a display copy this page itself writes,
+          // which must never be trusted over the real thing -- see
+          // handleSubmit below for why it can otherwise get stuck showing
+          // a new address before that address is actually confirmed.
+          email: user.email || profile.email || '',
           avatar_url: profile.avatar_url || '',
           phone: profile.phone || '',
           address: profile.address || '',
@@ -97,15 +107,28 @@ export default function SettingsPage() {
     setError('');
     setMessage('');
     try {
-      if (form.email !== user.email) {
-        const { error: authError } = await supabase.auth.updateUser({ email: form.email });
+      const emailChanging = form.email !== user.email;
+      if (emailChanging) {
+        const { error: authError } = await supabase.auth.updateUser(
+          { email: form.email },
+          { emailRedirectTo: authRedirectUrl('/login') }
+        );
         if (authError) throw authError;
       }
+      // Supabase's email-change flow doesn't take effect until the user
+      // clicks the confirmation link -- auth.users.email (the real login
+      // credential) stays the old address until then. Persist the
+      // still-current user.email here, never the pending form.email, so
+      // profiles.email (used for the Settings display above and as the
+      // "from" address on invoice/proposal exports) can't jump ahead of
+      // what's actually confirmed and get stuck showing an address that
+      // was mistyped or never confirmed.
       await upsertProfile({
         id: user.id,
         ...form,
+        email: user.email,
       });
-      setMessage(form.email !== user.email ? 'Settings saved. Confirm the email change from your inbox.' : 'Settings saved.');
+      setMessage(emailChanging ? 'Settings saved. Confirm the email change from your inbox.' : 'Settings saved.');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -285,6 +308,26 @@ export default function SettingsPage() {
           </p>
         )}
       </Card>
+
+      <Card variant="default" className="danger-zone">
+        <div className="danger-zone__header">
+          <span className="danger-zone__icon-badge" aria-hidden="true"><ShieldAlert size={16} /></span>
+          <div>
+            <h3 className="panel__title">Danger Zone</h3>
+            <p className="panel__subtitle">Permanently delete your account and all of its data.</p>
+          </div>
+        </div>
+        <p className="muted small">
+          This deletes your clients, invoices, payments, proposals, branding, and uploaded files. This can't be undone.
+        </p>
+        <div className="form-actions">
+          <Button variant="danger" type="button" onClick={() => setDeleteModalOpen(true)}>
+            Delete Account
+          </Button>
+        </div>
+      </Card>
+
+      <DeleteAccountModal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} isPro={isPro} />
     </div>
   );
 }

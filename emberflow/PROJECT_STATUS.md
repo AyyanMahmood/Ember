@@ -3,6 +3,8 @@
 > **2026-07-27 — Payments deferred to V1.5.** Payment processing cannot go live until November (external, non-technical — not a code blocker) and is no longer on the V1 critical path; V1 launch readiness is judged independently of it.
 >
 > **2026-07-28 — Billing migrated Paddle → Polar.** The integration was moved from Paddle to Polar (Merchant of Record). The Polar code is complete and verified at build + logic level (`npm run verify:polar`, 31/31); a live Polar **sandbox** end-to-end test is the remaining step before it's production-verified. See `POLAR_SETUP.md` and `POLAR_MIGRATION_PLAN.md`. The "Polar Status" section below supersedes the old "Paddle Status"; dated entries elsewhere that mention Paddle are historical.
+>
+> **2026-08-02 — Production-grade account deletion shipped (Tier 1 launch blocker, closed).** EmberFlow had no way for a user to permanently delete their account — now closed via **Settings → Danger Zone → Delete Account**. Cancels any active Polar subscription immediately, deletes every database row the user owns atomically (`delete_user_account(uuid)`, migration `012`), removes uploaded files, then deletes the Supabase Auth user. Build green, `verify:polar` 33/33 (no regression), new `verify:account-deletion` 36/36 covering confirmation matching, the billing-revocation decision, and the full handler control flow (billing/DB/storage/auth failure ordering) against a mocked Supabase client. Migration `012` is **not yet applied to the live production database** — same standing gate as every other migration in this project (no live Supabase credentials in this environment) — see README.md → "Account Deletion" for the full design and `LAUNCH_READINESS_REPORT.md` for the updated blocker status.
 
 ## Project Overview
 
