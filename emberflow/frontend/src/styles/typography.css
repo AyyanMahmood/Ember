@@ -50,4 +50,8 @@
 
 .preserve {
   white-space: pre-wrap;
+  /* pre-wrap only breaks at existing whitespace/newlines -- a long unbroken
+     run (URL, email, reference number) pasted into free-text notes has no
+     break point of its own and would otherwise overflow the card. */
+  overflow-wrap: anywhere;
 }

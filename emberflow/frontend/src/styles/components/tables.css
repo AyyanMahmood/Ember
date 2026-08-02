@@ -195,6 +195,19 @@
     border-bottom: 1px solid var(--color-line);
     text-align: right;
     white-space: normal;
+    /* A long unbroken value (email address, URL, business name with no
+       spaces) has a min-content width equal to its full rendered length --
+       flex items don't shrink below that by default, so the row's true
+       minimum size can exceed the card, forcing the whole card into
+       horizontal scroll instead of wrapping. overflow-wrap: anywhere (not
+       break-word) is what actually lets the flexbox min-size calculation
+       account for the break, per spec -- and it's inherited, so it also
+       reaches a bare text value with no wrapping element of its own. */
+    overflow-wrap: anywhere;
+  }
+
+  .table--stack td > * {
+    min-width: 0;
   }
 
   .table--stack td:last-child {

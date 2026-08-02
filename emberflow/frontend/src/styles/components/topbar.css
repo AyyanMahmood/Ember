@@ -10,7 +10,22 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  flex-wrap: wrap;
+  /* Deliberately nowrap (the flex default -- stated explicitly so it isn't
+     "fixed" back to wrap by a future pass): the three children (mobile menu
+     button, title, theme toggle + avatar) are sized so the fixed-width ones
+     always fit and the title shrinks/ellipsizes into whatever's left. wrap
+     used a flex item's *unshrunk* content width for its line-fitting
+     decision, so a long title ("Brand Studio", "Subscriptions" -- the two
+     longest nav labels) could force the row to wrap even though the title,
+     once allowed to shrink, fit fine -- dropping the theme toggle + avatar
+     onto their own line, left-aligned, looking "floating"/misaligned. */
+  flex-wrap: nowrap;
+}
+
+/* The mobile nav-open button is a fixed-size control too -- same reasoning
+   as .topbar__right below, it must never be the one that gives. */
+.topbar > .icon-button.mobile-only {
+  flex-shrink: 0;
 }
 
 .topbar__left {
@@ -35,6 +50,14 @@
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
+  /* Never shrink: this holds only the theme toggle + avatar, both fixed-size
+     controls. Without this, flexbox can still shave a few px off it (shared
+     proportionally with the title) whenever the title is long enough to
+     need shrinking -- just enough to trip flex-wrap above and stack the
+     toggle above the avatar instead of leaving them side by side. All the
+     give must come from the title (which is designed to shrink/ellipsize),
+     never from these controls. */
+  flex-shrink: 0;
 }
 
 .topbar__avatar-link {

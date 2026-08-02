@@ -98,6 +98,14 @@
 
 .page-stack {
   display: grid;
+  /* Explicit minmax(0, 1fr) rather than relying on the implicit single auto
+     column: an auto track's automatic minimum size is content-based, so one
+     unclamped child anywhere in the stack (a long value, a wide table row)
+     could force the whole column -- and every sibling section in it,
+     including the page header -- wider than the viewport. minmax(0, 1fr)
+     caps it to the actually available width, same fix as elsewhere in this
+     file (filters-row, form-grid, etc. already use this pattern). */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
 }
 
@@ -154,7 +162,7 @@
 
 @media (max-width: 680px) {
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -164,7 +172,7 @@
 
 @media (max-width: 1200px) {
   .stats-grid--3 {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -273,19 +281,22 @@
 
 @media (max-width: 680px) {
   .detail-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 .details-list {
   display: grid;
   gap: var(--space-2);
-  grid-template-columns: 7rem 1fr;
+  /* minmax(0, 1fr), not bare 1fr -- a plain 1fr track's automatic minimum
+     size is content-based, so a long unbroken value (email, URL) in .dd
+     could force the column past the available width instead of wrapping. */
+  grid-template-columns: 7rem minmax(0, 1fr);
 }
 
 @media (max-width: 680px) {
   .details-list {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -299,6 +310,7 @@
   margin: 0;
   font-size: var(--text-body-sm);
   color: var(--color-ink);
+  overflow-wrap: anywhere;
 }
 
 .upgrade-inline {
@@ -403,6 +415,7 @@
 
 .preserve {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .form-grid {
