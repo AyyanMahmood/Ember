@@ -140,7 +140,7 @@ export default function AuthPage({ mode }) {
   }
 
   return (
-    <div className="auth-page">
+    <main className="auth-page">
       <Seo
         title={isSignup ? 'Create your account' : 'Sign in'}
         description={isSignup ? 'Create your free EmberFlow account and start managing clients, invoices, and proposals.' : 'Sign in to your EmberFlow workspace.'}
@@ -221,6 +221,6 @@ export default function AuthPage({ mode }) {
           ) : null}
         </form>
       </Card>
-    </div>
+    </main>
   );
 }

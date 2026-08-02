@@ -29,8 +29,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="auth-page">
-      <Seo title="Reset your password" description="Request a password reset link for your EmberFlow account." path="/forgot-password" />
+    <main className="auth-page">
+      {/* noindex: a utility action page (send a reset email) with no content
+          value to a search visitor, and no reason to compete with /login
+          for "emberflow login" style branded queries. */}
+      <Seo title="Reset your password" description="Request a password reset link for your EmberFlow account." path="/forgot-password" noindex />
       <Link className="brand-mark" to="/">
         EmberFlow
       </Link>
@@ -51,6 +54,6 @@ export default function ForgotPasswordPage() {
           </Link>
         </form>
       </Card>
-    </div>
+    </main>
   );
 }

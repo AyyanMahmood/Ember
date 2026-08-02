@@ -15,8 +15,9 @@ export default function FeaturesPage() {
     <main className="section-band">
       <Seo
         title="Features"
-        description="CRM, invoicing, payments, analytics, and proposals — everything freelancers need to operate professionally."
+        description="Freelancer CRM, invoicing software, payments, analytics, and proposal software — everything you need to run a professional freelance business."
         path="/features"
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'Features' }]}
       />
       <div className="section-heading">
         <p className="eyebrow">Features</p>

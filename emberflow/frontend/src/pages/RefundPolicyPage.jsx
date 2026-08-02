@@ -10,6 +10,7 @@ export default function RefundPolicyPage() {
         title="Refund Policy"
         description="EmberFlow's refund policy for Pro subscriptions and billing disputes."
         path="/refund"
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'Refund Policy' }]}
       />
       <p className="eyebrow"><RotateCcw size={14} /> Refunds</p>
       <h1>Refund Policy</h1>

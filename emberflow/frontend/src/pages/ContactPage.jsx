@@ -5,12 +5,33 @@ import { Seo } from '../components/Seo.jsx';
 import { COMPANY } from '../data/company.js';
 
 export default function ContactPage() {
+  const siteUrl = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/$/, '');
+  const contactJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact EmberFlow',
+    url: `${siteUrl}/contact`,
+    about: {
+      '@type': 'Organization',
+      name: COMPANY.name,
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer support',
+        email: COMPANY.supportEmail,
+        areaServed: 'Worldwide',
+        availableLanguage: 'English',
+      },
+    },
+  };
+
   return (
     <main className="legal-page">
       <Seo
         title="Contact"
         description="Get in touch with the EmberFlow team for support, billing, or general questions."
         path="/contact"
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'Contact' }]}
+        jsonLd={contactJsonLd}
       />
       <p className="eyebrow"><MessageSquare size={14} /> Contact</p>
       <h1>Get in Touch</h1>

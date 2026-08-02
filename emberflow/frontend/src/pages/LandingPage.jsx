@@ -6,6 +6,7 @@ import { StatusBadge } from '../components/ui/Badge.jsx';
 import { PricingCard } from '../components/ui/Card.jsx';
 import { Seo } from '../components/Seo.jsx';
 import { FEATURES } from '../data/features.js';
+import { COMPANY } from '../data/company.js';
 import { getPublicPlans } from '../utils/plans.js';
 import { scrollToId } from '../utils/scroll.js';
 
@@ -52,17 +53,92 @@ const workflow = [
 ];
 
 const trustPoints = [
-  [Lock, 'Row-level security by default', 'Every table is scoped to its owner in Postgres itself — not just enforced in application code.'],
-  [SquareCode, 'PDFs render in your browser', 'Invoices and proposals are generated client-side. Nothing is sent to a third-party document service.'],
-  [ShieldCheck, 'Billing state you can trust', 'Subscription status comes from signed Polar webhooks written to the database, never trusted from the client.'],
+  [Lock, 'Your client data stays private', 'Every account is fully isolated at the database level — no one else can ever see your clients, invoices, or financial records.'],
+  [SquareCode, 'Your documents never leave your browser', 'Invoices and proposals are generated as PDFs right on your device — your client and pricing data is never sent to a third-party document service.'],
+  [ShieldCheck, 'Billing you can rely on', 'Your plan and billing status are always kept accurate and verified, so you never lose access to features you are paying for.'],
 ];
 
+// Real freelancer search intent, not developer/architecture questions —
+// every answer is grounded in an actual, currently-shipping limit or
+// feature (frontend/src/config/plans.js), never a rounded-off or aspirational
+// claim.
 const faqs = [
-  ['Can I deploy this on free tiers?', 'Yes. The app is designed for Vercel and Supabase, with Polar handling paid subscription checkout.'],
-  ['Does invoice export depend on a third party?', 'No. PDFs are generated in the browser and never sent to an external document service.'],
-  ['Is subscription state trusted from the frontend?', 'No. Polar webhooks update Supabase, and the app reads subscription status from the database.'],
-  ['What happens when I hit the free plan limits?', 'You keep everything you have already created — you just upgrade to Pro to add more invoices or clients.'],
+  ['Is there a free plan for invoicing software?', 'Yes. EmberFlow’s free plan includes 5 invoices a month and 10 clients, with no credit card required. Upgrade to Pro any time for unlimited invoices and clients.'],
+  ['Can I add my own logo and branding to invoices?', 'Yes, on the Pro plan. Brand Studio applies your logo, a brand color, and a chosen font consistently across every invoice and proposal you generate.'],
+  ['Do I need a separate payment processor to get paid?', 'No. EmberFlow lets you record and reconcile payments manually against each invoice, so you can track what is owed and what has cleared without connecting a payment gateway.'],
+  ['What happens if I go over the free plan limits?', 'Nothing you have already created is ever deleted or locked. You simply upgrade to Pro whenever you need to add more invoices or clients than the free plan allows.'],
+  ['Can I create proposals as well as invoices?', 'Yes, on the Pro plan. Turn a scope of work into a polished, client-ready proposal PDF, then convert the agreed terms straight into an invoice.'],
 ];
+
+// Structured data, sourced from the real plan catalog (utils/plans.js) and
+// the real company contact record (data/company.js) so none of it can
+// silently drift from what the app actually charges or says elsewhere --
+// no fabricated ratings/reviews (AggregateRating requires real review data
+// EmberFlow doesn't have; adding one anyway would be exactly the kind of
+// spammy over-optimization the audit was told to avoid), no fabricated
+// `sameAs` social profiles (none exist today), no invented Founder --
+// schema.org's Person/founder property needs a real named individual, and
+// no public-facing founder name exists anywhere else in this app's own
+// content, so asserting one here would be exactly the fabrication this
+// audit was told never to do.
+function buildJsonLd() {
+  const siteUrl = (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/$/, '');
+  const organization = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: COMPANY.name,
+    url: siteUrl,
+    logo: `${siteUrl}/emberflow-mark.png`,
+    email: COMPANY.supportEmail,
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      email: COMPANY.supportEmail,
+      areaServed: 'Worldwide',
+      availableLanguage: 'English',
+    },
+  };
+  const website = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'EmberFlow',
+    url: siteUrl,
+    inLanguage: 'en-US',
+  };
+  const softwareApplication = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'EmberFlow',
+    applicationCategory: 'BusinessApplication',
+    applicationSubCategory: 'Invoicing Software',
+    operatingSystem: 'Web',
+    description: 'EmberFlow is the finance operating system for freelancers — clients, invoices, proposals, and payments in one workspace.',
+    url: siteUrl,
+    publisher: { '@type': 'Organization', name: COMPANY.name },
+    offers: getPublicPlans().map((plan) => ({
+      '@type': 'Offer',
+      name: plan.name,
+      // plan.priceValue is the raw number (e.g. 11) -- plan.price is the
+      // pre-formatted *display* string (e.g. "$11") used by the pricing UI.
+      // schema.org/Offer's `price` must be a bare number, no currency symbol
+      // (priceCurrency conveys the currency separately) -- using the display
+      // string here would be invalid structured data.
+      price: String(plan.priceValue),
+      priceCurrency: plan.currency,
+      url: `${siteUrl}/pricing`,
+    })),
+  };
+  const faqPage = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(([question, answer]) => ({
+      '@type': 'Question',
+      name: question,
+      acceptedAnswer: { '@type': 'Answer', text: answer },
+    })),
+  };
+  return [organization, website, softwareApplication, faqPage];
+}
 
 export default function LandingPage() {
   const location = useLocation();
@@ -77,10 +153,11 @@ export default function LandingPage() {
   }, [location.hash]);
 
   return (
-    <>
+    <main>
       <Seo
         description="EmberFlow is the finance operating system for freelancers — clients, invoices, proposals, and payments in one workspace."
         path="/"
+        jsonLd={buildJsonLd()}
       />
       <section className="lp-hero">
         <div className="lp-hero__grid">
@@ -255,7 +332,7 @@ export default function LandingPage() {
       <Reveal as="section" id="faq" className="lp-section lp-section--tight">
         <div className="lp-section__head">
           <p className="overline lp-section__eyebrow">FAQ</p>
-          <h2 className="heading-xl lp-section__title">Built to launch without paid APIs.</h2>
+          <h2 className="heading-xl lp-section__title">Questions freelancers ask before switching.</h2>
         </div>
         <div className="lp-faq__grid">
           {faqs.map(([question, answer]) => (
@@ -275,6 +352,6 @@ export default function LandingPage() {
           </Button>
         </div>
       </Reveal>
-    </>
+    </main>
   );
 }

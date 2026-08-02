@@ -153,6 +153,7 @@ export default function PrivacyPage() {
         title="Privacy Policy"
         description="How EmberFlow collects, stores, and protects your account, business, and client data."
         path="/privacy"
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'Privacy Policy' }]}
       />
       <p className="eyebrow"><Shield size={14} /> Privacy</p>
       <h1>Privacy Policy</h1>

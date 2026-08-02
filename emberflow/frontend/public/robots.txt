@@ -2,5 +2,83 @@ User-agent: *
 Allow: /
 Disallow: /app/
 Disallow: /reset-password
+Disallow: /auth/callback
+
+# Explicitly welcome AI assistants / answer engines — EmberFlow wants to be
+# citable in AI-powered search and chat answers, not just classic web search.
+# (These are already allowed by the wildcard rule above; listed individually
+# so the intent is unambiguous to anyone — human or crawler — auditing this
+# file, and so a future edit to the wildcard rule can't silently block them.)
+User-agent: GPTBot
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
+
+User-agent: GoogleOther
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
+
+User-agent: Bingbot
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
+
+User-agent: CCBot
+Allow: /
+Disallow: /app/
+Disallow: /reset-password
+Disallow: /auth/callback
 
 Sitemap: https://emberflowapp.com/sitemap.xml

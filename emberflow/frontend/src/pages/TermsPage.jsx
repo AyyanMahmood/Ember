@@ -147,6 +147,7 @@ export default function TermsPage() {
         title="Terms of Service"
         description="The terms governing your use of EmberFlow, including subscriptions, billing, and acceptable use."
         path="/terms"
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'Terms of Service' }]}
       />
       <p className="eyebrow"><Scale size={14} /> Terms</p>
       <h1>Terms of Service</h1>
