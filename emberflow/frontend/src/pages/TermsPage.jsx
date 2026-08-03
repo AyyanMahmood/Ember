@@ -21,7 +21,7 @@ const sections = [
   },
   {
     id: 'accounts',
-    title: 'Account Registration &amp; Security',
+    title: 'Account Registration & Security',
     icon: ShieldCheck,
     content: (
       <>
@@ -54,7 +54,7 @@ const sections = [
   },
   {
     id: 'subscriptions',
-    title: 'Subscriptions &amp; Billing',
+    title: 'Subscriptions & Billing',
     icon: CreditCard,
     content: (
       <>
@@ -71,7 +71,7 @@ const sections = [
   },
   {
     id: 'cancellation',
-    title: 'Cancellation &amp; Termination',
+    title: 'Cancellation & Termination',
     icon: Ban,
     content: (
       <>

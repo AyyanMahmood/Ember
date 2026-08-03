@@ -100,7 +100,7 @@ const sections = [
   },
   {
     id: 'data-storage',
-    title: 'Data Storage &amp; Security',
+    title: 'Data Storage & Security',
     icon: Database,
     content: (
       <>
@@ -126,7 +126,7 @@ const sections = [
   },
   {
     id: 'data-retention',
-    title: 'Data Retention &amp; Deletion',
+    title: 'Data Retention & Deletion',
     content: (
       <>
         <p>Your data is retained for as long as your account is active. If you cancel your subscription, your data remains accessible in read or export capacity until you choose to delete your account.</p>

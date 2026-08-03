@@ -541,7 +541,8 @@ export default function SubscriptionsPage() {
         <p className="muted small">
           Full refunds are available within 7 days of a charge, for monthly and yearly plans alike — contact support to request one.
           After 7 days, charges aren't refundable. Cancel any time and you'll keep Pro access through the end of the period you already
-          paid for; we don't prorate partial periods.
+          paid for — cancelling doesn't prorate a refund for the unused time. (Switching between Monthly and Yearly is different: that
+          prorates the price difference automatically, so you're never charged twice — see the FAQ below.)
         </p>
         <Link to="/refund" className="link">Read the full Refund Policy →</Link>
       </Card>
