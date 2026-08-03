@@ -112,13 +112,29 @@ const pending = new Map();
 
 // Idempotent: repeated calls for the same font id share one in-flight
 // import and resolve instantly once it's already been loaded once.
+//
+// Every call site fires this without awaiting/catching (a font is a visual
+// nicety, not something worth blocking on) -- so this must never leave a
+// rejected promise sitting in `pending`: that would surface as a raw
+// unhandled rejection AND permanently "poison" that font id, since every
+// future call would just return the same already-rejected promise instead
+// of retrying. Swallowing the error here and always clearing `pending` (via
+// `finally`, on success or failure) keeps loadBrandFont's contract simple
+// (always resolves) while letting a later attempt actually retry.
 export function loadBrandFont(id) {
   if (loaded.has(id) || !loaders[id]) return Promise.resolve();
   if (pending.has(id)) return pending.get(id);
-  const promise = loaders[id]().then(() => {
-    loaded.add(id);
-    pending.delete(id);
-  });
+  const promise = loaders[id]()
+    .then(() => {
+      loaded.add(id);
+    })
+    .catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to load brand font "${id}":`, err);
+    })
+    .finally(() => {
+      pending.delete(id);
+    });
   pending.set(id, promise);
   return promise;
 }

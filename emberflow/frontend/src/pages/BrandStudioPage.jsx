@@ -129,7 +129,7 @@ function LogoDropzone({ logoUrl, uploadingLogo, onUploadLogo, onRemoveLogo }) {
         ) : (
           <>
             <strong>{logoUrl ? 'Replace logo' : 'Drop a logo here, or click to browse'}</strong>
-            <span>PNG, JPEG, WebP, or SVG. Up to 2MB.</span>
+            <span>PNG, JPEG, or WebP. Up to 2MB.</span>
           </>
         )}
       </div>
@@ -145,7 +145,7 @@ function LogoDropzone({ logoUrl, uploadingLogo, onUploadLogo, onRemoveLogo }) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+        accept="image/png,image/jpeg,image/webp"
         className="sr-only"
         tabIndex={-1}
         onChange={(event) => {
@@ -253,7 +253,7 @@ function BrandControls({
 export default function BrandStudioPage() {
   const { user } = useAuth();
   const subscription = useSubscription();
-  const { profile, loading, refresh } = useProfile();
+  const { profile, loading, error: profileError, refresh } = useProfile();
   const [form, setForm] = useState(null);
   const [docKind, setDocKind] = useState('invoice');
   const [showDefault, setShowDefault] = useState(false);
@@ -265,7 +265,7 @@ export default function BrandStudioPage() {
   const [error, setError] = useState('');
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const previousLogoPathRef = useRef(null);
-  const { open: previewOpen, openSheet, closeSheet, fabRef, closeButtonRef } = useMobilePreviewSheet();
+  const { open: previewOpen, openSheet, closeSheet, fabRef, closeButtonRef, sheetRef: previewSheetRef } = useMobilePreviewSheet();
 
   useEffect(() => {
     if (!profile) return;
@@ -368,10 +368,34 @@ export default function BrandStudioPage() {
     }
   }
 
-  if (loading || !form) {
+  if (loading) {
     return (
       <div className="page-stack" role="status" aria-live="polite">
         <LoadingSpinner size="lg" label="Loading Brand Studio..." />
+      </div>
+    );
+  }
+
+  // profileError leaves `profile` (and therefore `form`, which only ever
+  // populates from the profile-loaded effect above) permanently null once
+  // loading finishes -- without this branch the page falls through to the
+  // `!form` case below forever, showing the loading spinner with no error
+  // and no way out except leaving the page.
+  if (profileError || !form) {
+    return (
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <p className="eyebrow brand-studio__eyebrow"><Sparkles size={13} /> Brand Studio</p>
+            <h1 className="heading-xl">Something went wrong.</h1>
+          </div>
+        </div>
+        <Card variant="default">
+          <div className="error-panel" role="alert">{profileError || "Couldn't load your brand settings."}</div>
+          <div className="form-actions">
+            <Button variant="secondary" onClick={refresh}>Try again</Button>
+          </div>
+        </Card>
       </div>
     );
   }
@@ -410,7 +434,13 @@ export default function BrandStudioPage() {
           />
         </div>
 
-        <div className={`studio-preview ${previewOpen ? 'studio-preview--open' : ''}`}>
+        <div
+          ref={previewSheetRef}
+          className={`studio-preview ${previewOpen ? 'studio-preview--open' : ''}`}
+          role={previewOpen ? 'dialog' : undefined}
+          aria-modal={previewOpen ? 'true' : undefined}
+          aria-label="Live preview"
+        >
           <MobilePreviewHeader title="Live preview" onClose={closeSheet} closeButtonRef={closeButtonRef} />
           <div className="studio-preview__surface">
             <div className="brand-studio__preview-toolbar">

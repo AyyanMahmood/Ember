@@ -20,6 +20,17 @@ function safeFileStem(value) {
   return (value || 'document').toString().replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-+|-+$/g, '');
 }
 
+// Invoice numbers and proposal titles are free-text user input that flows
+// straight into these hand-built HTML documents (unlike the rest of the
+// app, which only ever renders user data through React JSX or DOM
+// serialization, both auto-escaped) -- must be escaped before
+// interpolation to avoid a stored-XSS break-out of the <title> tag.
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (ch) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+  ));
+}
+
 // ── Normalize invoice/proposal into one flat shape the text-based exporters share ──
 
 function normalizeDocument(kind, data, profile) {
@@ -163,7 +174,7 @@ export function printNode(node, title) {
     .map((el) => el.outerHTML)
     .join('\n');
 
-  printWindow.document.write(`<!doctype html><html><head><title>${title || 'Document'}</title>${styleTags}
+  printWindow.document.write(`<!doctype html><html><head><title>${escapeHtml(title || 'Document')}</title>${styleTags}
     <style>
       @page { margin: 0; }
       body { margin: 0; display: flex; justify-content: center; background: #fff; }
@@ -188,7 +199,7 @@ export function exportNodeToHtml(node, filename) {
       }
     })
     .join('\n');
-  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${filename}</title><style>${documentCss}</style></head><body style="margin:0;display:flex;justify-content:center;background:#f2f2f2;padding:24px;">${node.outerHTML}</body></html>`;
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(filename)}</title><style>${documentCss}</style></head><body style="margin:0;display:flex;justify-content:center;background:#f2f2f2;padding:24px;">${node.outerHTML}</body></html>`;
   downloadText(html, `${safeFileStem(filename)}.html`, 'text/html;charset=utf-8');
 }
 

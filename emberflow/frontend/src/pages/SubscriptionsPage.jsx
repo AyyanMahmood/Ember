@@ -256,6 +256,31 @@ export default function SubscriptionsPage() {
     );
   }
 
+  // A load failure with no subscription row at all means we genuinely don't
+  // know this account's real plan/status -- falling through to the normal
+  // page below would render every "you're on Free, upgrade now" affordance
+  // by default, which is actively misleading (and, worse, could read as
+  // "you're on Free" to an actual paying Pro customer) rather than just
+  // incomplete. Show only the error + retry until a real answer loads.
+  if (subscription.error && !subscription.subscription) {
+    return (
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">Subscriptions</p>
+            <h1 className="heading-xl">Plan, billing, and payment history.</h1>
+          </div>
+        </div>
+        <Alert variant="danger" title="Couldn't load your subscription">
+          {subscription.error}
+        </Alert>
+        <div className="form-actions">
+          <Button variant="secondary" onClick={subscription.refresh}>Try again</Button>
+        </div>
+      </div>
+    );
+  }
+
   const row = subscription.subscription;
   const hasCustomer = Boolean(row?.polar_customer_id);
   const status = row?.status || 'active';
@@ -317,7 +342,15 @@ export default function SubscriptionsPage() {
         />
       ) : null}
 
-      <div className="page-stack subscriptions-page">
+      {/* ProActivation is a full-screen overlay, not a portal -- it visually
+          blocks the page below it but Tab order still follows DOM order, so
+          a keyboard user could otherwise tab straight into the still-live
+          Switch/Cancel/Manage billing controls underneath while the
+          celebration is showing (up to ~14s). inert -- the same mechanism
+          already used for locked Pro controls elsewhere -- removes this
+          whole subtree from the tab order and assistive tech until it's
+          done, without needing a separate focus-trap implementation. */}
+      <div className="page-stack subscriptions-page" inert={showActivation ? '' : undefined}>
       <div className="page-header">
         <div>
           <p className="eyebrow">Subscriptions</p>

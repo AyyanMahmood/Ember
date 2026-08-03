@@ -18,7 +18,7 @@ import { ScaledPreview } from '../document-studio/ScaledPreview.jsx';
 import { TemplateSelector } from '../document-studio/TemplateSelector.jsx';
 import { ExportMenu } from '../document-studio/ExportMenu.jsx';
 import { useDocumentExport } from '../document-studio/useDocumentExport.js';
-import { DEFAULT_THEME_ID, getTheme } from '../document-studio/themes.js';
+import { DEFAULT_THEME_ID, getTheme, isPremiumTheme } from '../document-studio/themes.js';
 import { MobilePreviewBackdrop, MobilePreviewFab, MobilePreviewHeader, useMobilePreviewSheet } from '../document-studio/MobilePreviewSheet.jsx';
 
 const emptyItem = { description: '', quantity: 1, price: 0, tax_rate: 0 };
@@ -105,6 +105,21 @@ export default function InvoiceFormPage() {
     }
     load();
   }, [editing, id]);
+
+  // A ?template= link (e.g. shared, or guessed) is the one template-picker
+  // entry point that previously bypassed the Pro gate that TemplatesPage
+  // and TemplateSelector both already enforce -- it initialized `form`
+  // straight from the URL param with no isPro check at all. Correct it
+  // once subscription state has actually loaded (isPro defaults to false
+  // while loading, so this never lets a locked template through in the
+  // meantime -- it only ever needs to walk one back).
+  useEffect(() => {
+    if (editing || subscription.loading) return;
+    const requestedId = params.get('template');
+    if (!requestedId || !isPremiumTheme(requestedId) || subscription.isPro) return;
+    setForm((prev) => (prev.template === requestedId ? { ...prev, template: DEFAULT_THEME_ID } : prev));
+    setUpgradeOpen(true);
+  }, [editing, subscription.loading, subscription.isPro, params]);
 
   const totals = useMemo(() => calculateInvoiceTotals(items, form.discount_total), [items, form.discount_total]);
 

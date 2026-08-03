@@ -33,11 +33,18 @@ module.exports = async function handler(req, res) {
     // a second, parallel subscription instead of replacing the first - the
     // customer would end up billed on both. Block it here, not just in the
     // UI, since this route can be called directly.
-    const { data: existingSubscription } = await supabase
+    const { data: existingSubscription, error: existingSubscriptionError } = await supabase
       .from('subscriptions')
       .select('status, plan')
       .eq('user_id', user.id)
       .maybeSingle();
+
+    // Fail closed, not open: an unchecked error here previously left
+    // existingSubscription as undefined, which reads identically to "no
+    // subscription" and would let this guard's whole point — never
+    // creating a second, parallel Polar subscription — silently no-op on a
+    // transient DB error instead of blocking the request.
+    if (existingSubscriptionError) throw existingSubscriptionError;
 
     if (existingSubscription?.plan !== 'free' && hasAccessGrantingStatus(existingSubscription?.status)) {
       // sendError() replaces the message with a generic string in production

@@ -106,12 +106,27 @@
 .alert--warning .alert__title {
   color: var(--color-warning-strong);
 }
+/* Description also gets the strong tone here (not the shared muted rule
+   above) -- in the light theme, --color-muted on --color-warning-soft
+   measures ~4.27:1, under WCAG AA (4.5:1) for normal-weight text. Real
+   copy, not hypothetical: this is the color of the past_due dunning
+   notice and the failed-payment message. --color-warning-strong on
+   --color-warning-soft measures ~6.4:1 in both themes; the lighter
+   font-weight (vs. the title's semibold) keeps the visual hierarchy. */
+.alert--warning .alert__description {
+  color: var(--color-warning-strong);
+}
 
 .alert--danger {
   background: var(--color-danger-soft);
 }
 .alert--danger .alert__icon,
 .alert--danger .alert__title {
+  color: var(--color-danger-strong);
+}
+/* Same fix as .alert--warning above: --color-muted measures ~3.90:1 on
+   --color-danger-soft in the light theme, under AA. */
+.alert--danger .alert__description {
   color: var(--color-danger-strong);
 }
 

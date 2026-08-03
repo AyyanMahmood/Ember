@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import FeatureGate from '../components/FeatureGate.jsx';
+import { Button } from '../components/ui/Button.jsx';
 import { Card, StatCard } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import { EmptyState } from '../components/ui/EmptyState.jsx';
@@ -14,16 +15,19 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    async function load() {
-      try {
-        setInvoices(await listInvoices());
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+  async function load() {
+    setLoading(true);
+    setError('');
+    try {
+      setInvoices(await listInvoices());
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     load();
   }, []);
 
@@ -114,6 +118,9 @@ export default function AnalyticsPage() {
         <div className="page-stack">
           <Card variant="default">
             <div className="error-panel" role="alert">{error}</div>
+            <div className="form-actions">
+              <Button variant="secondary" onClick={load}>Try again</Button>
+            </div>
           </Card>
         </div>
       </FeatureGate>

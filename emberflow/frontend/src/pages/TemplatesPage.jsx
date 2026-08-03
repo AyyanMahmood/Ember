@@ -2,6 +2,7 @@ import { Lock, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button.jsx';
+import { Card } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/Loading.jsx';
 import UpgradeModal from '../components/UpgradeModal.jsx';
 import { useProfile } from '../hooks/useProfile.js';
@@ -13,7 +14,7 @@ import { SAMPLE_INVOICE } from '../document-studio/sampleDocuments.js';
 export default function TemplatesPage() {
   const navigate = useNavigate();
   const subscription = useSubscription();
-  const { profile, loading } = useProfile();
+  const { profile, loading, error: profileError, refresh } = useProfile();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   function selectTemplate(theme) {
@@ -28,6 +29,25 @@ export default function TemplatesPage() {
     return (
       <div className="page-stack" role="status" aria-live="polite">
         <LoadingSpinner size="lg" label="Loading templates..." />
+      </div>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">Templates</p>
+            <h1 className="heading-xl">Something went wrong.</h1>
+          </div>
+        </div>
+        <Card variant="default">
+          <div className="error-panel" role="alert">{profileError}</div>
+          <div className="form-actions">
+            <Button variant="secondary" onClick={refresh}>Try again</Button>
+          </div>
+        </Card>
       </div>
     );
   }

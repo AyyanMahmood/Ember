@@ -38,33 +38,66 @@ export default function ResetPasswordPage() {
     verifyAttempted.current = true;
 
     let cancelled = false;
+    let timeoutId;
+
+    // IMPORTANT: never treat a plain supabase.auth.getSession() result as
+    // proof of a valid reset link -- this page has no route guard, so any
+    // visitor who already has an ordinary logged-in session in this browser
+    // (their own, or one left signed-in on a shared/borrowed device) would
+    // otherwise reach the "set a new password" form with zero
+    // re-authentication, unlike Settings' password change which requires
+    // the current password. The only trustworthy signals that a recovery
+    // link -- not an ambient session -- is what got us here are (1) the
+    // explicit token_hash verify below succeeding, or (2) Supabase's own
+    // "PASSWORD_RECOVERY" auth event, which its client only ever fires when
+    // the automatic ?code= exchange resolves a recovery-type callback (read
+    // directly from the installed @supabase/auth-js source: GoTrueClient's
+    // _initialize() dispatches it via setTimeout(0) after a real network
+    // round trip, so a listener attached during this synchronous mount is
+    // always subscribed before it can fire).
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY' && !cancelled) {
+        clearTimeout(timeoutId);
+        setLinkValid(true);
+        setVerifying(false);
+      }
+    });
 
     async function establishSession() {
       const tokenHash = searchParams.get('token_hash');
-      const type = searchParams.get('type');
 
-      if (tokenHash && type) {
-        const { error: verifyError } = await verifyPasswordRecovery(tokenHash, type);
+      if (tokenHash) {
+        // Hardcode 'recovery' rather than trusting the URL's own ?type=
+        // value -- this page must only ever consume a recovery token, never
+        // whatever type an arbitrary token_hash happens to claim.
+        const { error: verifyError } = await verifyPasswordRecovery(tokenHash, 'recovery');
         if (cancelled) return;
         if (!verifyError) {
           setLinkValid(true);
           setVerifying(false);
           return;
         }
+        setVerifying(false);
+        return;
       }
 
-      // No token_hash (older/default email template still using ?code=), or
-      // the explicit verify above failed -- fall back to checking whether
-      // Supabase's automatic detectSessionInUrl exchange already succeeded.
-      const { data } = await supabase.auth.getSession();
-      if (cancelled) return;
-      setLinkValid(Boolean(data.session));
-      setVerifying(false);
+      // No token_hash (older/default email template still using ?code=) --
+      // give Supabase's automatic detectSessionInUrl exchange a few seconds
+      // to run and fire PASSWORD_RECOVERY above. If it doesn't (no code in
+      // the URL, an already-used code, or a missing/mismatched code
+      // verifier), the link is genuinely invalid or expired.
+      timeoutId = setTimeout(() => {
+        if (!cancelled) setVerifying(false);
+      }, 5000);
     }
 
     establishSession();
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
     };
   }, [searchParams, verifyPasswordRecovery]);
 
@@ -91,7 +124,7 @@ export default function ResetPasswordPage() {
 
   if (!linkValid) {
     return (
-      <div className="auth-page">
+      <main className="auth-page">
         <Seo title="Reset link expired" noindex path="/reset-password" />
         <Link className="brand-mark" to="/">
           EmberFlow
@@ -110,12 +143,12 @@ export default function ResetPasswordPage() {
             </Button>
           </div>
         </Card>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="auth-page">
+    <main className="auth-page">
       <Seo title="Set a new password" noindex path="/reset-password" />
       <Link className="brand-mark" to="/">
         EmberFlow
@@ -147,6 +180,6 @@ export default function ResetPasswordPage() {
           </Button>
         </form>
       </Card>
-    </div>
+    </main>
   );
 }

@@ -251,7 +251,14 @@ export default function InvoicesPage() {
         </Button>
       </div>
 
-      {error && <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card>}
+      {error && (
+        <Card variant="default">
+          <div className="error-panel" role="alert">{error}</div>
+          <div className="form-actions">
+            <Button variant="secondary" onClick={load}>Try again</Button>
+          </div>
+        </Card>
+      )}
 
       <Card variant="default">
         <div className="filters-row">
@@ -294,9 +301,9 @@ export default function InvoicesPage() {
           pagination
           pageSize={10}
           onRowClick={(row) => navigate(`/app/invoices/${row.id}`)}
-          emptyTitle="No invoices yet"
-          emptyMessage="Create an invoice with line items, taxes, and due dates."
-          emptyAction={{
+          emptyTitle={error ? "Couldn't load invoices" : 'No invoices yet'}
+          emptyMessage={error ? 'Try again above.' : 'Create an invoice with line items, taxes, and due dates.'}
+          emptyAction={error ? undefined : {
             label: 'Create invoice',
             to: '/app/invoices/new',
           }}

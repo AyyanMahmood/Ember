@@ -1,12 +1,18 @@
 import { supabase } from './supabase.js';
 
-const ALLOWED_LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+// SVG deliberately excluded (matches the avatar upload's existing policy):
+// the `logos` bucket is public with no ownership check on read, so an SVG
+// containing a <script>/onload= payload would be directly script-executable
+// at its own public storage URL when opened via top-level navigation (not
+// exploitable through the app's own <img> rendering, but a real stored-XSS
+// host under the project's storage subdomain otherwise).
+const ALLOWED_LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2MB — a logo, not a photo library.
 
 export function validateLogoFile(file) {
   if (!file) throw new Error('Choose a logo file first.');
   if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
-    throw new Error('Logo must be a PNG, JPEG, WebP, or SVG file.');
+    throw new Error('Logo must be a PNG, JPEG, or WebP file.');
   }
   if (file.size > MAX_LOGO_BYTES) {
     throw new Error('Logo must be smaller than 2MB.');

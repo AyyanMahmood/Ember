@@ -135,19 +135,27 @@ export default function ProposalsPage() {
         </Button>
       </div>
 
-      {error ? <Card variant="default"><div className="error-panel" role="alert">{error}</div></Card> : null}
-      <Card variant="default">
-        {proposals.length === 0 ? (
-          <EmptyState
-            title="No proposals yet"
-            message="Create a proposal from a template and export it as a polished PDF."
-            actionLabel="Create proposal"
-            actionTo="/app/proposals/new"
-          />
-        ) : (
-          <Table columns={columns} data={proposals} keyExtractor={(row) => row.id} />
-        )}
+      {error ? (
+        <Card variant="default">
+          <div className="error-panel" role="alert">{error}</div>
+          <div className="form-actions">
+            <Button variant="secondary" onClick={load}>Try again</Button>
+          </div>
         </Card>
+      ) : (
+        <Card variant="default">
+          {proposals.length === 0 ? (
+            <EmptyState
+              title="No proposals yet"
+              message="Create a proposal from a template and export it as a polished PDF."
+              actionLabel="Create proposal"
+              actionTo="/app/proposals/new"
+            />
+          ) : (
+            <Table columns={columns} data={proposals} keyExtractor={(row) => row.id} />
+          )}
+        </Card>
+      )}
       </div>
 
       <ConfirmDialog
