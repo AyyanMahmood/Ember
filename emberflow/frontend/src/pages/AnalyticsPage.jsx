@@ -32,10 +32,32 @@ export default function AnalyticsPage() {
   }, []);
 
   const analytics = useMemo(() => {
-    const currency = invoices[0]?.currency || 'USD';
     const now = new Date();
     const monthKey = now.toISOString().slice(0, 7);
-    const paid = invoices.filter((invoice) => invoice.status === 'paid');
+    const paidAll = invoices.filter((invoice) => invoice.status === 'paid');
+
+    // Revenue totals must never add amounts across currencies into one
+    // number -- that's not a smaller total, it's an arithmetically wrong
+    // one. Find the currency actually used by most paid invoices and only
+    // total those; invoices in any other currency are excluded from the
+    // sums (not dropped from the app -- still visible on the Invoices page)
+    // and surfaced via otherCurrencyCount instead of silently vanishing.
+    const currencyCounts = new Map();
+    paidAll.forEach((invoice) => {
+      const c = invoice.currency || 'USD';
+      currencyCounts.set(c, (currencyCounts.get(c) || 0) + 1);
+    });
+    let currency = 'USD';
+    let bestCount = -1;
+    for (const [c, count] of currencyCounts) {
+      if (count > bestCount) {
+        currency = c;
+        bestCount = count;
+      }
+    }
+
+    const paid = paidAll.filter((invoice) => (invoice.currency || 'USD') === currency);
+    const otherCurrencyCount = paidAll.length - paid.length;
     const monthlyPaid = paid.filter((invoice) => (invoice.paid_at || invoice.invoice_date || '').slice(0, 7) === monthKey);
     const pending = invoices.filter((invoice) => ['sent', 'overdue'].includes(effectiveStatus(invoice)));
     const overdue = invoices.filter((invoice) => effectiveStatus(invoice) === 'overdue');
@@ -61,6 +83,7 @@ export default function AnalyticsPage() {
       totalRevenue,
       monthlyRevenue,
       paidCount: paid.length,
+      otherCurrencyCount,
       pendingCount: pending.length,
       overdueCount: overdue.length,
       bestClients,
@@ -71,7 +94,9 @@ export default function AnalyticsPage() {
     {
       label: 'Total revenue',
       value: formatMoney(analytics.totalRevenue, analytics.currency),
-      note: 'All paid invoices',
+      note: analytics.otherCurrencyCount > 0
+        ? `Paid invoices in ${analytics.currency} (${analytics.otherCurrencyCount} in other currencies excluded)`
+        : 'All paid invoices',
       icon: <ArrowUpRight size={18} />,
       to: '/app/invoices?status=paid',
     },

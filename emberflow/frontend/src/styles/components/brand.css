@@ -117,13 +117,17 @@
   font-size: clamp(1.6rem, 4vw, 2.1rem);
   font-weight: var(--weight-semibold);
   letter-spacing: -0.02em;
-  color: var(--color-ink);
+  /* Not the theme-aware --color-ink: .pro-activation's background is a
+     fixed warm-near-black gradient in both themes (line 41), so a light-theme
+     --color-ink (near-black) would be unreadable. --color-sidebar-text is
+     the existing "always light, for an always-dark surface" token. */
+  color: var(--color-sidebar-text);
 }
 
 .pro-activation__subtitle {
   margin-top: var(--space-2);
   font-size: var(--text-body);
-  color: var(--color-muted);
+  color: var(--color-sidebar-text-muted);
 }
 
 @keyframes pro-ring-trace {

@@ -1,6 +1,7 @@
 import { Copy, Download, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Alert } from '../components/ui/Alert.jsx';
 import { Button, IconButton } from '../components/ui/Button.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { Table } from '../components/ui/Table.jsx';
@@ -24,9 +25,13 @@ export default function ProposalsPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [pdfLoadingId, setPdfLoadingId] = useState(null);
+  // Separate from `error`: a failed single-PDF export is not the same failure
+  // as the list failing to load, and must not tear down an already-loaded list.
+  const [pdfError, setPdfError] = useState('');
 
   async function downloadPdf(proposal) {
     setPdfLoadingId(proposal.id);
+    setPdfError('');
     try {
       const { node, cleanup } = await renderDocumentOffscreen(<ProposalDocument proposal={proposal} profile={profile} />);
       try {
@@ -35,7 +40,7 @@ export default function ProposalsPage() {
         cleanup();
       }
     } catch (err) {
-      setError(err.message);
+      setPdfError(err.message);
     } finally {
       setPdfLoadingId(null);
     }
@@ -134,6 +139,12 @@ export default function ProposalsPage() {
           New proposal
         </Button>
       </div>
+
+      {pdfError ? (
+        <Alert variant="danger" title="Couldn't download that PDF" onDismiss={() => setPdfError('')}>
+          {pdfError}
+        </Alert>
+      ) : null}
 
       {error ? (
         <Card variant="default">

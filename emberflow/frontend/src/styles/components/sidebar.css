@@ -44,8 +44,15 @@
   font-size: 1.1rem;
   font-weight: var(--weight-semibold);
   letter-spacing: -0.01em;
-  color: var(--color-sidebar-text);
+  color: var(--color-ink);
   text-decoration: none;
+}
+
+/* The sidebar's own background stays dark in both themes, unlike the
+   marketing header/footer and auth pages that also use .brand-mark -- only
+   the sidebar needs the always-light-on-dark sidebar text color. */
+.sidebar .brand-mark {
+  color: var(--color-sidebar-text);
 }
 
 .brand-mark__logo {

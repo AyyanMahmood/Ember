@@ -59,7 +59,7 @@ export default class ErrorBoundary extends Component {
         <div className="app-error__panel">
           <h1 className="app-error__title">{title}</h1>
           <p className="app-error__message">{message}</p>
-          <button type="button" className="btn btn--primary" onClick={this.handleReload}>
+          <button type="button" className="button button--primary button--md" onClick={this.handleReload}>
             Reload EmberFlow
           </button>
         </div>
