@@ -96,18 +96,21 @@ EmberFlow relies **entirely on Polar's native dunning** — do not build or impr
 
 ## Refund requests
 
-**Policy (published at `/refund`):** subscription charges are **non-refundable** except for billing errors, duplicate charges, or an extended outage (>48h of core functionality down), at EmberFlow's discretion. The Free plan never involves a charge. (The in-app "Refund policy" card on `/app/subscriptions` states the same summary — they must not contradict; re-check both after any policy change.)
+**Policy (founder-approved, published at `/refund`, 2026-08-03 — supersedes the earlier discretionary-only policy and the monthly/yearly-split recommendation below):** a full refund is available within **7 calendar days of the charge date**, for **both monthly and yearly** subscriptions, no distinction between them. **After 7 days, that charge is not eligible for a refund** — no discretionary exception for "just outside the window." Billing errors and duplicate charges are handled separately (see step 5) and are always correctable regardless of the 7-day window, since that's fixing our own mistake, not a customer-requested refund. The Free plan never involves a charge. Refunds are never self-service — every request is handled manually by a human, through Polar. (The in-app "Refund policy" card on `/app/subscriptions` states the same summary — they must not contradict; re-check both after any policy change.)
 
 **How to process an approved refund:**
-1. Open the Polar dashboard → **Orders** → find the order → **Refund order** (full or partial; Polar auto-calculates the tax portion).
-2. **CRITICAL — refunding does NOT cancel the subscription.** Polar's own docs are explicit: "refunding the order returns the money but does not end the relationship." If the intent is to end access too, you must **also cancel** — and now that cancel is one click in-app, prefer asking the customer to cancel in EmberFlow (or do it via the Polar dashboard's cancel), as a **separate** step. A refund alone leaves them on Pro until the period ends.
-3. Payment-processing fees are **not** returned to EmberFlow on a refund (~2.9%+30¢ is retained regardless). Factor this into goodwill-refund decisions.
-4. Note the Polar `order_id` and reason in the support thread.
+1. Confirm the charge date is within 7 calendar days of today. If it isn't, and this isn't a billing error/duplicate charge, the request falls outside policy — see the customer-facing decline language below.
+2. Open the Polar dashboard → **Orders** → find the order → **Refund order** (full; Polar auto-calculates the tax portion).
+3. **CRITICAL — refunding does NOT cancel the subscription.** Polar's own docs are explicit: "refunding the order returns the money but does not end the relationship." A refund is a full 7-day-window refund, so also **cancel** the subscription as a separate step — prefer asking the customer to cancel in EmberFlow (or do it via the Polar dashboard's cancel). A refund alone leaves them on Pro until the period ends.
+4. Payment-processing fees are **not** returned to EmberFlow on a refund (~2.9%+30¢ is retained regardless).
+5. **Billing errors / duplicate charges** (any age): refund the erroneous charge the same way, but this doesn't require a cancel step unless the duplicate itself created an unwanted second subscription.
+6. Note the Polar `order_id` and reason in the support thread.
 
-**Refund windows (recommended policy — see `LAUNCH_READINESS_REPORT.md` → Refund Research for the full competitive analysis):**
-- **Monthly:** discretionary only (billing error / duplicate / outage). A monthly charge is small ($11) and the customer is never more than ~30 days from being able to cancel, so a blanket money-back window mainly invites abuse.
-- **Yearly:** discretionary, **plus** honor a good-faith **14-day** cooling-off refund for a first-time yearly purchase if the customer requests it and has made minimal use — a $130 up-front commitment warrants more goodwill. Prorated refunds are not offered mid-term; direct the customer to cancel (keeps access to period end) instead.
-- **Fraud prevention:** confirm the request comes from the account's own email; be wary of "refund + immediately re-subscribe" loops and refunds requested right after heavy export activity.
+**If a request falls outside the 7-day window and isn't a billing error:** decline politely — "Charges are refundable within 7 days of the purchase date; this one is outside that window, so I'm not able to refund it, but I've gone ahead and cancelled the subscription so you won't be charged again." Do not make discretionary exceptions; escalate to the founder if there's a genuinely unusual circumstance.
+
+**Fraud prevention:** confirm the request comes from the account's own email; be wary of "refund + immediately re-subscribe" loops and refunds requested right after heavy export activity.
+
+*(`LAUNCH_READINESS_REPORT.md` → Refund Research has the competitive analysis that originally informed this decision; the monthly/yearly-split recommendation it contains was not the one the founder ultimately chose — this 7-day-both-plans policy is the final, current one.)*
 
 ---
 

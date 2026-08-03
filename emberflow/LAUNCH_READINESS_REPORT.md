@@ -93,6 +93,8 @@ Five flows audited end-to-end this sprint, each against code **and** Polar's own
 
 ## Refund Research (Task 1 — recommendations only, nothing implemented)
 
+**Superseded 2026-08-03:** the founder decided a simpler final policy — a full refund within **7 calendar days of purchase**, identical for monthly and yearly, no discretionary carve-outs, processed manually. This differs from the monthly/yearly-split recommendation below; the research itself is left as-is as the historical analysis that informed the decision. Current policy lives at `/refund` and `SUPPORT_PLAYBOOK.md` → "Refund requests."
+
 ### Polar's actual capabilities (verified against `polar.sh/docs/features/refunds`)
 - **Full and partial refunds**, from the **dashboard** or the **API** (`POST` create-refund; `refund.created`/`order.refunded` webhooks exist).
 - Polar **auto-calculates the tax portion** and prorates it for partial refunds.

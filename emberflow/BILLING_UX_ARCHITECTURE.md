@@ -54,8 +54,8 @@ Each surface is rated for how it *feels to a user today*, with the concrete fric
 - Entitlement-sync-after-portal-cancel is the known deferred issue (bfcache/return-path fixes landed; live-test still pending).
 
 ### 1.7 Refund flow — 🟡
-- No in-app refund anything. Policy is stated (non-refundable except billing errors/duplicates/outage) with a link to `/refund`. A refund happens only by emailing support → a human issues it in the Polar dashboard.
-- Acceptable for v1 (low volume, our policy is intentionally narrow), but there's **no in-app "request a refund / report a billing problem" affordance** — the user has to find the support email.
+- No in-app refund anything. Policy is stated (full refund within 7 days of purchase, both cadences; none after — see 2026-08-03 founder decision) with a link to `/refund`. A refund happens only by emailing support → a human issues it in the Polar dashboard.
+- Acceptable for v1 (low volume), but there's **no in-app "request a refund / report a billing problem" affordance** — the user has to find the support email.
 - ⚠️ Operational trap already documented: in Polar, **refunding an order does not cancel the subscription** — the two are separate actions. Any refund path must handle both.
 
 ### 1.8 Failed-payment flow — 🟢 (just hardened)
@@ -181,7 +181,7 @@ Only if A and B are both rejected. Schedule the switch: cancel-at-period-end + a
 - The remaining theoretical gap (two concurrent first-time checkouts — the TOCTOU item deferred in Milestone A) is unaffected by this redesign and stays a separate, later hardening item.
 
 ### 3.5 Refund experience (our policy, Polar-executed)
-- Keep the **narrow, defensible policy** (non-refundable except billing errors / duplicate charges / extended outage). It matches how Polar itself frames discretionary refunds and avoids the no-questions-asked-window support burden.
+- Policy (founder-decided 2026-08-03): **full refund within 7 calendar days of purchase**, identical for monthly and yearly, none after. Simple and predictable rather than discretionary — see `/refund` and `SUPPORT_PLAYBOOK.md` → "Refund requests" for the current, authoritative text.
 - **Add an in-app affordance:** a "Report a billing problem" action in the Refund/help block → opens a prefilled support email (or a lightweight form) with the user's plan + last-charge context attached. This replaces "go find our support email."
 - **Internal (documented, not user-facing):** the refund runbook must state the Polar trap — *refund the order **and** cancel the subscription* are two separate steps, or a refunded user keeps Pro. This already exists in `SUPPORT_PLAYBOOK.md`; link it from the refund block's internal notes.
 
