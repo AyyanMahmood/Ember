@@ -228,8 +228,16 @@ export default function InvoiceFormPage() {
 
   if (loading) {
     return (
-      <div className="page-stack" role="status" aria-live="polite">
-        <LoadingSpinner size="lg" label="Loading invoice..." />
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">{editing ? 'Edit invoice' : 'New invoice'}</p>
+            <h1 className="heading-xl">{editing ? 'Update invoice details.' : 'Create a professional itemized invoice.'}</h1>
+          </div>
+        </div>
+        <div className="page-stack" role="status" aria-live="polite">
+          <LoadingSpinner size="lg" label="Loading invoice..." />
+        </div>
       </div>
     );
   }

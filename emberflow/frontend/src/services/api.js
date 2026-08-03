@@ -151,7 +151,17 @@ export async function updateClient(id, values) {
 }
 
 export async function deleteClient(id) {
-  return requireData(await supabase.from("clients").delete().eq("id", id));
+  const result = await supabase.from("clients").delete().eq("id", id);
+  // Postgres SQLSTATE 23503 = foreign_key_violation -- raised when this
+  // client still has invoices (invoices.client_id has no ON DELETE
+  // CASCADE/SET NULL). The raw error is a Postgres constraint-name string;
+  // surface a message a customer can act on instead.
+  if (result.error?.code === "23503") {
+    throw new Error(
+      "This client still has invoices linked to their account. Delete or reassign those invoices first, then delete the client."
+    );
+  }
+  return requireData(result);
 }
 
 export async function listInvoices() {

@@ -46,6 +46,7 @@ export default function InvoicesPage() {
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [pdfLoadingId, setPdfLoadingId] = useState(null);
+  const [pageSize, setPageSize] = useState(10);
 
   async function load() {
     setLoading(true);
@@ -231,14 +232,6 @@ export default function InvoicesPage() {
     [filteredInvoices]
   );
 
-  if (loading) {
-    return (
-      <div className="page-stack" role="status" aria-live="polite">
-        <LoadingSpinner size="lg" label="Loading invoices..." />
-      </div>
-    );
-  }
-
   return (
     <div className="page-stack">
       <div className="page-header">
@@ -294,12 +287,14 @@ export default function InvoicesPage() {
           columns={columns}
           data={clientPrepared}
           keyExtractor={(row) => row.id}
+          loading={loading}
           sortable
           selectable
           selectedKeys={selectedKeys}
           onSelectionChange={setSelectedKeys}
           pagination
-          pageSize={10}
+          pageSize={pageSize}
+          onPageChange={setPageSize}
           onRowClick={(row) => navigate(`/app/invoices/${row.id}`)}
           emptyTitle={error ? "Couldn't load invoices" : 'No invoices yet'}
           emptyMessage={error ? 'Try again above.' : 'Create an invoice with line items, taxes, and due dates.'}

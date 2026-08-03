@@ -25,42 +25,27 @@ export default function TemplatesPage() {
     navigate(`/app/invoices/new?template=${theme.id}`);
   }
 
-  if (loading) {
-    return (
-      <div className="page-stack" role="status" aria-live="polite">
-        <LoadingSpinner size="lg" label="Loading templates..." />
-      </div>
-    );
-  }
-
-  if (profileError) {
-    return (
-      <div className="page-stack">
-        <div className="page-header">
-          <div>
-            <p className="eyebrow">Templates</p>
-            <h1 className="heading-xl">Something went wrong.</h1>
-          </div>
+  return (
+    <div className="page-stack">
+      <div className="page-header">
+        <div>
+          <p className="eyebrow">Templates</p>
+          <h1 className="heading-xl">{profileError ? 'Something went wrong.' : 'Pick a look, then start your invoice.'}</h1>
         </div>
+      </div>
+
+      {loading ? (
+        <div className="page-stack" role="status" aria-live="polite">
+          <LoadingSpinner size="lg" label="Loading templates..." />
+        </div>
+      ) : profileError ? (
         <Card variant="default">
           <div className="error-panel" role="alert">{profileError}</div>
           <div className="form-actions">
             <Button variant="secondary" onClick={refresh}>Try again</Button>
           </div>
         </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="page-stack">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">Templates</p>
-          <h1 className="heading-xl">Pick a look, then start your invoice.</h1>
-        </div>
-      </div>
-
+      ) : (
       <div className="templates-page-grid">
         {DOCUMENT_THEMES.map((theme) => {
           const locked = isPremiumTheme(theme.id) && !subscription.isPro;
@@ -92,6 +77,7 @@ export default function TemplatesPage() {
           );
         })}
       </div>
+      )}
 
       <UpgradeModal
         open={upgradeOpen}

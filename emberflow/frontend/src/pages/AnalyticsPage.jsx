@@ -127,31 +127,6 @@ export default function AnalyticsPage() {
     },
   ], [analytics]);
 
-  if (loading) {
-    return (
-      <FeatureGate feature="analytics" title="Analytics are a Pro feature" message="Upgrade to Pro to analyze revenue, overdue work, and top clients.">
-        <div className="page-stack" role="status" aria-live="polite">
-          <LoadingSpinner size="lg" label="Loading analytics..." />
-        </div>
-      </FeatureGate>
-    );
-  }
-
-  if (error) {
-    return (
-      <FeatureGate feature="analytics" title="Analytics are a Pro feature" message="Upgrade to Pro to analyze revenue, overdue work, and top clients.">
-        <div className="page-stack">
-          <Card variant="default">
-            <div className="error-panel" role="alert">{error}</div>
-            <div className="form-actions">
-              <Button variant="secondary" onClick={load}>Try again</Button>
-            </div>
-          </Card>
-        </div>
-      </FeatureGate>
-    );
-  }
-
   return (
     <FeatureGate feature="analytics" title="Analytics are a Pro feature" message="Upgrade to Pro to analyze revenue, overdue work, and top clients.">
       <div className="page-stack">
@@ -162,53 +137,74 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <section className="stats-grid" aria-label="Key metrics">
-          {statCards.map((stat, index) => (
-            <Link key={index} to={stat.to} className="stat-card-link">
-              <StatCard
-                label={stat.label}
-                value={stat.value}
-                note={stat.note}
-                trend={stat.trend}
-                trendLabel={stat.trendLabel}
-              >
-                {stat.icon && <span className="stat-card__icon" aria-hidden="true">{stat.icon}</span>}
-              </StatCard>
-            </Link>
-          ))}
-        </section>
-
-        <Card variant="default">
-          <div className="panel__header">
-            <h3 className="panel__title">Best clients</h3>
-            <span className="muted small">By paid revenue</span>
-          </div>
-          {analytics.bestClients.length === 0 ? (
-            <EmptyState
-              title="No paid invoices yet"
-              message="Once invoices are marked paid, your top clients by revenue will show up here."
-            />
-          ) : (
-              <div className="ranking-list">
-                {analytics.bestClients.map((client, index) => {
-                  const content = (
-                    <>
-                      <span className="ranking-row__rank">{index + 1}</span>
-                      <span className="ranking-row__name">{client.name}</span>
-                      <span className="ranking-row__value">{formatMoney(client.revenue, analytics.currency)}</span>
-                    </>
-                  );
-                  return client.id ? (
-                    <Link to={`/app/clients/${client.id}`} className="ranking-row" key={client.id}>
-                      {content}
+        {error ? (
+          <Card variant="default">
+            <div className="error-panel" role="alert">{error}</div>
+            <div className="form-actions">
+              <Button variant="secondary" onClick={load}>Try again</Button>
+            </div>
+          </Card>
+        ) : (
+          <>
+            <section className="stats-grid" aria-label="Key metrics" aria-busy={loading || undefined}>
+              {loading
+                ? [...Array(4)].map((_, index) => (
+                    <article className="stat-card stat-card--loading" key={index} aria-hidden="true">
+                      <LoadingSpinner size="sm" />
+                    </article>
+                  ))
+                : statCards.map((stat, index) => (
+                    <Link key={index} to={stat.to} className="stat-card-link">
+                      <StatCard
+                        label={stat.label}
+                        value={stat.value}
+                        note={stat.note}
+                        trend={stat.trend}
+                        trendLabel={stat.trendLabel}
+                      >
+                        {stat.icon && <span className="stat-card__icon" aria-hidden="true">{stat.icon}</span>}
+                      </StatCard>
                     </Link>
-                  ) : (
-                    <div className="ranking-row" key={client.name}>{content}</div>
-                  );
-                })}
+                  ))}
+            </section>
+
+            <Card variant="default">
+              <div className="panel__header">
+                <h3 className="panel__title">Best clients</h3>
+                <span className="muted small">By paid revenue</span>
               </div>
-          )}
-        </Card>
+              {loading ? (
+                <div className="page-stack" role="status" aria-live="polite">
+                  <LoadingSpinner size="md" label="Loading..." />
+                </div>
+              ) : analytics.bestClients.length === 0 ? (
+                <EmptyState
+                  title="No paid invoices yet"
+                  message="Once invoices are marked paid, your top clients by revenue will show up here."
+                />
+              ) : (
+                  <div className="ranking-list">
+                    {analytics.bestClients.map((client, index) => {
+                      const content = (
+                        <>
+                          <span className="ranking-row__rank">{index + 1}</span>
+                          <span className="ranking-row__name">{client.name}</span>
+                          <span className="ranking-row__value">{formatMoney(client.revenue, analytics.currency)}</span>
+                        </>
+                      );
+                      return client.id ? (
+                        <Link to={`/app/clients/${client.id}`} className="ranking-row" key={client.id}>
+                          {content}
+                        </Link>
+                      ) : (
+                        <div className="ranking-row" key={client.name}>{content}</div>
+                      );
+                    })}
+                  </div>
+              )}
+            </Card>
+          </>
+        )}
       </div>
     </FeatureGate>
   );

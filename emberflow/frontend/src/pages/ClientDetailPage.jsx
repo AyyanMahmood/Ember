@@ -188,7 +188,7 @@ export default function ClientDetailPage() {
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
         title="Delete client"
-        message={`Delete ${client.name}? Invoices linked to this client must be removed first.`}
+        message={`Delete ${client.name}? This can't be undone. If any invoices are linked to this client, deleting will fail until those are removed or reassigned first.`}
         confirmLabel="Delete"
         loading={deleting}
       />

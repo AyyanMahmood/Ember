@@ -191,8 +191,17 @@ export default function InvoiceDetailPage() {
 
   if (loading) {
     return (
-      <div className="page-stack" role="status" aria-live="polite">
-        <LoadingSpinner size="lg" label="Loading invoice..." />
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">Invoice</p>
+            <h1 className="heading-xl">Loading…</h1>
+          </div>
+          <Button as={Link} variant="ghost" to="/app/invoices">Back to invoices</Button>
+        </div>
+        <div className="page-stack" role="status" aria-live="polite">
+          <LoadingSpinner size="lg" label="Loading invoice..." />
+        </div>
       </div>
     );
   }

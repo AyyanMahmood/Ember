@@ -42,6 +42,7 @@ export default function ClientsPage() {
   const [error, setError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [pageSize, setPageSize] = useState(10);
 
   async function load() {
     setLoading(true);
@@ -187,7 +188,8 @@ export default function ClientsPage() {
           keyExtractor={(row) => row.id}
           sortable
           pagination
-          pageSize={10}
+          pageSize={pageSize}
+          onPageChange={setPageSize}
           onRowClick={(row) => navigate(`/app/clients/${row.id}`)}
           emptyTitle="No clients yet"
           emptyMessage="Add a client before creating invoices and proposals."
@@ -204,7 +206,7 @@ export default function ClientsPage() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
         title="Delete client"
-        message={deleteTarget ? `Delete ${deleteTarget.name}? Invoices linked to this client must be removed first.` : ''}
+        message={deleteTarget ? `Delete ${deleteTarget.name}? This can't be undone. If any invoices are linked to this client, deleting will fail until those are removed or reassigned first.` : ''}
         confirmLabel="Delete"
         loading={deleting}
       />

@@ -40,13 +40,23 @@ export function renderDocumentOffscreen(element) {
       requestAnimationFrame(async () => {
         try {
           const images = Array.from(container.querySelectorAll('img'));
+          const anyImageFailed = [];
           await Promise.all([
             fontReady,
             ...images.map((img) => (img.complete ? Promise.resolve() : new Promise((res) => {
               img.onload = res;
-              img.onerror = res;
+              img.onerror = () => { anyImageFailed.push(img); res(); };
             }))),
           ]);
+          // A failed <img> also fires DocumentTemplate's own onError, which
+          // swaps it for the initials placeholder -- but that's a React
+          // state update, not yet painted at this point. Give it one more
+          // settle cycle so a broken logo is captured as the placeholder,
+          // not a broken-image icon, exactly like the two rAFs above do for
+          // ordinary layout.
+          if (anyImageFailed.length > 0) {
+            await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+          }
           resolve({
             node: nodeRef,
             cleanup: () => {

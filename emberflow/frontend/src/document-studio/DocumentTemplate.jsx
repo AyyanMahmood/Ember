@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 
 // Fixed true render size (US Letter @ 96dpi). The live preview scales this
 // DOWN visually with a CSS transform on an OUTER wrapper — the node exported
@@ -34,6 +34,13 @@ export const DocumentTemplate = forwardRef(function DocumentTemplate({
 }, ref) {
   const isSidebar = theme.layout === 'sidebar';
   const isDark = Boolean(theme.forceDark);
+  // A stale/deleted/CORS-blocked logo URL must fall back to the initials
+  // placeholder, not a broken-image icon on a client-facing document.
+  // Tracking the failed URL itself (rather than a plain boolean) means a
+  // change to logoUrl naturally retries instead of staying stuck failed.
+  const [failedLogoUrl, setFailedLogoUrl] = useState(null);
+  const showLogo = Boolean(logoUrl) && logoUrl !== failedLogoUrl;
+  const handleLogoError = () => setFailedLogoUrl(logoUrl);
 
   const style = {
     '--doc-primary': palette.primary,
@@ -54,8 +61,8 @@ export const DocumentTemplate = forwardRef(function DocumentTemplate({
 
   const headerBlock = (
     <header className="doc-header">
-      {logoUrl ? (
-        <img src={logoUrl} alt="" className="doc-header__logo" crossOrigin="anonymous" />
+      {showLogo ? (
+        <img src={logoUrl} alt="" className="doc-header__logo" crossOrigin="anonymous" onError={handleLogoError} />
       ) : (
         <div className="doc-header__logo doc-header__logo--placeholder">
           {(profile?.business_name || profile?.full_name || 'B').slice(0, 1)}
@@ -122,8 +129,8 @@ export const DocumentTemplate = forwardRef(function DocumentTemplate({
       {isSidebar ? (
         <div className="doc-sidebar-shell">
           <aside className="doc-sidebar">
-            {logoUrl ? (
-              <img src={logoUrl} alt="" className="doc-sidebar__logo" crossOrigin="anonymous" />
+            {showLogo ? (
+              <img src={logoUrl} alt="" className="doc-sidebar__logo" crossOrigin="anonymous" onError={handleLogoError} />
             ) : (
               <div className="doc-sidebar__logo doc-sidebar__logo--placeholder">
                 {(profile?.business_name || profile?.full_name || 'B').slice(0, 1)}

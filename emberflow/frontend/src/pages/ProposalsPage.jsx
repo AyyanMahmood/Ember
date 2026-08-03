@@ -82,16 +82,6 @@ export default function ProposalsPage() {
     navigate('/app/proposals/new', { state: { duplicateFrom: proposal } });
   }
 
-  if (loading) {
-    return (
-      <FeatureGate feature="proposals" title="Proposals are a Pro feature" message="Upgrade to Pro to create proposal templates and export proposal PDFs.">
-        <div className="page-stack" role="status" aria-live="polite">
-          <LoadingSpinner size="lg" label="Loading proposals..." />
-        </div>
-      </FeatureGate>
-    );
-  }
-
   const columns = [
     { key: 'title', label: 'Title' },
     { key: 'client_name', label: 'Client' },
@@ -155,7 +145,9 @@ export default function ProposalsPage() {
         </Card>
       ) : (
         <Card variant="default">
-          {proposals.length === 0 ? (
+          {loading ? (
+            <Table columns={columns} data={[]} loading keyExtractor={(row) => row.id} />
+          ) : proposals.length === 0 ? (
             <EmptyState
               title="No proposals yet"
               message="Create a proposal from a template and export it as a polished PDF."
