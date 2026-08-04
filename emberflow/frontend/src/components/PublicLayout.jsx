@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Menu } from 'lucide-react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from './ui/Button.jsx';
 import { EmberLogo } from './ui/EmberLogo.jsx';
-import { ThemeToggle } from './ui/ThemeToggle.jsx';
-import { Drawer, DrawerFooter } from './ui/Modal.jsx';
+import { Drawer } from './ui/Modal.jsx';
 import { scrollToId } from '../utils/scroll.js';
 
 const year = new Date().getFullYear();
@@ -93,7 +91,6 @@ export default function PublicLayout() {
             <Link className="button primary" to="/register">
               Start free
             </Link>
-            <ThemeToggle className="marketing-nav__theme-toggle" />
           </nav>
           <button
             type="button"
@@ -123,12 +120,6 @@ export default function PublicLayout() {
           <Link to="/contact" onClick={closeMobileNav}>Contact</Link>
           <Link to="/login" onClick={closeMobileNav}>Log in</Link>
         </nav>
-        <DrawerFooter className="marketing-mobile-drawer__footer">
-          <ThemeToggle />
-          <Button as={Link} to="/register" variant="primary" fullWidth onClick={closeMobileNav}>
-            Get Started
-          </Button>
-        </DrawerFooter>
       </Drawer>
       <Outlet />
       <footer className="marketing-footer">

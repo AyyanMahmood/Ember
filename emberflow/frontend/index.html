@@ -29,8 +29,15 @@
     <script>
       (function () {
         try {
-          var stored = localStorage.getItem('emberflow-theme');
-          var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          // Public/marketing/auth pages are permanently dark; only /app/* honors the stored
+          // preference. Kept in sync with hooks/useTheme.js so a visitor who previously chose
+          // light mode inside the app never sees a flash of it out here.
+          var isApp = window.location.pathname.indexOf('/app') === 0;
+          var theme = 'dark';
+          if (isApp) {
+            var stored = localStorage.getItem('emberflow-theme');
+            theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          }
           document.documentElement.setAttribute('data-theme', theme);
         } catch (e) {
           document.documentElement.setAttribute('data-theme', 'dark');
