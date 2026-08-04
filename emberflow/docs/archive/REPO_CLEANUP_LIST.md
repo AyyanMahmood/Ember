@@ -1,6 +1,9 @@
 # Repository Cleanup List (Phase 3)
 
-> ## 🧊 LAUNCH FREEZE — 2026-07-30
+> ## ✅ EXECUTED — 2026-08-04
+> V1 launch reached production-stable status (CLAUDE.md), lifting the freeze below. The cleanup sequence at the bottom of this file was run as planned: the 3 empty stubs were removed, `AGENTS.md` was filled with a pointer to `CLAUDE.md`, and the 6 originally-listed historical docs were moved to `docs/archive/`. Three more files were archived alongside them after being confirmed superseded/historical during the same pass: `BILLING_QA_CHECKLIST.md` (self-declared superseded by `LAUNCH_QA.md`), `BILLING_UX_ARCHITECTURE.md` (self-declared "approved & implemented," retained as a design record), and `KNOWN_LIMITATIONS.md` (merged into `KNOWN_ISSUES.md` first — the two trackers had drifted and each held real items missing from the other — then archived once nothing unique remained). See `DOCUMENTATION_MAP.md` for the current doc hierarchy this produced. This file is now itself archived below it, superseded by that map.
+
+> ## 🧊 LAUNCH FREEZE — 2026-07-30 (historical, now lifted — see above)
 > **EmberFlow is in release freeze. NOTHING in this list executes until AFTER launch.**
 > No files deleted, moved, archived, or refactored. Every item below is classified into one of four post-launch buckets; the classification is the *only* thing produced under freeze. The sole permitted code changes before launch are: **production configuration, real payment testing, critical bug fixes, security fixes.** Everything here is, by definition, none of those.
 

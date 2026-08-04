@@ -30,7 +30,7 @@ This is the honest part, and it matters for a product that touches real money:
 - **Polar/Vercel production configuration has not been independently confirmed** in this release cycle (org token scope, webhook secret, selected webhook events, `POLAR_SERVER`/`APP_URL` values). This has been a standing gate since the original Paddle→Polar migration, not a new gap.
 - **The Supabase Reset Password email template's live content is unconfirmed** — the code-side fix (token-hash verification) is in place and correct, but whether the dashboard template embeds `{{ .TokenHash }}` cannot be checked without dashboard access.
 
-None of the above are code defects. They are the specific, small set of external/configuration steps between "code-complete" and "real-money launch," and they're the same ones this project has tracked since mid-project. See `KNOWN_LIMITATIONS.md` for the complete, current list — nothing padded, nothing hidden.
+None of the above are code defects. They are the specific, small set of external/configuration steps between "code-complete" and "real-money launch," and they're the same ones this project has tracked since mid-project. See `KNOWN_ISSUES.md` for the complete, current list — nothing padded, nothing hidden.
 
 ## Recommended next step before real-money launch
 

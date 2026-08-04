@@ -15,11 +15,11 @@ Genuine, real remaining issues only — no invented future work. Each is somethi
 These are launch **gates** — not code defects, but things that must be true before flipping `POLAR_SERVER=production`. The full step list is `LAUNCH_QA.md`.
 
 1. **The live billing journey has never been exercised end-to-end.**
-   Checkout, the activation moment, in-app switch/cancel/resume, webhook sync, and the `past_due` flow are all build-, schema-, and render-verified, but **no real Polar transaction has ever run** (this environment has no Polar credentials, ever). Until `LAUNCH_QA.md` is completed against a Polar **sandbox** and then a single real production purchase, "it works live" is unproven.
+   Checkout, the activation moment, in-app switch/cancel/resume, webhook sync, and the `past_due` flow are all build-, schema-, and render-verified, but **no real Polar transaction has ever run** (this environment has no Polar credentials, ever) — this despite real supporting evidence in production (166 processed webhook events; 4 accounts currently on active Pro plans with correctly-synced Polar customer/subscription ids). Until `LAUNCH_QA.md` is completed against a Polar **sandbox** and then a single real production purchase, "it works live" is unproven.
    → *Action:* run `LAUNCH_QA.md` end-to-end.
 
 2. **Polar production configuration is unconfirmed.**
-   Specifically: the org access token must include **`subscriptions (write)`** (a token minted before 2026-07-31 lacks it → in-app switch/cancel return 403); the webhook endpoint must have all six `subscription.*` events at **Raw** format; the grace period should be **21 days**; and the portal's self-serve **cancel/switch should be disabled** (those are in-app now). `APP_URL` and the `POLAR_*` vars must be set for production and redeployed.
+   Specifically: the org access token must include **`subscriptions (write)`** (a token minted before 2026-07-31 lacks it → in-app switch/cancel return 403); the webhook endpoint must have all six `subscription.*` events at **Raw** format; the grace period should be **21 days**; and the portal's self-serve **cancel/switch should be disabled** (those are in-app now). `APP_URL` and the `POLAR_*` vars must be set for production and redeployed. Requires Polar dashboard access.
    → *Action:* `LAUNCH_QA.md` §0 "Go-Live configuration."
 
 3. ~~**Supabase migration `007_polar_billing.sql` must be confirmed applied to production.**~~ **Confirmed 2026-08-01** — `polar_customer_id`/`polar_subscription_id`/`polar_product_id` verified present on `public.subscriptions` via a direct `information_schema` query against production. Migration `008` (the Brand Studio free-tier fix) was also applied and confirmed this session.
@@ -27,6 +27,14 @@ These are launch **gates** — not code defects, but things that must be true be
 4. **Supabase migration `012_delete_account.sql` must be applied to production before Delete Account can work live.**
    Adds `delete_user_account(uuid)`, the SECURITY DEFINER function `api/account/delete.js` calls to atomically delete a user's rows. Without it, every deletion attempt fails at the RPC step with a clear "couldn't delete your data, nothing was changed" error (fails safe — no partial deletion, but the feature doesn't work until this is applied). Also not yet exercised against a live Supabase project or live Polar subscription (no credentials available in this environment, ever) — `npm run verify:account-deletion` covers the pure logic and the handler's control flow against a mocked client, not the real RLS/FK/Storage/Polar behavior.
    → *Action:* apply `supabase/migrations/012_delete_account.sql` to production, then manually delete one Free test account and one Pro test account (with real client/invoice/logo data) and confirm no rows remain in any table and no files remain in Storage.
+
+5. **Vercel production environment variables are unconfirmed.**
+   `POLAR_SERVER` (must read `production`, not the legacy `POLAR_ENVIRONMENT` name), `POLAR_ACCESS_TOKEN` and both `POLAR_PRODUCT_PRO_*` ids (production, not sandbox), `POLAR_WEBHOOK_SECRET` (must match the production endpoint specifically), `APP_URL`/`VITE_APP_URL`. Requires Vercel dashboard access.
+   → *Action:* confirm each in the Vercel project dashboard before flipping `POLAR_SERVER=production`.
+
+6. **The Supabase Reset Password email template's live content is unconfirmed.**
+   The code-side fix (explicit `token_hash` verification, not an ambient session) is correct and in place; whether the dashboard template actually embeds `{{ .TokenHash }}` cannot be checked without Supabase dashboard access. Without it, the cross-device password-reset case falls back to same-browser-only behavior.
+   → *Action:* confirm the template in the Supabase Authentication → Email Templates dashboard, test-send once.
 
 ---
 
@@ -56,6 +64,8 @@ These are launch **gates** — not code defects, but things that must be true be
 8. **Live Lighthouse baseline never run.**
    Static picture is good (all routes lazy-loaded, vendor chunks split, `jspdf`/`html2canvas` deferred to when a document editor runs, self-hosted fonts), but performance/a11y have not been measured on a real device.
 
+9. **`proposal_items` has two overlapping sets of RLS policies** (one current, one legacy pre-`past_due` set). Harmless today since permissive policies OR together, but real cleanup debt.
+
 ---
 
 ## 🟢 Nice-to-have (minor, non-blocking)
@@ -80,4 +90,22 @@ These are launch **gates** — not code defects, but things that must be true be
 
 ---
 
-*This document lists only genuine current issues. When one is fixed, remove it here and note the fix in CLAUDE.md. See `LAUNCH_QA.md` for the launch gate and `SUPPORT_PLAYBOOK.md` for handling the deferred sync case in support.*
+## 🟢 UX polish (from the first-time-customer product audit)
+
+All findings classified Critical or High were fixed in the v1.0.0 release. The following Medium/Low items remain, triaged for v1.1 or later; none block launch.
+
+1. Dashboard/ClientDetail/InvoiceDetail replace the whole page (not a scoped banner) on a failed data fetch.
+2. A minor layout shift on Dashboard/ClientDetail stat cards between the loading and loaded state.
+3. Pricing/Upgrade/Subscription card grids skip a tablet-optimized layout, going straight from 3-column to 1-column at 920px.
+4. Usage-meter cards stay at 2 columns on mobile instead of 1 (a CSS specificity bug).
+5. Decorative external-link icons occasionally wrap onto their own line on the Terms/Privacy/Contact pages.
+6. The dedicated `/features` page has its own shorter, hand-maintained feature list that has drifted from the homepage's list (missing a "Secure workspace" callout).
+7. The proposal line-item editor doesn't show the same real-time "excluded" warning the invoice editor has for an incomplete row (still caught at submit time, not silently lost).
+8. The Brand Studio color picker popover can render partially off-screen near a narrow viewport's right edge.
+9. The mobile sidebar navigation drawer doesn't trap keyboard focus the way every other overlay in the app does.
+10. Several minor accessibility gaps: missing `scope="col"` on table headers app-wide; color-swatch buttons announce a raw hex code instead of a descriptive label; the delete-account dialog briefly loses its accessible name during the deleting/success transition; loading spinners are wrapped in a redundant duplicate `aria-live` region on three pages.
+11. A handful of narrow, low-frequency edge cases: a template-picker keyboard-navigation breakpoint mismatch (only affects a ~40px viewport range for keyboard-only users), a long business name silently clipping in one premium document theme, a locked template briefly flashing via a guessed URL before snapping back, and one page-size control using an inline style instead of the spacing token scale.
+
+---
+
+*This document lists only genuine current issues. When one is fixed, remove it here and note the fix in CLAUDE.md and CHANGELOG.md. See `LAUNCH_QA.md` for the launch gate and `SUPPORT_PLAYBOOK.md` for handling the deferred sync case in support. Absorbed the former `KNOWN_LIMITATIONS.md` (archived `docs/archive/` — its v1.0.0-dated content is fully preserved above) on 2026-08-04 after the two trackers were found to have drifted apart with genuinely different items in each.*
