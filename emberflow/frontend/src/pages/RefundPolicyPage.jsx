@@ -31,8 +31,8 @@ export default function RefundPolicyPage() {
         <p>
           Refunds aren't self-service &mdash; there's no automatic "refund" button.
           Request one from EmberFlow Support (or, where available, directly through
-          Polar, our billing provider) and we'll process it by hand. See "How to
-          Request a Refund" below.
+          Polar, our billing provider) and we'll process it by hand as quickly as
+          we can. See "How to Request a Refund" below.
         </p>
       </section>
 
@@ -82,7 +82,7 @@ export default function RefundPolicyPage() {
           the email address associated with your account, within 7 calendar days of
           the charge. Include your account details and the charge you'd like
           refunded. We'll confirm eligibility and process it manually (through Polar,
-          our billing provider) &mdash; we'll respond within 48 hours.
+          our billing provider) as quickly as we can.
         </p>
       </section>
 

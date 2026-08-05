@@ -171,7 +171,7 @@ Only genuine risks are listed. "Code-set" = verified from source this phase; "Da
 | **success_url** | Code-set: `${APP_URL}/app/subscriptions?billing=success` | ✅ Correct and read by the confirming-purchase handler. |
 | **return_url** | Code-set: `${APP_URL}/app/subscriptions` | ✅ Set on both portal-session attempts (fixed `1b27012`). |
 | **cancel_url** | Not set | 🟢 Low/none. Polar's hosted checkout has no separate cancel_url in its create body; an abandoned checkout is handled by the customer navigating back. No action needed, noted for completeness. |
-| **Support URL/email** | Code: `support@emberflow.com` (`company.js`) | 🟢 Confirm the inbox is monitored and the address is real before launch. |
+| **Support URL/email** | Code: `embersystemssupport@gmail.com` (`company.js`) | 🟢 Confirm the inbox is monitored and the address is real before launch. |
 | **Rate limiting** | Code: checkout 5/min, portal 5/min, **webhook 60/min** (per-IP) | 🟠 Rate-limiting the *webhook* is unusual. At launch volume 60/min/IP is ample; a large burst (mass renewal) could 429 legitimate deliveries — Polar retries 429s so it self-heals, but consider raising/exempting the webhook route if volume grows. Fails **open** if Redis is down. |
 | **Authentication** | Google OAuth production-verified; email/password via Supabase | 🟢 Re-confirm OAuth callback/origins match the final domain. |
 | **Migration 007 applied** | Supabase prod | 🔴 Confirm the three `polar_*` columns exist by direct column check (not `migration list`). |

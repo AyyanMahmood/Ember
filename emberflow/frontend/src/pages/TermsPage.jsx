@@ -113,7 +113,7 @@ const sections = [
     id: 'governing-law',
     title: 'Governing Law',
     content: (
-      <p>These Terms are governed by the laws of <strong>the State of New York, United States</strong>, without regard to its conflict of laws principles. Any disputes arising under these Terms shall be resolved exclusively in the state or federal courts located in New York County, New York.</p>
+      <p>These Terms are governed by the laws applicable to <strong>Ember Holdings</strong>&rsquo; place of business in <strong>Lahore, Pakistan</strong>, without regard to conflict of laws principles. Any disputes arising under these Terms shall be resolved in the courts having jurisdiction over that location.</p>
     ),
   },
   {

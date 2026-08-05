@@ -2,7 +2,7 @@
 
 Operational guide for handling billing support requests. Every billing **charge, refund, tax line, and receipt** is handled by **Polar** as Merchant of Record — EmberFlow never touches card data. As of the 2026-07-31 customer-journey work, the common actions (upgrade, **switch plan**, **cancel**, **resume**) all happen **inside EmberFlow** via Polar's API; the Polar customer **portal** is now used only for **updating a card** and **downloading invoices/receipts**.
 
-**Support inbox:** `support@emberflow.com` · **Billing provider dashboard:** Polar (sandbox: sandbox.polar.sh · production: polar.sh)
+**Support inbox:** `embersystemssupport@gmail.com` · **Billing provider dashboard:** Polar (sandbox: sandbox.polar.sh · production: polar.sh)
 
 ---
 

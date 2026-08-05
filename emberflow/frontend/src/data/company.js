@@ -2,7 +2,7 @@
 // the Contact, Terms, Privacy, and Refund pages. Update here rather than
 // editing each page individually.
 export const COMPANY = {
-  name: 'EmberFlow Inc.',
-  supportEmail: 'support@emberflow.com',
-  address: 'New York, NY',
+  name: 'Ember Holdings',
+  supportEmail: 'embersystemssupport@gmail.com',
+  address: 'Lahore, Pakistan',
 };

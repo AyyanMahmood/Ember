@@ -37,7 +37,7 @@ export default function ContactPage() {
       <h1>Get in Touch</h1>
       <p className="legal-subtitle">
         We&rsquo;re here to help. Reach out using any of the methods below and
-        we&rsquo;ll get back to you within 48 hours.
+        we&rsquo;ll get back to you as soon as we can.
       </p>
 
       <div className="contact-methods">
@@ -56,7 +56,7 @@ export default function ContactPage() {
 
         <Card variant="default">
           <h2><Clock size={18} aria-hidden="true" /> Response Time</h2>
-          <p>We aim to respond to all inquiries within <strong>48 hours</strong> during regular business days.</p>
+          <p>We respond as quickly as possible during business days.</p>
         </Card>
       </div>
 
