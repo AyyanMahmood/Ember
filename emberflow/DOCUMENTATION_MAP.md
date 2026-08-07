@@ -69,6 +69,4 @@ This repo is one product in a larger ecosystem. Related documentation lives outs
 - `~/Desktop/Ember UI/` — the canonical cross-product component/design system this repo consumes.
 - `~/Desktop/White Label EmberFlow/` — the commercial white-label template product line.
 - `~/Desktop/Ember Holdings/` — company-wide operations (marketing, support/release/versioning policy) that sits above any single product.
-
----
 *Reflects repository state as of 2026-08-04. If a doc listed here has since moved or been superseded, trust the doc over this map and update this map to match.*

@@ -155,9 +155,11 @@ Study open-source like a research lab: understand *why* something is good, extra
 
 ### References
 
-Local reference repositories live in `/references` at the repo root (untracked/gitignored — large, cloned locally for study, not committed):
+Local reference repositories live in `/references/libraries` at the repo root (untracked/gitignored — large, cloned locally for study, not committed):
 
 - `shadcn-ui` (cloned as `ui`), `magicui`, `originui`, `animate-ui`, `radix-ui`, `framer-motion`, `react-bits`, `mantine`, `heroui`, `chakra-ui`, `tremor`, `headlessui`
+
+`/references` also holds `design/`, `websites/`, `inspiration/`, and `brands/` — raw study material, distinct from `.claude/skills/`, which holds distilled, reusable knowledge.
 
 Documentation-only research sources (no local clone): reactbits.dev, kokonutui.com, motion.dev, animejs.com, rive.app.
 

@@ -11,3 +11,4 @@ testing-issues.md
 # this line makes that actually true and prevents an accidental `git add -A`
 # from staging gigabytes. See CLAUDE.md → Ember UI → References.
 references/
+KNOWN_ISSUES.md
