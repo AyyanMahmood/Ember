@@ -180,8 +180,9 @@ using (
   )
 );
 
+drop policy if exists "Proposal items viewable by proposal owner" on public.proposal_items;
 drop policy if exists "Proposal items are viewable by proposal owner" on public.proposal_items;
-create policy "Proposal items are viewable by proposal owner" on public.proposal_items for select
+create policy "Proposal items viewable by proposal owner" on public.proposal_items for select
 using (
   exists (
     select 1 from public.proposals
@@ -190,8 +191,9 @@ using (
   )
 );
 
+drop policy if exists "Proposal items insertable by proposal owner" on public.proposal_items;
 drop policy if exists "Proposal items are insertable by proposal owner" on public.proposal_items;
-create policy "Proposal items are insertable by proposal owner" on public.proposal_items for insert
+create policy "Proposal items insertable by proposal owner" on public.proposal_items for insert
 with check (
   exists (
     select 1 from public.proposals
@@ -200,8 +202,9 @@ with check (
   )
 );
 
+drop policy if exists "Proposal items updateable by active pro users" on public.proposal_items;
 drop policy if exists "Proposal items are updateable by active pro users" on public.proposal_items;
-create policy "Proposal items are updateable by active pro users" on public.proposal_items for update
+create policy "Proposal items updateable by active pro users" on public.proposal_items for update
 using (
   exists (
     select 1 from public.proposals
@@ -209,7 +212,7 @@ using (
     where proposals.id = proposal_items.proposal_id
       and proposals.user_id = auth.uid()
       and subscriptions.plan in ('pro_monthly', 'pro_yearly')
-      and subscriptions.status in ('active', 'trialing')
+      and subscriptions.status in ('active', 'trialing', 'past_due')
   )
 )
 with check (
@@ -219,12 +222,13 @@ with check (
     where proposals.id = proposal_items.proposal_id
       and proposals.user_id = auth.uid()
       and subscriptions.plan in ('pro_monthly', 'pro_yearly')
-      and subscriptions.status in ('active', 'trialing')
+      and subscriptions.status in ('active', 'trialing', 'past_due')
   )
 );
 
+drop policy if exists "Proposal items deletable by active pro users" on public.proposal_items;
 drop policy if exists "Proposal items are deletable by active pro users" on public.proposal_items;
-create policy "Proposal items are deletable by active pro users" on public.proposal_items for delete
+create policy "Proposal items deletable by active pro users" on public.proposal_items for delete
 using (
   exists (
     select 1 from public.proposals
@@ -232,7 +236,7 @@ using (
     where proposals.id = proposal_items.proposal_id
       and proposals.user_id = auth.uid()
       and subscriptions.plan in ('pro_monthly', 'pro_yearly')
-      and subscriptions.status in ('active', 'trialing')
+      and subscriptions.status in ('active', 'trialing', 'past_due')
   )
 );
 

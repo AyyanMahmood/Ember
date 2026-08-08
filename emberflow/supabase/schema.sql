@@ -424,7 +424,7 @@ CREATE TABLE public.invoices (
     status text DEFAULT 'draft'::text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    discount_total numeric DEFAULT 0,
+    discount_total numeric DEFAULT 0 NOT NULL,
     notes text,
     sent_at timestamp with time zone,
     paid_at timestamp with time zone,
@@ -442,14 +442,15 @@ CREATE TABLE public.payments (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     invoice_id uuid,
     user_id uuid,
-    amount numeric DEFAULT 0,
+    amount numeric(12,2) DEFAULT 0 NOT NULL,
     currency text DEFAULT 'USD'::text,
     payment_date date,
     method text DEFAULT 'manual'::text,
     reference text,
     notes text,
     status text DEFAULT 'pending'::text,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT payments_amount_check CHECK ((amount > (0)::numeric))
 );
 
 
@@ -490,7 +491,7 @@ CREATE TABLE public.proposal_items (
     proposal_id uuid NOT NULL,
     title text NOT NULL,
     description text,
-    amount numeric DEFAULT 0 NOT NULL,
+    amount numeric(12,2) DEFAULT 0 NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     "position" integer
@@ -777,10 +778,31 @@ CREATE INDEX invoices_user_id_idx ON public.invoices USING btree (user_id);
 
 
 --
+-- Name: payments_invoice_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX payments_invoice_id_idx ON public.payments USING btree (invoice_id);
+
+
+--
+-- Name: payments_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX payments_user_id_idx ON public.payments USING btree (user_id);
+
+
+--
 -- Name: profiles_email_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE INDEX profiles_email_idx ON public.profiles USING btree (email);
+
+
+--
+-- Name: proposal_items_proposal_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX proposal_items_proposal_id_idx ON public.proposal_items USING btree (proposal_id);
 
 
 --
@@ -1090,7 +1112,7 @@ CREATE POLICY "Profiles are viewable by owner" ON public.profiles FOR SELECT USI
 CREATE POLICY "Proposal items deletable by active pro users" ON public.proposal_items FOR DELETE USING ((EXISTS ( SELECT 1
    FROM (public.proposals
      JOIN public.subscriptions ON ((subscriptions.user_id = proposals.user_id)))
-  WHERE ((proposals.id = proposal_items.proposal_id) AND (proposals.user_id = auth.uid()) AND (subscriptions.plan = ANY (ARRAY['pro_monthly'::text, 'pro_yearly'::text])) AND (subscriptions.status = ANY (ARRAY['active'::text, 'trialing'::text]))))));
+  WHERE ((proposals.id = proposal_items.proposal_id) AND (proposals.user_id = auth.uid()) AND (subscriptions.plan = ANY (ARRAY['pro_monthly'::text, 'pro_yearly'::text])) AND (subscriptions.status = ANY (ARRAY['active'::text, 'trialing'::text, 'past_due'::text]))))));
 
 
 --
@@ -1109,10 +1131,10 @@ CREATE POLICY "Proposal items insertable by proposal owner" ON public.proposal_i
 CREATE POLICY "Proposal items updateable by active pro users" ON public.proposal_items FOR UPDATE USING ((EXISTS ( SELECT 1
    FROM (public.proposals
      JOIN public.subscriptions ON ((subscriptions.user_id = proposals.user_id)))
-  WHERE ((proposals.id = proposal_items.proposal_id) AND (proposals.user_id = auth.uid()) AND (subscriptions.plan = ANY (ARRAY['pro_monthly'::text, 'pro_yearly'::text])) AND (subscriptions.status = ANY (ARRAY['active'::text, 'trialing'::text])))))) WITH CHECK ((EXISTS ( SELECT 1
+  WHERE ((proposals.id = proposal_items.proposal_id) AND (proposals.user_id = auth.uid()) AND (subscriptions.plan = ANY (ARRAY['pro_monthly'::text, 'pro_yearly'::text])) AND (subscriptions.status = ANY (ARRAY['active'::text, 'trialing'::text, 'past_due'::text])))))) WITH CHECK ((EXISTS ( SELECT 1
    FROM (public.proposals
      JOIN public.subscriptions ON ((subscriptions.user_id = proposals.user_id)))
-  WHERE ((proposals.id = proposal_items.proposal_id) AND (proposals.user_id = auth.uid()) AND (subscriptions.plan = ANY (ARRAY['pro_monthly'::text, 'pro_yearly'::text])) AND (subscriptions.status = ANY (ARRAY['active'::text, 'trialing'::text]))))));
+  WHERE ((proposals.id = proposal_items.proposal_id) AND (proposals.user_id = auth.uid()) AND (subscriptions.plan = ANY (ARRAY['pro_monthly'::text, 'pro_yearly'::text])) AND (subscriptions.status = ANY (ARRAY['active'::text, 'trialing'::text, 'past_due'::text]))))));
 
 
 --
