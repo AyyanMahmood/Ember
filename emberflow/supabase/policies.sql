@@ -253,6 +253,11 @@ create policy "Users can upload own logos" on storage.objects for insert
 with check (
   bucket_id = 'logos'
   and auth.uid()::text = (storage.foldername(name))[1]
+  and exists (
+    select 1 from public.subscriptions
+    where subscriptions.user_id = auth.uid()
+      and subscriptions.plan in ('pro_monthly', 'pro_yearly')
+  )
 );
 
 drop policy if exists "Users can update own logos" on storage.objects;
@@ -264,6 +269,11 @@ using (
 with check (
   bucket_id = 'logos'
   and auth.uid()::text = (storage.foldername(name))[1]
+  and exists (
+    select 1 from public.subscriptions
+    where subscriptions.user_id = auth.uid()
+      and subscriptions.plan in ('pro_monthly', 'pro_yearly')
+  )
 );
 
 drop policy if exists "Users can delete own logos" on storage.objects;
@@ -273,19 +283,22 @@ using (
   and auth.uid()::text = (storage.foldername(name))[1]
 );
 
+drop policy if exists "Avatar images are publicly readable" on storage.objects;
 drop policy if exists "Avatars are readable" on storage.objects;
-create policy "Avatars are readable" on storage.objects for select
+create policy "Avatar images are publicly readable" on storage.objects for select
 using (bucket_id = 'avatars');
 
+drop policy if exists "Users can upload their own avatars" on storage.objects;
 drop policy if exists "Users can upload own avatars" on storage.objects;
-create policy "Users can upload own avatars" on storage.objects for insert
+create policy "Users can upload their own avatars" on storage.objects for insert
 with check (
   bucket_id = 'avatars'
   and auth.uid()::text = (storage.foldername(name))[1]
 );
 
+drop policy if exists "Users can update their own avatars" on storage.objects;
 drop policy if exists "Users can update own avatars" on storage.objects;
-create policy "Users can update own avatars" on storage.objects for update
+create policy "Users can update their own avatars" on storage.objects for update
 using (
   bucket_id = 'avatars'
   and auth.uid()::text = (storage.foldername(name))[1]
@@ -295,8 +308,9 @@ with check (
   and auth.uid()::text = (storage.foldername(name))[1]
 );
 
+drop policy if exists "Users can delete their own avatars" on storage.objects;
 drop policy if exists "Users can delete own avatars" on storage.objects;
-create policy "Users can delete own avatars" on storage.objects for delete
+create policy "Users can delete their own avatars" on storage.objects for delete
 using (
   bucket_id = 'avatars'
   and auth.uid()::text = (storage.foldername(name))[1]
