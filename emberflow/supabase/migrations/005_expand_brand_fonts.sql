@@ -16,7 +16,7 @@
 begin;
 
 alter table public.profiles
-  drop constraint profiles_brand_font_check;
+  drop constraint if exists profiles_brand_font_check;
 
 alter table public.profiles
   add constraint profiles_brand_font_check

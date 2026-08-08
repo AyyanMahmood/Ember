@@ -31,6 +31,9 @@ alter table public.profiles
   add column if not exists brand_font text not null default 'inter';
 
 alter table public.profiles
+  drop constraint if exists profiles_brand_font_check;
+
+alter table public.profiles
   add constraint profiles_brand_font_check
   check (brand_font in ('inter', 'manrope', 'space-grotesk', 'fraunces'));
 
@@ -38,10 +41,13 @@ alter table public.profiles
   add column if not exists brand_accent_color text;
 
 alter table public.profiles
+  drop constraint if exists profiles_brand_accent_color_check;
+
+alter table public.profiles
   add constraint profiles_brand_accent_color_check
   check (brand_accent_color is null or brand_accent_color ~* '^#([0-9a-f]{3}|[0-9a-f]{6})$');
 
-create function public.enforce_branding_pro_only() returns trigger
+create or replace function public.enforce_branding_pro_only() returns trigger
     language plpgsql security definer
     set search_path to 'public'
     as $$
@@ -82,6 +88,8 @@ revoke all on function public.enforce_branding_pro_only() from public;
 grant all on function public.enforce_branding_pro_only() to anon;
 grant all on function public.enforce_branding_pro_only() to authenticated;
 grant all on function public.enforce_branding_pro_only() to service_role;
+
+drop trigger if exists enforce_branding_pro_only_trigger on public.profiles;
 
 create trigger enforce_branding_pro_only_trigger
   before update on public.profiles
