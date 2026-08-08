@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Trash2 } from 'lucide-react';
 import { Modal, ModalFooter } from './ui/Modal.jsx';
@@ -38,12 +38,12 @@ export function DeleteAccountModal({ isOpen, onClose, isPro }) {
 
   const locked = phase !== 'confirm';
 
-  function handleClose() {
+  const handleClose = useCallback(() => {
     if (locked) return; // belt-and-suspenders — every close trigger below is already disabled while locked
     setConfirmation('');
     setError('');
     onClose();
-  }
+  }, [locked, onClose]);
 
   async function handleDelete() {
     if (!isMatch) return;

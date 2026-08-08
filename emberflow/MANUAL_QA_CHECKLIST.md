@@ -10,6 +10,29 @@ Where a flow is identical on both, it's listed once per device section anyway so
 
 ---
 
+## Known Issues (not yet fixed)
+
+Newly discovered, root-caused-by-code-read bugs — tracked here so a QA pass doesn't need to rediscover them from scratch. Don't check off the corresponding checklist items below as passing until these are actually fixed.
+
+### 1. Account deletion confirmation input loses focus on every keystroke — ✅ FIXED (not yet device-verified)
+**Where:** Settings → Delete account → `frontend/src/components/DeleteAccountModal.jsx`
+**Fix applied:** `handleClose` wrapped in `useCallback` (deps `[locked, onClose]`) instead of being redefined every render, so it no longer changes identity on each keystroke and no longer re-triggers `useFocusTrap`'s effect. Build verified green. Not yet confirmed in an actual browser (standing no-browser limitation) — leave the checklist item below unchecked until manually confirmed.
+**Symptom:** Typing any character (letter, number, symbol, or space) into the "Type DELETE or your email" input immediately deselects it — impossible to type normally.
+**Root cause (confirmed):** `DeleteAccountModal.jsx:41` defines `handleClose` as a plain function, recreated on every render (not wrapped in `useCallback`). It's passed as `Modal`'s `onClose` prop (`DeleteAccountModal.jsx:73` → `Modal.jsx:34`), which forwards it into `useFocusTrap(modalRef, { isOpen, onClose, closeOnEscape })`. That hook's effect (`useFocusTrap.js:10-50`) lists `onClose` in its dependency array (`useFocusTrap.js:50`). Every `setConfirmation` keystroke (`DeleteAccountModal.jsx:104`) re-renders the component → `handleClose` gets a new identity → the effect tears down (restores focus to whatever was active before the modal opened) and re-runs (`ref.current?.focus()` refocuses the modal's outer `<section>`, not the input) — yanking focus off the confirmation input on every character.
+**Fix direction (not applied):** wrap `handleClose` in `useCallback`, or have `useFocusTrap` read `onClose` via a ref instead of putting it in the effect's dependency array.
+
+### 2. Deleted account's email appears to already exist on re-signup
+**Where:** Signup (`frontend/src/hooks/useAuth.js` → `supabase.auth.signUp()`) vs. account deletion (`api/account/delete.js`)
+**Symptom:** A newly created account was deleted; signing up again with the exact same email behaved as though the account already existed and sent a verification email.
+**Investigation so far:** account deletion does call the hard-delete step — `api/account/delete.js:121` calls `supabase.auth.admin.deleteUser(user.id)` last, after the `delete_user_account` RPC (`supabase/migrations/012_delete_account.sql`) and best-effort storage cleanup, and a failure there is surfaced as a distinct, explicit error ("Your data has been deleted, but we could not remove your login...") rather than swallowed — `scripts/verify-account-deletion.js` has a dedicated scenario asserting this. Signup calls `supabase.auth.signUp()` with no EmberFlow-side pre-check, and EmberFlow's "check your email" UI copy is identical for a genuine first-time confirmation and for Supabase's own anti-enumeration behavior (resending a confirmation email for an existing-but-unconfirmed user without erroring) — so this symptom may be visually indistinguishable from a real bug without being one.
+**Not yet distinguished — ranked by likelihood:**
+  1. Expected Supabase `signUp()` behavior for what was actually a fresh signup — not a bug.
+  2. That specific deletion failed at the `auth.admin.deleteUser` step and the explicit error was missed/dismissed, leaving the `auth.users` row behind.
+  3. An unidentified real bug (least likely — the hard-delete code path exists, is called unconditionally, and its failure path has test coverage).
+**What to test manually to distinguish these:** delete a fresh test account and watch closely for any error toast/message during the deletion itself (confirms or rules out #2). If none appeared, check Supabase Dashboard → Authentication → Users for that email immediately after deletion — before attempting re-signup — to see directly whether the `auth.users` row was actually removed.
+
+---
+
 ## Arc (Desktop)
 
 ### Authentication
@@ -26,6 +49,8 @@ Where a flow is identical on both, it's listed once per device section anyway so
 - [x] Logout (from sidebar footer) after a Google login → ✅ verified — redirected to marketing/login, session actually cleared, logging back in with Google works again
 - [ ] Forgot password → submit email → reset link email arrives → reset page accepts new password → can log in with new password
 - [ ] Settings → Security card → change password: current/new/confirm fields all show the eye-toggle and all three toggle together; wrong "current password" is rejected; success message appears
+- [ ] **[Known Issue #1]** Settings → Delete account → confirmation input: type "DELETE" character by character — input must NOT lose focus/deselect after each keystroke
+- [ ] **[Known Issue #2]** Delete a fresh test account, watch for any error during deletion, then check Supabase Dashboard → Authentication → Users for that email before re-signing up with it — determine whether the `auth.users` row was actually removed and whether re-signup behaves as a genuine fresh signup
 
 ### Dashboard
 - [ ] Stat cards show correct values: Total revenue, Pending invoices, Paid invoices, Clients
@@ -160,6 +185,7 @@ Where a flow is identical on both, it's listed once per device section anyway so
 - [ ] Logout from the sidebar (via the mobile drawer) actually clears the session
 - [ ] Forgot password → reset email → reset page → new password → log in with it
 - [ ] Settings → Security: change password, eye-toggle on all three fields, touch targets are large enough to tap reliably
+- [ ] **[Known Issue #1]** Settings → Delete account → confirmation input on a touch keyboard: type "DELETE" — input must NOT lose focus after each keystroke
 
 ### Dashboard
 - [ ] Stat cards stack correctly at ~360-414px width, no overlap or cut-off text
