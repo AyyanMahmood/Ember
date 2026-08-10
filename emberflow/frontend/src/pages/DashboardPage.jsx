@@ -10,6 +10,7 @@ import { Button } from '../components/ui/Button.jsx';
 import { listClients, listInvoices, listRecentInvoices } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
 import { effectiveStatus } from '../utils/invoice.js';
+import { selectDominantCurrency } from '../utils/currency.js';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -45,13 +46,15 @@ export default function DashboardPage() {
   const stats = useMemo(() => {
     const paidInvoices = invoices.filter((invoice) => invoice.status === 'paid');
     const pendingInvoices = invoices.filter((invoice) => ['sent', 'overdue'].includes(effectiveStatus(invoice)));
-    const totalRevenue = paidInvoices.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0);
+    const { currency, invoices: paidInDominantCurrency, otherCurrencyCount } = selectDominantCurrency(paidInvoices);
+    const totalRevenue = paidInDominantCurrency.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0);
     return {
       totalRevenue,
       paidCount: paidInvoices.length,
       pendingCount: pendingInvoices.length,
       clientCount: clients.length,
-      currency: paidInvoices[0]?.currency || invoices[0]?.currency || 'USD',
+      currency,
+      otherCurrencyCount,
     };
   }, [clients, invoices]);
 
@@ -59,7 +62,9 @@ export default function DashboardPage() {
     {
       label: 'Total revenue',
       value: formatMoney(stats.totalRevenue, stats.currency),
-      note: 'Paid invoices',
+      note: stats.otherCurrencyCount > 0
+        ? `Paid invoices (${stats.otherCurrencyCount} in other currencies excluded)`
+        : 'Paid invoices',
       icon: <DollarSign size={18} />,
       to: '/app/invoices?status=paid',
     },

@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../components/ui/Modal.jsx';
 import { deleteClient, getClient, listInvoices } from '../services/api.js';
 import { formatDate, formatMoney } from '../utils/format.js';
 import { effectiveStatus } from '../utils/invoice.js';
+import { selectDominantCurrency } from '../utils/currency.js';
 
 export default function ClientDetailPage() {
   const { id } = useParams();
@@ -53,12 +54,15 @@ export default function ClientDetailPage() {
   const summary = useMemo(() => {
     const paid = invoices.filter((invoice) => invoice.status === 'paid');
     const outstanding = invoices.filter((invoice) => ['sent', 'overdue'].includes(effectiveStatus(invoice)));
-    const currency = invoices[0]?.currency || 'USD';
+    const { currency, invoices: billed, otherCurrencyCount } = selectDominantCurrency(invoices);
+    const paidInDominantCurrency = paid.filter((invoice) => (invoice.currency || 'USD') === currency);
+    const outstandingInDominantCurrency = outstanding.filter((invoice) => (invoice.currency || 'USD') === currency);
     return {
-      totalBilled: invoices.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0),
-      totalPaid: paid.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0),
-      totalOutstanding: outstanding.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0),
+      totalBilled: billed.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0),
+      totalPaid: paidInDominantCurrency.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0),
+      totalOutstanding: outstandingInDominantCurrency.reduce((sum, invoice) => sum + Number(invoice.total || 0), 0),
       currency,
+      otherCurrencyCount,
     };
   }, [invoices]);
 
@@ -138,9 +142,21 @@ export default function ClientDetailPage() {
       </div>
 
       <section className="stats-grid stats-grid--3" aria-label="Client billing summary">
-        <StatCard label="Total billed" value={formatMoney(summary.totalBilled, summary.currency)} note="All invoices" />
-        <StatCard label="Paid" value={formatMoney(summary.totalPaid, summary.currency)} note="Collected" />
-        <StatCard label="Outstanding" value={formatMoney(summary.totalOutstanding, summary.currency)} note="Sent or overdue" />
+        <StatCard
+          label="Total billed"
+          value={formatMoney(summary.totalBilled, summary.currency)}
+          note={summary.otherCurrencyCount > 0 ? `All invoices (${summary.otherCurrencyCount} in other currencies excluded)` : 'All invoices'}
+        />
+        <StatCard
+          label="Paid"
+          value={formatMoney(summary.totalPaid, summary.currency)}
+          note={summary.otherCurrencyCount > 0 ? `Collected (${summary.otherCurrencyCount} in other currencies excluded)` : 'Collected'}
+        />
+        <StatCard
+          label="Outstanding"
+          value={formatMoney(summary.totalOutstanding, summary.currency)}
+          note={summary.otherCurrencyCount > 0 ? `Sent or overdue (${summary.otherCurrencyCount} in other currencies excluded)` : 'Sent or overdue'}
+        />
       </section>
 
       <section className="detail-grid">

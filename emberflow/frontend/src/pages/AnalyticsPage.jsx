@@ -9,6 +9,7 @@ import { EmptyState } from '../components/ui/EmptyState.jsx';
 import { listInvoices } from '../services/api.js';
 import { formatMoney } from '../utils/format.js';
 import { effectiveStatus } from '../utils/invoice.js';
+import { selectDominantCurrency } from '../utils/currency.js';
 
 export default function AnalyticsPage() {
   const [invoices, setInvoices] = useState([]);
@@ -36,28 +37,11 @@ export default function AnalyticsPage() {
     const monthKey = now.toISOString().slice(0, 7);
     const paidAll = invoices.filter((invoice) => invoice.status === 'paid');
 
-    // Revenue totals must never add amounts across currencies into one
-    // number -- that's not a smaller total, it's an arithmetically wrong
-    // one. Find the currency actually used by most paid invoices and only
-    // total those; invoices in any other currency are excluded from the
-    // sums (not dropped from the app -- still visible on the Invoices page)
-    // and surfaced via otherCurrencyCount instead of silently vanishing.
-    const currencyCounts = new Map();
-    paidAll.forEach((invoice) => {
-      const c = invoice.currency || 'USD';
-      currencyCounts.set(c, (currencyCounts.get(c) || 0) + 1);
-    });
-    let currency = 'USD';
-    let bestCount = -1;
-    for (const [c, count] of currencyCounts) {
-      if (count > bestCount) {
-        currency = c;
-        bestCount = count;
-      }
-    }
-
-    const paid = paidAll.filter((invoice) => (invoice.currency || 'USD') === currency);
-    const otherCurrencyCount = paidAll.length - paid.length;
+    // See selectDominantCurrency: revenue totals must never add amounts
+    // across currencies into one number, so only the dominant currency's
+    // paid invoices are totaled; the rest are reported via
+    // otherCurrencyCount instead of silently vanishing or being mixed in.
+    const { currency, invoices: paid, otherCurrencyCount } = selectDominantCurrency(paidAll);
     const monthlyPaid = paid.filter((invoice) => (invoice.paid_at || invoice.invoice_date || '').slice(0, 7) === monthKey);
     const pending = invoices.filter((invoice) => ['sent', 'overdue'].includes(effectiveStatus(invoice)));
     const overdue = invoices.filter((invoice) => effectiveStatus(invoice) === 'overdue');
