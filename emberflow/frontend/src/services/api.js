@@ -215,24 +215,14 @@ export async function createInvoice(invoice, items) {
 }
 
 export async function updateInvoice(id, invoice, items) {
+  const rows = items.map((item, index) => ({ ...item, position: index + 1 }));
   requireData(
-    await supabase
-      .from("invoices")
-      .update(invoice)
-      .eq("id", id)
-      .select()
-      .single(),
+    await supabase.rpc("update_invoice_with_items", {
+      p_invoice_id: id,
+      p_invoice: invoice,
+      p_items: rows,
+    }),
   );
-  requireData(
-    await supabase.from("invoice_items").delete().eq("invoice_id", id),
-  );
-  const rows = items.map((item, index) => ({
-    ...item,
-    invoice_id: id,
-    position: index + 1,
-  }));
-  if (rows.length > 0)
-    requireData(await supabase.from("invoice_items").insert(rows));
   return getInvoice(id);
 }
 
