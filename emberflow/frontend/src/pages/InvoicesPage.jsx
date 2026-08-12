@@ -133,12 +133,28 @@ export default function InvoicesPage() {
     }
   }
 
+  async function runBulkAction(ids, action) {
+    const results = await Promise.allSettled(ids.map((id) => action(id)));
+    const failedIds = ids.filter((_, index) => results[index].status === 'rejected');
+    return { succeededCount: ids.length - failedIds.length, failedIds };
+  }
+
   async function confirmBulkDelete() {
     setActionLoading(true);
     try {
-      await Promise.all(selectedKeys.map((id) => deleteInvoice(id)));
-      setSelectedKeys([]);
+      const ids = selectedKeys;
+      const { succeededCount, failedIds } = await runBulkAction(ids, deleteInvoice);
       setBulkDeleteOpen(false);
+      if (failedIds.length === 0) {
+        setSelectedKeys([]);
+        setError('');
+      } else if (succeededCount === 0) {
+        setSelectedKeys(failedIds);
+        setError("Couldn't delete the selected invoices.");
+      } else {
+        setSelectedKeys(failedIds);
+        setError(`Deleted ${succeededCount} of ${ids.length} invoices — ${failedIds.length} failed.`);
+      }
       await load();
     } catch (err) {
       setError(err.message);
@@ -150,8 +166,18 @@ export default function InvoicesPage() {
   async function bulkMarkPaid() {
     setActionLoading(true);
     try {
-      await Promise.all(selectedKeys.map((id) => updateInvoiceStatus(id, 'paid')));
-      setSelectedKeys([]);
+      const ids = selectedKeys;
+      const { succeededCount, failedIds } = await runBulkAction(ids, (id) => updateInvoiceStatus(id, 'paid'));
+      if (failedIds.length === 0) {
+        setSelectedKeys([]);
+        setError('');
+      } else if (succeededCount === 0) {
+        setSelectedKeys(failedIds);
+        setError("Couldn't mark the selected invoices as paid.");
+      } else {
+        setSelectedKeys(failedIds);
+        setError(`Marked ${succeededCount} of ${ids.length} invoices as paid — ${failedIds.length} failed.`);
+      }
       await load();
     } catch (err) {
       setError(err.message);
