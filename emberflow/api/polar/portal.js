@@ -1,6 +1,6 @@
 const { getAuthenticatedUser } = require('../_utils/supabaseAdmin');
 const { getBaseUrl, methodNotAllowed, optionsHandler, sendJson } = require('../_utils/http');
-const { polarFetch } = require('../_utils/polar');
+const { guardedSelfHeal, isMissingResourceError, polarFetch } = require('../_utils/polar');
 const { rateLimit } = require('../_utils/rateLimit');
 
 module.exports = async function handler(req, res) {
@@ -82,7 +82,18 @@ module.exports = async function handler(req, res) {
     // Gated strictly on 404 ("resource not found"): any other failure
     // (bad token, rate limit, network) is a real problem that recovery
     // would only mask — let it bubble up as before.
-    if (lastErr?.status === 404 && subscription) {
+    if (isMissingResourceError(lastErr) && subscription) {
+      // MF-7: see guardedSelfHeal()'s comments in api/_utils/polar.js — a
+      // single 404 on both lookups doesn't by itself prove no customer
+      // exists in this environment; it could mean the environment itself
+      // is misconfigured, in which case creating a new customer here would
+      // be wasteful/incorrect, not a recovery.
+      const canSelfHeal = await guardedSelfHeal('portal');
+      if (!canSelfHeal) {
+        return sendJson(res, 502, {
+          error: "We couldn't verify your billing account with our provider right now. Please try again in a few minutes, or contact support if this continues.",
+        });
+      }
       try {
         const { data: profile } = await supabase
           .from('profiles')

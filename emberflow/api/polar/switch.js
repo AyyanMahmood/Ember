@@ -1,6 +1,6 @@
 const { getAuthenticatedUser } = require('../_utils/supabaseAdmin');
 const { methodNotAllowed, optionsHandler, sendJson } = require('../_utils/http');
-const { collapseToFreeAfterMissingSubscription, getProductId, hasAccessGrantingStatus, planFromProduct, polarFetch } = require('../_utils/polar');
+const { collapseToFreeAfterMissingSubscription, getProductId, guardedSelfHeal, hasAccessGrantingStatus, isMissingResourceError, planFromProduct, polarFetch } = require('../_utils/polar');
 const { rateLimit } = require('../_utils/rateLimit');
 
 // In-app plan switch (Monthly <-> Yearly). Uses Polar's native Update
@@ -55,7 +55,17 @@ module.exports = async function handler(req, res) {
         body: JSON.stringify({ product_id: productId, proration_behavior: 'invoice' }),
       });
     } catch (err) {
-      if (err.status === 404) {
+      if (isMissingResourceError(err)) {
+        // MF-7: a 404 here is not by itself proof this row is stale — see
+        // guardedSelfHeal()'s comments in api/_utils/polar.js. Only mutate
+        // if it explicitly clears both the environment-health check and the
+        // cross-request circuit breaker.
+        const canSelfHeal = await guardedSelfHeal('switch');
+        if (!canSelfHeal) {
+          return sendJson(res, 502, {
+            error: "We couldn't verify your subscription with our billing provider right now. Please try again in a few minutes, or contact support if this continues.",
+          });
+        }
         await collapseToFreeAfterMissingSubscription(supabase, user.id);
         return sendJson(res, 409, {
           error: "We couldn't find an active subscription with our billing provider, so your account has been moved to the Free plan. Choose a plan below to subscribe again — contact support if this looks wrong.",
